@@ -5,7 +5,6 @@ import './App.scss';
 import LobbyPage from './pages/LobbyPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import Main from './components/main';
 import NaverLogin from './components/login';
 
 function App() {
