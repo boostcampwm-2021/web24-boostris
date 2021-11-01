@@ -8,7 +8,11 @@ function OauthLoginButton({
   children: React.ReactNode;
   name: string;
 }) {
-  return <button>{children} Login</button>;
+  return (
+    <button>
+      <span className={`oauth__name--${name}`}>{children}</span> Login
+    </button>
+  );
 }
 
 export default OauthLoginButton;

@@ -18,4 +18,27 @@ button {
     font-size: 20px;
     line-height: 23px;
   }
+
+  span {
+    text-transform: capitalize;
+    &.oauth__name--naver {
+      color: #04cf5c;
+    }
+    &.oauth__name--google {
+      background: linear-gradient(
+        to right,
+        #4285f4 0% 1ch,
+        #db4437 1ch 2ch,
+        #f4b400 2ch 3ch,
+        #4285f4 3ch 4ch,
+        #0f9d58 4ch 5ch,
+        #db4437 5ch 100%
+      );
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    &.oauth__name--github {
+      color: #9c9c9c;
+    }
+  }
 }

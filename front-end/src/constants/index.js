@@ -1,1 +1,1 @@
-export const OAUTH_LIST = ['NAVER', 'GOOGLE', 'GITHUB'];
+export const OAUTH_LIST = ['naver', 'google', 'github'];
