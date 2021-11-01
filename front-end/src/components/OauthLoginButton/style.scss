@@ -1,0 +1,21 @@
+@import 'common/styles/base';
+
+button {
+  color: $white;
+  padding: 15px;
+  cursor: pointer;
+  position: relative;
+  min-width: 124px;
+  font-size: 20px;
+  line-height: 23px;
+
+  &:hover::before {
+    content: '> ';
+    position: absolute;
+    top: 50%;
+    left: -18px;
+    transform: translateY(-50%);
+    font-size: 20px;
+    line-height: 23px;
+  }
+}
