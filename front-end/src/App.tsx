@@ -1,33 +1,27 @@
 import React, { useState } from 'react';
+import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
+
 import './App.scss';
-import Modal from './components/Modal';
-import OauthLoginButton from './components/OauthLoginButton';
-import { OAUTH_LIST } from './constants';
+import LobbyPage from './pages/LobbyPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
 function App() {
-  // const [open, setOpen] = useState(false);
   return (
     <div className="App">
-      <div>
-        <img src="assets/logo.png" alt="" />
-      </div>
-      <p className="login__title">SELECT Login Button</p>
-      {OAUTH_LIST.map((name) => (
-        <OauthLoginButton
-          key={name}
-          name={name}
-          // handleClick={() => setOpen(true)}
-          handleClick={() => {}}
-        >
-          {name}
-        </OauthLoginButton>
-      ))}
-      <p className="login__title">
-        (C) Attendance starts from the first number{' '}
-      </p>
-      {/* <Modal open={open} onClose={() => setOpen(false)}>
-        hello
-      </Modal> */}
+      <BrowserRouter>
+        <Switch>
+          {/* <PrivateRoute exact path="/" component={Town} /> */}
+          <Route exact path="/" component={LobbyPage} />
+          <Route path="/login" component={LoginPage} />
+          <Route path="/register" component={RegisterPage} />
+          {/* <Route
+              path="/callback"
+              render={(props) => <Callback {...props} />}
+            /> */}
+          <Redirect path="*" to="/" />
+        </Switch>
+      </BrowserRouter>
     </div>
   );
 }
