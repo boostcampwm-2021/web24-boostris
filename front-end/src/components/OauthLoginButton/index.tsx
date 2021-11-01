@@ -11,7 +11,7 @@ function OauthLoginButton({
   handleClick: () => void;
 }) {
   return (
-    <button onClick={handleClick}>
+    <button className="oauth__btn--root" onClick={handleClick}>
       <span className={`oauth__name--${name}`}>{children}</span> Login
     </button>
   );
