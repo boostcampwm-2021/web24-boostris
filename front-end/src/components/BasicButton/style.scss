@@ -1,0 +1,16 @@
+@import 'common/styles/base';
+
+.btn__root {
+  padding: 8px 14px;
+  border-radius: 10px;
+
+  &.btn__root--contained {
+    background-color: $dark-navy;
+    color: $white;
+  }
+  &.btn__root--outlined {
+    background-color: $white;
+    color: $dark-navy;
+    border: 1px solid $dark-navy;
+  }
+}
