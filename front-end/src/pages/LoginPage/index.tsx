@@ -1,8 +1,12 @@
+import { useRef } from 'react';
+import Modal from '../../components/Modal';
 import OauthLoginButton from '../../components/OauthLoginButton';
 import { OAUTH_LIST } from '../../constants';
 import './style.scss';
 
 function LoginPage() {
+  const modalRef = useRef<any>();
+
   return (
     <div className="login__root full__page--root">
       <div>
@@ -13,8 +17,7 @@ function LoginPage() {
         <OauthLoginButton
           key={name}
           name={name}
-          // handleClick={() => setOpen(true)}
-          handleClick={() => {}}
+          handleClick={() => modalRef.current.open()}
         >
           {name}
         </OauthLoginButton>
@@ -22,9 +25,7 @@ function LoginPage() {
       <p className="login__title">
         (C) Attendance starts from the first number
       </p>
-      {/* <Modal open={open} onClose={() => setOpen(false)}>
-      hello
-    </Modal> */}
+      <Modal ref={modalRef}>hello</Modal>
     </div>
   );
 }
