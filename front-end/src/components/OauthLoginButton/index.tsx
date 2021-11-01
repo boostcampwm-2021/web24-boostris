@@ -3,13 +3,15 @@ import './style.scss';
 
 function OauthLoginButton({
   children,
-  name,
+  name = '',
+  handleClick = () => {},
 }: {
   children: React.ReactNode;
   name: string;
+  handleClick: () => void;
 }) {
   return (
-    <button>
+    <button onClick={handleClick}>
       <span className={`oauth__name--${name}`}>{children}</span> Login
     </button>
   );
