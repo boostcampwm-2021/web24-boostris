@@ -49,7 +49,7 @@ AuthRouter.post('/github/code', async (req, res) => {
 
     const { access_token } = data;
     const user = await getGithubUser(access_token);
-
+    await oauthDupCheck(user['login'], req, res); // 일단 중복 안되는 login 으로 해놓음
     res.status(200).json({ user });
   } catch (error) {
     console.error(error);
