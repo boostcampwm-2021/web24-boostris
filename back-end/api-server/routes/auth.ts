@@ -45,13 +45,18 @@ AuthRouter.post('/github/code', async (req, res) => {
 AuthRouter.post('/naver/token', async (req, res) => {
   const { accessToken } = req.body;
   const userInfoFromNaver = await getUserInfoFromNaver(accessToken);
-  /* 만약 네이버 로그인에 성공하면 jwt 토큰 발급 */
-  if (true) {
-    setJWT(req, res);
-  }
   const email = userInfoFromNaver['response']['email'];
   const name = userInfoFromNaver['response']['name'];
+  const id = userInfoFromNaver['response']['id'];
 
+  const userList = await isOauthIdInDB(id);
+  /* 만약 네이버 로그인에 성공하면 jwt 토큰 발급 */
+  if (userList) {
+    setJWT(req, res);
+  } else {
+    /* 회원 가입 페이지로 redirect */
+    console.log('fail');
+  }
   res.json({ email, name });
 });
 
