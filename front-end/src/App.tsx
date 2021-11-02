@@ -16,6 +16,7 @@ function App() {
           <Route exact path="/" component={LobbyPage} />
           <Route path="/login" component={LoginPage} />
           <Route path="/register" component={RegisterPage} />
+          <Route path="/tetris">tetrishere</Route>
           <Route path="/naver/login" component={NaverLogin} />
           {/* <Route
               path="/callback"
