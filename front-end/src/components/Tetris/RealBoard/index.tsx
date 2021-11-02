@@ -52,8 +52,8 @@ const rotate = (block : blockInterface, isRight : boolean) => {
     }
   }
 
-  if(isRight) block.shape.forEach((row: Array<number>) => row.reverse());
-  else [block.shape[0],block.shape[2]] = [block.shape[2],block.shape[0]];
+  if (isRight) block.shape.forEach((row: Array<number>) => row.reverse());
+  else block.shape.reverse();
   return block;
 }
 
