@@ -3,16 +3,18 @@
 .App {
   color: $white;
   background-color: $dark-navy;
-  height: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  flex: 1;
 
-  .login__title {
-    margin: 2.5rem 0 2rem;
-    font-size: 20px;
-    line-height: 23px;
-    text-align: center;
+  & > .full__page--root {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
+}
+
+.mb--40 {
+  margin: 20px;
 }

@@ -1,6 +1,6 @@
 @import 'common/styles/base';
 
-button {
+.oauth__btn--root {
   color: $white;
   padding: 15px;
   cursor: pointer;
@@ -41,4 +41,8 @@ button {
       color: #9c9c9c;
     }
   }
+}
+
+#naverIdLogin{
+  display: none;
 }
