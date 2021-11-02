@@ -10,7 +10,7 @@ function LobbyPage() {
     <div className="full__page--root">
       <div>Lobby</div>
       <div>WELCOME</div>
-      <div>{state.user ? JSON.stringify(state.user.login) : state.name}</div>
+      {/*<div>{state.user ? JSON.stringify(state.user.login) : state.name}</div>*/}
     </div>
   );
 }
