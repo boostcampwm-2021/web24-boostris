@@ -22,7 +22,11 @@ function GithubCallback() {
     };
     fetchGithubUserData()
       .then(({ user }) => {
-        history.replace('/', { user });
+        if (user.isOurUser) {
+          history.replace('/', { user });
+        } else {
+          history.replace('/register');
+        }
       })
       .catch((err) => {
         alert(err);

@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 function NaverCallback() {
   const location = useLocation();
+  const history = useHistory();
 
   useEffect(() => {
     const fetchNaverUserData = async (accessToken: any) => {
@@ -19,10 +20,15 @@ function NaverCallback() {
     };
     const accessToken = location.hash.split('=')[1].split('&')[0];
 
-    fetchNaverUserData(accessToken).then(() => {
-      console.log(document.cookie);
+    fetchNaverUserData(accessToken).then(({ isOurUser }) => {
+      if (isOurUser) {
+        history.replace('/');
+      } else {
+        history.replace('/register');
+      }
+      // console.log(document.cookie);
     });
-  }, [location.hash]);
+  }, [history, location.hash]);
   return <div></div>;
 }
 export default NaverCallback;

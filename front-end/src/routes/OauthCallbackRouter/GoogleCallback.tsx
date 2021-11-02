@@ -3,6 +3,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 
 function GoogleCallback() {
   const history = useHistory();
+  const { state } = useLocation();
 
   const loginSuccess = async (res: any) => {
     const googleUserInfo = {
@@ -20,11 +21,14 @@ function GoogleCallback() {
     });
     return response.json();
   };
-  const { state } = useLocation();
 
   useEffect(() => {
-    loginSuccess(state).then(({ name }) => {
-      history.replace('/', { name });
+    loginSuccess(state).then(({ name, isOurUser }) => {
+      if (isOurUser) {
+        history.replace('/', { name });
+      } else {
+        history.replace('/register');
+      }
     });
   }, [history, state]);
 
