@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import Modal from '../../components/Modal';
 import NaverLogin from '../../components/naver';
+import GoogleLoginComponent from '../../components/google';
 import OauthLoginButton from '../../components/OauthLoginButton';
 import { OAUTH_LIST, OAUTH_LIST_INDEX } from '../../constants';
 import './style.scss';
@@ -30,6 +31,7 @@ function LoginPage() {
       </p>
       <Modal ref={modalRef}>hello</Modal>
       <NaverLogin button={button[OAUTH_LIST_INDEX['naver']]} />
+      <GoogleLoginComponent button={button[OAUTH_LIST_INDEX['google']]}/>
     </div>
   );
 }

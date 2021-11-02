@@ -70,13 +70,18 @@ app.get('/', (req: express.Request, res: express.Response) => {
 });
 
 app.post('/login', async (req: express.Request, res: express.Response) => {
-  const accessToken = req.body['accessToken']; // 에러 처리 필요
-  const userInfoFromNaver = await getUserInfoFromNaver(accessToken);
-  /* 만약 네이버 로그인에 성공하면 jwt 토큰 발급 */
-  if (verifyNaverLogin()) {
-    setJWT(req, res);
+  if (req.body['vendor'] === 'naver') {
+    const accessToken = req.body['accessToken']; // 에러 처리 필요
+    const userInfoFromNaver = await getUserInfoFromNaver(accessToken);
+    console.log(userInfoFromNaver);
+    /* 만약 네이버 로그인에 성공하면 jwt 토큰 발급 */
+    if (verifyNaverLogin()) {
+      setJWT(req, res);
+    }
+    res.json('hello');
+  } else if (req.body['vendor'] === 'google') {
+    console.log(req.body);
   }
-  res.json('hello');
 });
 
 app.listen(4000, () => console.log('start'));

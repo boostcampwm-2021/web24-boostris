@@ -14,7 +14,7 @@ function Login() {
                     "Content-Type": "application/json",
                 },
                 credentials: 'include',
-                body: JSON.stringify({'accessToken': accessToken})
+                body: JSON.stringify({'accessToken': accessToken, 'vendor' : 'naver'})
             }).then(()=>{console.log(document.cookie)})
         }
         const accessToken = location.hash.split('=')[1].split('&')[0];
