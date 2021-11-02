@@ -27,7 +27,7 @@ function GithubCallback() {
       .catch((err) => {
         alert(err);
       });
-  }, [urlSearch]);
+  }, [history, urlSearch]);
 
   return <div></div>;
 }

@@ -5,7 +5,7 @@ import './App.scss';
 import LobbyPage from './pages/LobbyPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import Login from './components/login';
+// import Login from './components/login';
 import OauthCallbackRouter from './routes/OauthCallbackRouter';
 
 function App() {
@@ -18,11 +18,6 @@ function App() {
           <Route path="/login" component={LoginPage} />
           <Route path="/register" component={RegisterPage} />
           <Route path="/tetris">tetrishere</Route>
-          <Route path="/naver/login" component={Login} />
-          {/* <Route
-              path="/callback"
-              render={(props) => <Callback {...props} />}
-            /> */}
           <Route path="/oauth" component={OauthCallbackRouter}></Route>
           {/* <Redirect path="*" to="/" /> */}
         </Switch>

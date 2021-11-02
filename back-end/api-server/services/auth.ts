@@ -1,6 +1,7 @@
 import axios from 'axios';
+import * as jwt from 'jsonwebtoken';
 
-export async function getGithubUser(token) {
+export const getGithubUser = async (token) => {
   try {
     const { data } = await axios.get('https://api.github.com/user', {
       headers: {
@@ -12,4 +13,30 @@ export async function getGithubUser(token) {
   } catch (err) {
     throw err;
   }
-}
+};
+
+export const getUserInfoFromNaver = async (accessToken) => {
+  const header = 'Bearer ' + accessToken;
+  const apiUrl = 'https://openapi.naver.com/v1/nid/me';
+  const headers = {
+    Authorization: header,
+  };
+  try {
+    const { data } = await axios.get(apiUrl, {
+      headers: headers,
+    });
+    return data;
+  } catch (err) {
+    /*error 처리 */
+  }
+};
+
+export const setJWT = (req, res) => {
+  const jwtSignature = jwt.sign(
+    { expiresIn: '10h' }, // 임의 값 넣어놓음
+    process.env.JWT_SECRET_KEY
+  );
+  res.cookie('user', jwtSignature, {
+    expires: new Date(Date.now() + 600000),
+  });
+};
