@@ -14,6 +14,21 @@ const isOauthIdInDB = (oauthID) => {
   return selectTable('*', 'USER_INFO', `oauth_id='${oauthID}'`);
 };
 
+const oauthDupCheck = async (id, req, res) => {
+  try {
+    const userList = await isOauthIdInDB(id);
+    /* 만약 oauth 로그인에 성공하면 jwt 토큰 발급 */
+    if (userList && userList.length) {
+      setJWT(req, res);
+    } else {
+      /* 회원 가입 페이지로 redirect */
+      console.log('fail');
+    }
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 AuthRouter.post('/github/code', async (req, res) => {
   const { code } = req.body;
 
@@ -49,21 +64,14 @@ AuthRouter.post('/naver/token', async (req, res) => {
   const name = userInfoFromNaver['response']['name'];
   const id = userInfoFromNaver['response']['id'];
 
-  const userList = await isOauthIdInDB(id);
-  /* 만약 네이버 로그인에 성공하면 jwt 토큰 발급 */
-  if (userList) {
-    setJWT(req, res);
-  } else {
-    /* 회원 가입 페이지로 redirect */
-    console.log('fail');
-  }
+  await oauthDupCheck(id, req, res);
   res.json({ email, name });
 });
 
 AuthRouter.post('/google/user', async (req, res) => {
   const { email, name } = req.body;
-  /* 만약 네이버 로그인에 성공하면 jwt 토큰 발급 */
-
+  console.log(email, name);
+  await oauthDupCheck(email, req, res);
   res.json({ email, name });
 });
 
