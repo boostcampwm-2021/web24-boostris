@@ -16,14 +16,14 @@ function LoginPage() {
         <img src="assets/logo.png" alt="" />
       </div>
       <p className="login__title">SELECT Login Button</p>
-      {OAUTH_LIST.map((name) => (
+      {OAUTH_LIST.map(({ type, link }) => (
         <OauthLoginButton
-          key={name}
-          name={name}
-          handleClick={() => modalRef.current.open()}
+          key={type}
+          name={type}
+          link={link}
           button={button[i++]}
         >
-          {name}
+          {type}
         </OauthLoginButton>
       ))}
       <p className="login__title">

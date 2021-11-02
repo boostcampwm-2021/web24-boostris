@@ -1,27 +1,32 @@
-import * as express from "express"
+import * as express from 'express';
 const bodyParser = require('body-parser');
 const cors = require('cors');
+import AuthRouter from '../routes/auth';
 
 class App {
-    public application : express.Application;
-    constructor(){
-        this.application = express();
-    }
+  public application: express.Application;
+  constructor() {
+    this.application = express();
+  }
 }
 const app = new App().application;
 app.use(bodyParser.json());
-app.use(cors({
+app.use(
+  cors({
     origin: true,
-    credentials: true
-}))
+    credentials: true,
+  })
+);
 
-app.get("/",(req : express.Request , res : express.Response) =>{
-    res.send("start");
-})
+app.use('/auth', AuthRouter);
 
-app.post("/login", (req : express.Request , res : express.Response) =>{
-    console.log('naver');
-    console.log(req.body);
-})
+app.get('/', (req: express.Request, res: express.Response) => {
+  res.send('start');
+});
 
-app.listen(4000,()=>console.log("start"));
+app.post('/login', (req: express.Request, res: express.Response) => {
+  console.log('naver');
+  console.log(req.body);
+});
+
+app.listen(4000, () => console.log('start'));
