@@ -15,7 +15,7 @@ function Login() {
                 },
                 credentials: 'include',
                 body: JSON.stringify({'accessToken': accessToken})
-            })
+            }).then(()=>{console.log(document.cookie)})
         }
         const accessToken = location.hash.split('=')[1].split('&')[0];
         naverLogin(accessToken);
