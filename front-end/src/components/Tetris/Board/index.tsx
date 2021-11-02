@@ -1,5 +1,4 @@
 import React, {useEffect, useRef} from 'react';
-import './style.scss';
 
 const Board = (): JSX.Element =>{
   const canvasContainer = useRef<HTMLCanvasElement>(null);

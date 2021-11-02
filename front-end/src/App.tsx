@@ -6,6 +6,7 @@ import LobbyPage from './pages/LobbyPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import NaverLogin from './components/login';
+import Tetris from './components/Tetris';
 
 function App() {
   return (
@@ -16,7 +17,7 @@ function App() {
           <Route exact path="/" component={LobbyPage} />
           <Route path="/login" component={LoginPage} />
           <Route path="/register" component={RegisterPage} />
-          <Route path="/tetris">tetrishere</Route>
+          <Route path="/tetris" component={Tetris}></Route>
           <Route path="/naver/login" component={NaverLogin} />
           {/* <Route
               path="/callback"
