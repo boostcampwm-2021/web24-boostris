@@ -9,6 +9,7 @@ const axios = require('axios');
 require('dotenv').config();
 const bodyParser = require('body-parser');
 import AuthRouter from '../routes/auth';
+import selectTable from '../database/query';
 
 class App {
   public application: express.Application;
@@ -41,14 +42,14 @@ const setJWT = (req, res) => {
 };
 /* JWT (end) */
 
-/* naver */
-const verifyNaverLogin = () => {
-  /*
-    데이터 베이스 검증 코드 작성
-    */
-  return true;
+/*
+  이미 존재하는 회원인지 확인
+*/
+const isOauthIdInDB = (oauthID) => {
+  return selectTable('*', 'USER_INFO', `oauth_id='${oauthID}'`);
 };
 
+/* naver */
 const getUserInfoFromNaver = async (accessToken) => {
   const header = 'Bearer ' + accessToken;
   const apiUrl = 'https://openapi.naver.com/v1/nid/me';
@@ -59,6 +60,7 @@ const getUserInfoFromNaver = async (accessToken) => {
     const { data } = await axios.get(apiUrl, {
       headers: headers,
     });
+    isOauthIdInDB(data);
     return data;
   } catch (err) {
     /*error 처리 */
@@ -77,7 +79,7 @@ app.post('/login', async (req: express.Request, res: express.Response) => {
     const userInfoFromNaver = await getUserInfoFromNaver(accessToken);
     console.log(userInfoFromNaver);
     /* 만약 네이버 로그인에 성공하면 jwt 토큰 발급 */
-    if (verifyNaverLogin()) {
+    if (isOauthIdInDB(userInfoFromNaver['response']['id'])) {
       setJWT(req, res);
     }
     res.json('hello');
