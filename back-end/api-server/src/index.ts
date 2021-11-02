@@ -7,6 +7,8 @@ const logger = require('morgan');
 const axios = require('axios');
 
 require('dotenv').config();
+const bodyParser = require('body-parser');
+import AuthRouter from '../routes/auth';
 
 class App {
   public application: express.Application;
@@ -83,5 +85,7 @@ app.post('/login', async (req: express.Request, res: express.Response) => {
     console.log(req.body);
   }
 });
+
+app.use('/auth', AuthRouter);
 
 app.listen(4000, () => console.log('start'));

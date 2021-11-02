@@ -16,14 +16,14 @@ function LoginPage() {
         <img src="assets/logo.png" alt="" />
       </div>
       <p className="login__title">SELECT Login Button</p>
-      {OAUTH_LIST.map((name, idx) => (
+      {OAUTH_LIST.map(({ type, link }, idx) => (
         <OauthLoginButton
-          key={name}
-          name={name}
-          handleClick={() => modalRef.current.open()}
+          key={type}
+          name={type}
+          link={link}
           button={button[idx]}
         >
-          {name}
+          {type}
         </OauthLoginButton>
       ))}
       <p className="login__title">
@@ -31,7 +31,7 @@ function LoginPage() {
       </p>
       <Modal ref={modalRef}>hello</Modal>
       <NaverLogin button={button[OAUTH_LIST_INDEX['naver']]} />
-      <GoogleLoginComponent button={button[OAUTH_LIST_INDEX['google']]}/>
+      <GoogleLoginComponent button={button[OAUTH_LIST_INDEX['google']]} />
     </div>
   );
 }
