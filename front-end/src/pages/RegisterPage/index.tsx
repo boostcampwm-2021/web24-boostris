@@ -24,15 +24,38 @@ const registerButtonHandler = async(registerData:any, label:string, history:any)
       alert('이미 존재하는 닉네임 입니다 !')
       return ;
     } else {
-      console.log(registerCheck);
+      history.replace('/');
       // 다음 페이지로 넘어가는 로직 필요
       // 유저의 닉네임 등등 필요함
+
     }
   }
   else if (label === '취소') {
     history.replace('/login');
   }
 }
+
+/* Input 박스 로직 */
+
+const onChangeNickname = (e:any, registerData:any) => {
+  const NICKNAME_MAX = 10;
+
+  if (e.target.value.length > NICKNAME_MAX) {
+    e.target.value = e.target.value.slice(0, -1);
+    alert(`글자수는 ${NICKNAME_MAX}자 제한입니다`) // UX 관점에서 개선 필요
+  }
+  registerData.nickname = e.target.value;
+};
+
+const onChangeMessage = (e:any, registerData:any) => {
+  const MESSAGE_MAX = 50;
+
+  if (e.target.value.length > MESSAGE_MAX) {
+    e.target.value = e.target.value.slice(0, -1);
+    alert(`상태메세지는 ${MESSAGE_MAX}자 제한입니다`)
+  }
+  registerData.message = e.target.value;
+};
 
 function RegisterPage() {
   interface registerDataContent{
@@ -57,6 +80,8 @@ function RegisterPage() {
           placeholder="닉네임을 입력해주세요."
           type="input"
           registerData = {registerData}
+          onChangeNickname = {onChangeNickname}
+          onChangeMessage = {onChangeMessage}
         />
         <div className="mb--40"></div>
         <BasicInput
@@ -64,6 +89,8 @@ function RegisterPage() {
           placeholder="상태메세지를 입력해주세요."
           type="textarea"
           registerData = {registerData}
+          onChangeNickname = {onChangeNickname}
+          onChangeMessage = {onChangeMessage}
         />
         <div className="mb--40"></div>
         <div className="register__card--footer">
