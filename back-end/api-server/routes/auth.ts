@@ -1,7 +1,7 @@
 import * as express from 'express';
 import axios from 'axios';
 import 'dotenv/config';
-import selectTable from '../database/query';
+import { selectTable } from '../database/query';
 
 import { getGithubUser, getUserInfoFromNaver, setJWT } from '../services/auth';
 
@@ -52,7 +52,8 @@ AuthRouter.post('/github/code', async (req, res) => {
     const { access_token } = data;
     const user = await getGithubUser(access_token);
     const isOurUser = await oauthDupCheck(user['login'], req, res); // 일단 중복 안되는 login 으로 해놓음
-    res.status(200).json({ user, isOurUser });
+    const id = user.id;
+    res.status(200).json({ id, isOurUser });
   } catch (error) {
     console.error(error);
     res.sendStatus(400);
@@ -62,18 +63,15 @@ AuthRouter.post('/github/code', async (req, res) => {
 AuthRouter.post('/naver/token', async (req, res) => {
   const { accessToken } = req.body;
   const userInfoFromNaver = await getUserInfoFromNaver(accessToken);
-  const email = userInfoFromNaver['response']['email'];
-  const name = userInfoFromNaver['response']['name'];
   const id = userInfoFromNaver['response']['id'];
-
   const isOurUser = await oauthDupCheck(id, req, res);
-  res.json({ email, name, isOurUser });
+  res.json({ id, isOurUser });
 });
 
 AuthRouter.post('/google/user', async (req, res) => {
   const { email, name } = req.body;
   const isOurUser = await oauthDupCheck(email, req, res);
-  res.json({ email, name, isOurUser });
+  res.json({ email, isOurUser });
 });
 
 export default AuthRouter;

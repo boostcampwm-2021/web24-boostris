@@ -21,11 +21,11 @@ function GithubCallback() {
       return response.json();
     };
     fetchGithubUserData()
-      .then(({ user }) => {
-        if (user.isOurUser) {
-          history.replace('/', { user });
+      .then(({ id, isOurUser }) => {
+        if (isOurUser) {
+          history.replace('/', { id });
         } else {
-          history.replace('/register');
+          history.replace('/register', { id });
         }
       })
       .catch((err) => {

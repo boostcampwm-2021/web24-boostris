@@ -23,11 +23,12 @@ function GoogleCallback() {
   };
 
   useEffect(() => {
-    loginSuccess(state).then(({ name, isOurUser }) => {
+    loginSuccess(state).then(({ email, isOurUser }) => {
+      const id = email;
       if (isOurUser) {
-        history.replace('/', { name });
+        history.replace('/', { id });
       } else {
-        history.replace('/register');
+        history.replace('/register', { id } );
       }
     });
   }, [history, state]);
