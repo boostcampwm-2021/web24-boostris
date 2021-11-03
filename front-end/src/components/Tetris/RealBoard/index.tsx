@@ -37,12 +37,9 @@ const getPreviewBlocks = () => {
   return queue;
 };
 
-const isGameOver = (block: blockInterface) => {
+const isOverflow = (block: blockInterface) => {
   return block.shape.some((row, y) =>
-    row.some((value) => {
-      let nY = block.posY + y;
-      return value > 0 && nY < 0;
-    })
+    row.some((value) => value > 0 && block.posY + y < 0)
   );
 };
 
@@ -182,8 +179,6 @@ const rotate = (block: blockInterface, isRight: boolean) => {
   return block;
 };
 
-const dropBlock = () => {};
-
 const SRSAlgorithm = (
   SRS: Array<SRSInterface>,
   block: blockInterface,
@@ -298,14 +293,14 @@ const RealBoard = ({
             clearLine(board);
 
             //gameover
-            if (isGameOver(block)) {
-              clearInterval(drop);
-              clearInterval(start);
-              clearInterval(conflictCheck);
-              //draw gray block
-              endGame();
-              return;
-            }
+            // if (isGameOver(block)) {
+            //   clearInterval(drop);
+            //   clearInterval(start);
+            //   clearInterval(conflictCheck);
+            //   //draw gray block
+            //   endGame();
+            //   return;
+            // }
 
             block = blockQueue.shift() as blockInterface;
 
@@ -326,14 +321,14 @@ const RealBoard = ({
             clearInterval(drop);
           }
           //gameover
-          if (isGameOver(block)) {
-            clearInterval(drop);
-            clearInterval(start);
-            clearInterval(conflictCheck);
-            //draw gray block
-            endGame();
-            return;
-          }
+          // if (isGameOver(block)) {
+          //   clearInterval(drop);
+          //   clearInterval(start);
+          //   clearInterval(conflictCheck);
+          //   //draw gray block
+          //   endGame();
+          //   return;
+          // }
 
           setFreeze(board, block);
           clearLine(board);
