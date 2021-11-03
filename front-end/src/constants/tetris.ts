@@ -42,7 +42,7 @@ export const BOARD_WIDTH: number = 241;
 export const BOARD_HEIGHT: number = 481;
 
 // 블록 시작 좌표
-export const START_X: number = 3 * BOARD_ONE_SIZE;
+export const START_X: number = 3;
 export const START_Y: number = 0;
 
 // KEY 이벤트
@@ -60,38 +60,38 @@ export const KEY = {
 export const TETROMINO = [
   {
     name: 'Z',
-    shape: [[2, 2, 0], [0, 2, 2], [0, 0, 0]],
-    color: 2,
+    shape: [[3, 3, 0], [0, 3, 3], [0, 0, 0]],
+    color: 3,
   },
   {
     name: 'L',
-    shape: [[0, 0, 3], [3, 3, 3], [0, 0, 0]],
-    color: 3
-  },
-  {
-    name: 'O',
-    shape: [[0, 4, 4, 0], [0, 4, 4, 0], [0, 0, 0, 0]],
+    shape: [[0, 0, 4], [4, 4, 4], [0, 0, 0]],
     color: 4
   },
   {
-    name: 'S',
-    shape: [[0, 5, 5], [5, 5, 0], [0, 0, 0]],
+    name: 'O',
+    shape: [[0, 5, 5, 0], [0, 5, 5, 0], [0, 0, 0, 0]],
     color: 5
   },
   {
-    name: 'I',
-    shape: [[0, 0, 0, 0], [6, 6, 6, 6], [0, 0, 0, 0], [0, 0, 0, 0]],
+    name: 'S',
+    shape: [[0, 6, 6], [6, 6, 0], [0, 0, 0]],
     color: 6
   },
   {
-    name: 'J',
-    shape: [[7, 0, 0], [7, 7, 7], [0, 0, 0]],
+    name: 'I',
+    shape: [[0, 0, 0, 0], [7, 7, 7, 7], [0, 0, 0, 0], [0, 0, 0, 0]],
     color: 7
   },
   {
-    name: 'T',
-    shape: [[0, 8, 0], [8, 8, 8], [0, 0, 0]],
+    name: 'J',
+    shape: [[8, 0, 0], [8, 8, 8], [0, 0, 0]],
     color: 8
+  },
+  {
+    name: 'T',
+    shape: [[0, 9, 0], [9, 9, 9], [0, 0, 0]],
+    color: 9
   }
 ]
 
