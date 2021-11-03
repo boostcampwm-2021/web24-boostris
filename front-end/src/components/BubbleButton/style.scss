@@ -1,0 +1,21 @@
+@import 'common/styles/base';
+
+.bubbleBtn {
+  padding: 15px 14px;
+  border-radius: 10px;
+  color: white;
+}
+
+.bubbleBtn--inactive {
+  background-color: $dark-navy;
+  color: $light-navy;
+}
+
+.bubbleBtn--active {
+  background-color: $light-navy;
+
+  &:hover {
+    background-color: $azure-blue;
+    color: white;
+  }
+}
