@@ -317,8 +317,6 @@ const TETROMINO_INDEX = [0, 1, 2, 3, 4, 5, 6];
 
 // 랜덤으로 테트로미노 뽑기
 export const randomTetromino = () => {
-  //const random = Math.floor(Math.random() * )
-
   const tmpArr = TETROMINO_INDEX.slice();
   const randomBlocks = [];
 
@@ -329,4 +327,9 @@ export const randomTetromino = () => {
   }
 
   return randomBlocks;
+};
+
+//tetris 배열 outrange 검사
+export const withInRange = (x: number, y: number) => {
+  return 0 <= x && x < COLS && 0 <= y && y < ROWS;
 };

@@ -52,14 +52,8 @@ const setFreeze = (board: number[][], block: blockInterface) => {
       let nX = block.posX + x;
       let nY = block.posY + y;
 
-      if (
-        value > 0 &&
-        0 <= nX &&
-        nX < TETRIS.COLS &&
-        0 <= nY &&
-        nY < TETRIS.ROWS
-      ) {
-        board[block.posY + y][block.posX + x] = block.color;
+      if (value > 0 && TETRIS.withInRange(nX, nY)) {
+        board[nY][nX] = block.color;
       }
     });
   });
@@ -87,8 +81,7 @@ const isBottom = (board: number[][], block: blockInterface) => {
       if (value > 0) {
         let nX = block.posX + x;
         let nY = block.posY + y;
-        if (!(0 <= nX && nX < TETRIS.COLS && 0 <= nY && nY < TETRIS.ROWS))
-          return false;
+        if (!TETRIS.withInRange(nX, nY)) return false;
 
         return (
           (nY + 1 < TETRIS.ROWS && board[nY + 1][nX] !== 0) ||
@@ -120,13 +113,7 @@ const drawBlock = (
       const nX: number = block.posX + x;
       const nY: number = block.posY + y;
 
-      if (
-        value > 0 &&
-        0 <= nX &&
-        nX < TETRIS.COLS &&
-        0 <= nY &&
-        nY < TETRIS.ROWS
-      ) {
+      if (TETRIS.withInRange(nX, nY)) {
         ctx.drawImage(
           img,
           TETRIS.BLOCK_ONE_SIZE * (value - 1),
@@ -174,8 +161,7 @@ const blockConflictCheck = (block: blockInterface, board: number[][]) => {
       const nY: number = block.posY + y;
 
       if (value === 0) return true;
-      if (!(0 <= nX && nX < TETRIS.COLS && 0 <= nY && nY < TETRIS.ROWS))
-        return false;
+      if (!TETRIS.withInRange(nX, nY)) return false;
       if (0 < board[nY][nX] && board[nY][nX] <= 9) return false;
       return true;
     });
@@ -316,6 +302,7 @@ const RealBoard = ({
             }
 
             setFreeze(board, block);
+
             clearLine(board);
 
             //gameover
@@ -330,7 +317,7 @@ const RealBoard = ({
 
             block = blockQueue.shift() as blockInterface;
 
-            if (blockQueue.length == 5) {
+            if (blockQueue.length === 5) {
               blockQueue.push(...getPreviewBlocks());
             }
 
