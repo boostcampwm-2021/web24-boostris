@@ -1,0 +1,28 @@
+@import 'common/styles/base';
+
+.layout__root {
+  min-width: 1200px;
+  max-width: 1900px;
+  margin: 0 auto;
+  padding-top: 26px;
+  .appbar__container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    img {
+      display: block;
+    }
+    .appbar__conatiner--link {
+      display: flex;
+      align-items: center;
+      .appbar__link {
+        color: $white;
+        font-size: 20px;
+        line-height: 23px;
+        text-decoration: none;
+        padding: 1rem;
+        margin-left: 74px;
+      }
+    }
+  }
+}
