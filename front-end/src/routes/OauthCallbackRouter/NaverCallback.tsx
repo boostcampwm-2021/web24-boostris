@@ -20,13 +20,13 @@ function NaverCallback() {
     };
     const accessToken = location.hash.split('=')[1].split('&')[0];
 
-    fetchNaverUserData(accessToken).then(({ isOurUser }) => {
+    fetchNaverUserData(accessToken).then(({ id, isOurUser }) => {
+      console.log(isOurUser);
       if (isOurUser) {
-        history.replace('/');
+        history.replace('/', {id});
       } else {
-        history.replace('/register');
+        history.replace('/register', {id});
       }
-      // console.log(document.cookie);
     });
   }, [history, location.hash]);
   return <div></div>;

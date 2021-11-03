@@ -6,6 +6,8 @@ const logger = require('morgan');
 const axios = require('axios');
 import 'dotenv/config';
 import AuthRouter from '../routes/auth';
+import InsertDbRegister from '../routes/registerDBInsert';
+import checkDupNickRegister from '../routes/registerDupCheck';
 
 class App {
   public application: express.Application;
@@ -26,6 +28,7 @@ app.use(logger('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/auth', AuthRouter);
+app.use('/register', checkDupNickRegister, InsertDbRegister);
 
 app.get('/', (req: express.Request, res: express.Response) => {
   res.send('start');

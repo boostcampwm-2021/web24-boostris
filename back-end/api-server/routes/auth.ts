@@ -1,7 +1,7 @@
 import * as express from 'express';
 import axios from 'axios';
 import 'dotenv/config';
-import selectTable from '../database/query';
+import { selectIntoTable } from '../database/query';
 
 import { getGithubUser, getUserInfoFromNaver, setJWT } from '../services/auth';
 
@@ -11,7 +11,7 @@ const AuthRouter = express.Router();
   이미 존재하는 회원인지 확인
 */
 const isOauthIdInDB = (oauthID) => {
-  return selectTable('*', 'USER_INFO', `oauth_id='${oauthID}'`);
+  return selectIntoTable('*', 'USER_INFO', `oauth_id='${oauthID}'`);
 };
 
 const oauthDupCheck = async (id, req, res) => {
@@ -62,18 +62,15 @@ AuthRouter.post('/github/code', async (req, res) => {
 AuthRouter.post('/naver/token', async (req, res) => {
   const { accessToken } = req.body;
   const userInfoFromNaver = await getUserInfoFromNaver(accessToken);
-  const email = userInfoFromNaver['response']['email'];
-  const name = userInfoFromNaver['response']['name'];
   const id = userInfoFromNaver['response']['id'];
-
   const isOurUser = await oauthDupCheck(id, req, res);
-  res.json({ email, name, isOurUser });
+  res.json({ id, isOurUser });
 });
 
 AuthRouter.post('/google/user', async (req, res) => {
   const { email, name } = req.body;
   const isOurUser = await oauthDupCheck(email, req, res);
-  res.json({ email, name, isOurUser });
+  res.json({ email, isOurUser });
 });
 
 export default AuthRouter;
