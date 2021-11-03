@@ -46,7 +46,6 @@ function RegisterPage() {
   }
   const history = useHistory();
   registerData['oauthInfo'] = history.location.state;
-  
   return (
     <div className="register__root full__page--root">
       <div className="register__card--root">
