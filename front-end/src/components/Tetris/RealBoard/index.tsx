@@ -76,8 +76,8 @@ const setSolidBlock = (board: number[][], solidBlocks: number) => {
 };
 
 const isBottom = (board: number[][], block: blockInterface) => {
-  return block.shape.some((row, y) => {
-    return row.some((value: number, x: number) => {
+  return block.shape.some((row, y) =>
+    row.some((value: number, x: number) => {
       if (value > 0) {
         let nX = block.posX + x;
         let nY = block.posY + y;
@@ -88,11 +88,12 @@ const isBottom = (board: number[][], block: blockInterface) => {
           nY + 1 >= TETRIS.ROWS
         );
       }
-    });
-  });
+      return false;
+    })
+  );
 };
 
-const drawGameBoard = (
+const draw = (
   board: number[][],
   block: blockInterface,
   ctx: CanvasRenderingContext2D,
@@ -154,16 +155,12 @@ const drawBoard = (
   });
 };
 
-const blockConflictCheck = (block: blockInterface, board: number[][]) => {
+const isNotConflict = (block: blockInterface, board: number[][]) => {
   return block.shape.every((row: Array<number>, y: number) => {
     return row.every((value: number, x: number) => {
       const nX: number = block.posX + x;
       const nY: number = block.posY + y;
-
-      if (value === 0) return true;
-      if (!TETRIS.withInRange(nX, nY)) return false;
-      if (0 < board[nY][nX] && board[nY][nX] <= 9) return false;
-      return true;
+      return value === 0 || (TETRIS.withInRange(nX, nY) && board[nY][nX] === 0);
     });
   });
 };
@@ -184,6 +181,8 @@ const rotate = (block: blockInterface, isRight: boolean) => {
   else block.shape.reverse();
   return block;
 };
+
+const dropBlock = () => {};
 
 const SRSAlgorithm = (
   SRS: Array<SRSInterface>,
@@ -212,13 +211,32 @@ const SRSAlgorithm = (
       tmpBlock.posX += SRS[i].offset[j].x;
       tmpBlock.posY += SRS[i].offset[j].y;
 
-      if (blockConflictCheck(tmpBlock, board)) {
+      if (isNotConflict(tmpBlock, board)) {
         tmpBlock.dir = end;
         return tmpBlock;
       }
     }
   }
   return block;
+};
+
+const moves = {
+  [TETRIS.KEY.LEFT]: (prev: blockInterface) => ({
+    ...prev,
+    posX: prev.posX - 1,
+  }),
+  [TETRIS.KEY.RIGHT]: (prev: blockInterface) => ({
+    ...prev,
+    posX: prev.posX + 1,
+  }),
+  [TETRIS.KEY.DOWN]: (prev: blockInterface) => ({
+    ...prev,
+    posY: prev.posY + 1,
+  }),
+  [TETRIS.KEY.TURN_RIGHT]: (prev: blockInterface) =>
+    rotate(JSON.parse(JSON.stringify(prev)), true),
+  [TETRIS.KEY.TURN_LEFT]: (prev: blockInterface) =>
+    rotate(JSON.parse(JSON.stringify(prev)), false),
 };
 
 const RealBoard = ({
@@ -229,25 +247,6 @@ const RealBoard = ({
   endGame: () => void;
 }): JSX.Element => {
   const canvasContainer = useRef<HTMLCanvasElement>(null);
-
-  const moves = {
-    [TETRIS.KEY.LEFT]: (prev: blockInterface) => ({
-      ...prev,
-      posX: prev.posX - 1,
-    }),
-    [TETRIS.KEY.RIGHT]: (prev: blockInterface) => ({
-      ...prev,
-      posX: prev.posX + 1,
-    }),
-    [TETRIS.KEY.DOWN]: (prev: blockInterface) => ({
-      ...prev,
-      posY: prev.posY + 1,
-    }),
-    [TETRIS.KEY.TURN_RIGHT]: (prev: blockInterface) =>
-      rotate(JSON.parse(JSON.stringify(prev)), true),
-    [TETRIS.KEY.TURN_LEFT]: (prev: blockInterface) =>
-      rotate(JSON.parse(JSON.stringify(prev)), false),
-  };
 
   useEffect(() => {
     if (!gameStart) return;
@@ -268,22 +267,16 @@ const RealBoard = ({
     ctx.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
 
     img.onload = () => {
-      drawBoard(board, ctx, img);
-      drawBlock(block, ctx, img);
+      draw(board, block, ctx, img);
 
       const dropBlock = () => {
         const nextBlock = JSON.parse(JSON.stringify(block));
+        beforeBlock = block;
 
-        if (
-          blockConflictCheck({ ...nextBlock, posY: nextBlock.posY + 1 }, board)
-        ) {
-          // 전체 범위 검사
+        if (isNotConflict({ ...nextBlock, posY: nextBlock.posY + 1 }, board)) {
           nextBlock.posY += 1;
-          drawGameBoard(board, nextBlock, ctx, img);
-          beforeBlock = block;
+          draw(board, nextBlock, ctx, img);
           block = nextBlock;
-        } else {
-          beforeBlock = block;
         }
       };
 
@@ -302,7 +295,6 @@ const RealBoard = ({
             }
 
             setFreeze(board, block);
-
             clearLine(board);
 
             //gameover
@@ -325,7 +317,6 @@ const RealBoard = ({
             solidBlocks = 0;
             timer = 0;
             drop = setInterval(dropBlock, 900);
-            // drawGameBoard(board, block, ctx, img);
           }
         }
         timer += 0.5;
@@ -348,7 +339,7 @@ const RealBoard = ({
           clearLine(board);
           block = blockQueue.shift() as blockInterface;
 
-          if (blockQueue.length == 5) {
+          if (blockQueue.length === 5) {
             blockQueue.push(...getPreviewBlocks());
           }
 
@@ -356,7 +347,7 @@ const RealBoard = ({
           solidBlocks = 0;
           timer = 0;
           drop = setInterval(dropBlock, 900);
-          drawGameBoard(board, block, ctx, img);
+          draw(board, block, ctx, img);
         }
       }, 500);
     };
@@ -375,10 +366,10 @@ const RealBoard = ({
         case TETRIS.KEY.LEFT:
         case TETRIS.KEY.RIGHT:
         case TETRIS.KEY.DOWN:
-          if (blockConflictCheck(nextBlock, board)) {
+          if (isNotConflict(nextBlock, board)) {
             beforeBlock = block;
             block = nextBlock;
-            drawGameBoard(board, block, ctx, img);
+            draw(board, block, ctx, img);
           }
           break;
         case TETRIS.KEY.TURN_RIGHT:
@@ -391,16 +382,15 @@ const RealBoard = ({
             board,
             event.key
           );
-          drawGameBoard(board, block, ctx, img);
+          draw(board, block, ctx, img);
           break;
         default:
           break;
       }
     };
-    window.addEventListener('keydown', keyEventHandler);
 
+    window.addEventListener('keydown', keyEventHandler);
     return () => {
-      console.log('bye');
       window.removeEventListener('keydown', keyEventHandler);
     };
   }, [gameStart]);
