@@ -1,7 +1,7 @@
 import * as express from 'express';
 import axios from 'axios';
 import 'dotenv/config';
-import { selectIntoTable } from '../database/query';
+import { selectTable } from '../database/query';
 
 import { getGithubUser, getUserInfoFromNaver, setJWT } from '../services/auth';
 
@@ -11,7 +11,7 @@ const AuthRouter = express.Router();
   이미 존재하는 회원인지 확인
 */
 const isOauthIdInDB = (oauthID) => {
-  return selectIntoTable('*', 'USER_INFO', `oauth_id='${oauthID}'`);
+  return selectTable('*', 'USER_INFO', `oauth_id='${oauthID}'`);
 };
 
 const oauthDupCheck = async (id, req, res) => {
@@ -52,7 +52,8 @@ AuthRouter.post('/github/code', async (req, res) => {
     const { access_token } = data;
     const user = await getGithubUser(access_token);
     const isOurUser = await oauthDupCheck(user['login'], req, res); // 일단 중복 안되는 login 으로 해놓음
-    res.status(200).json({ user, isOurUser });
+    const id = user.id;
+    res.status(200).json({ id, isOurUser });
   } catch (error) {
     console.error(error);
     res.sendStatus(400);

@@ -1,10 +1,10 @@
 import * as express from 'express';
-import { selectIntoTable } from '../database/query';
+import { selectTable } from '../database/query';
 const RegisterRouter = express.Router();
 
 RegisterRouter.post('/insert', async (req, res, next) => {
   const nickName = req.body['registerData']['nickname'];
-  const userDupCheckResult = await selectIntoTable(
+  const userDupCheckResult = await selectTable(
     '*',
     'USER_INFO',
     `nickname='${nickName}'`

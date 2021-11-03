@@ -24,6 +24,7 @@ const registerButtonHandler = async(registerData:any, label:string, history:any)
       alert('이미 존재하는 닉네임 입니다 !')
       return ;
     } else {
+      console.log(registerCheck);
       // 다음 페이지로 넘어가는 로직 필요
       // 유저의 닉네임 등등 필요함
     }
@@ -46,6 +47,7 @@ function RegisterPage() {
   }
   const history = useHistory();
   registerData['oauthInfo'] = history.location.state;
+  registerData['oauthInfo'] = registerData['oauthInfo'].id;
   return (
     <div className="register__root full__page--root">
       <div className="register__card--root">
