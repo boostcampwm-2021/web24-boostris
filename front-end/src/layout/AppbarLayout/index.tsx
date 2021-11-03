@@ -23,7 +23,7 @@ function AppbarLayout({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
       </div>
-      {children}
+      <div className="layout__content--root">{children}</div>
     </div>
   );
 }
