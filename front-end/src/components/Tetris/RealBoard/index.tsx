@@ -21,10 +21,44 @@ interface SRSInterface {
   offset: Array<offsetInterface>;
 }
 
+const getPreviewBlocks = () => {
+  const randomBlocks = TETRIS.randomTetromino();
+  const queue: blockInterface[] = [];
+
+  randomBlocks.forEach((block) => {
+    queue.push({
+      posX: TETRIS.START_X,
+      posY: TETRIS.START_Y,
+      dir: 0,
+      ...TETRIS.TETROMINO[block],
+    });
+  });
+
+  return queue;
+};
+
+const isGameOver = (block: blockInterface) => {
+  return block.shape.some((row, y) =>
+    row.some((value) => {
+      let nY = block.posY + y;
+      return value > 0 && nY < 0;
+    })
+  );
+};
+
 const setFreeze = (board: number[][], block: blockInterface) => {
   block.shape.forEach((row: Array<number>, y: number) => {
     row.forEach((value: number, x: number) => {
-      if (value > 0) {
+      let nX = block.posX + x;
+      let nY = block.posY + y;
+
+      if (
+        value > 0 &&
+        0 <= nX &&
+        nX < TETRIS.COLS &&
+        0 <= nY &&
+        nY < TETRIS.ROWS
+      ) {
         board[block.posY + y][block.posX + x] = block.color;
       }
     });
@@ -33,22 +67,32 @@ const setFreeze = (board: number[][], block: blockInterface) => {
 
 const clearLine = (board: number[][]) => {
   board.forEach((row, y) => {
-    if (row.every((value) => value !== 0)) {
+    if (row.every((value) => value > 1)) {
       board.splice(y, 1);
       board.unshift(Array(TETRIS.COLS).fill(0));
     }
   });
 };
 
+const setSolidBlock = (board: number[][], solidBlocks: number) => {
+  for (let i = 0; i < solidBlocks; i++) {
+    board.shift();
+    board.push(Array(TETRIS.COLS).fill(1));
+  }
+};
+
 const isBottom = (board: number[][], block: blockInterface) => {
   return block.shape.some((row, y) => {
     return row.some((value: number, x: number) => {
       if (value > 0) {
-        let nx = block.posX + x;
-        let ny = block.posY + y;
+        let nX = block.posX + x;
+        let nY = block.posY + y;
+        if (!(0 <= nX && nX < TETRIS.COLS && 0 <= nY && nY < TETRIS.ROWS))
+          return false;
+
         return (
-          (ny + 1 < TETRIS.ROWS && board[ny + 1][nx] !== 0) ||
-          ny + 1 >= TETRIS.ROWS
+          (nY + 1 < TETRIS.ROWS && board[nY + 1][nX] !== 0) ||
+          nY + 1 >= TETRIS.ROWS
         );
       }
     });
@@ -73,10 +117,19 @@ const drawBlock = (
 ) => {
   block.shape.forEach((row: Array<number>, y: number) => {
     row.forEach((value: number, x: number) => {
-      if (value > 0) {
+      const nX: number = block.posX + x;
+      const nY: number = block.posY + y;
+
+      if (
+        value > 0 &&
+        0 <= nX &&
+        nX < TETRIS.COLS &&
+        0 <= nY &&
+        nY < TETRIS.ROWS
+      ) {
         ctx.drawImage(
           img,
-          TETRIS.BLOCK_ONE_SIZE * value,
+          TETRIS.BLOCK_ONE_SIZE * (value - 1),
           0,
           TETRIS.BLOCK_ONE_SIZE,
           TETRIS.BLOCK_ONE_SIZE,
@@ -100,7 +153,7 @@ const drawBoard = (
       if (value > 0) {
         ctx.drawImage(
           img,
-          TETRIS.BLOCK_ONE_SIZE * value,
+          TETRIS.BLOCK_ONE_SIZE * (value - 1),
           0,
           TETRIS.BLOCK_ONE_SIZE,
           TETRIS.BLOCK_ONE_SIZE,
@@ -182,15 +235,6 @@ const SRSAlgorithm = (
   return block;
 };
 
-const isGameOver = (block: blockInterface) => {
-  return block.shape.some((row, y) =>
-    row.some((value) => {
-      let nY = block.posY + y;
-      return value > 0 && nY < 0;
-    })
-  );
-};
-
 const RealBoard = ({
   gameStart,
   endGame,
@@ -221,25 +265,14 @@ const RealBoard = ({
 
   useEffect(() => {
     if (!gameStart) return;
-    const blockQueue: Array<blockInterface> = [];
-    for (let i = 0; i < 5; i++)
-      blockQueue.push({
-        posX: TETRIS.START_X,
-        posY: TETRIS.START_Y,
-        dir: 0,
-        ...TETRIS.randomTetromino(),
-      });
+    const blockQueue: Array<blockInterface> = getPreviewBlocks();
 
-    let block: blockInterface = {
-      posX: TETRIS.START_X,
-      posY: TETRIS.START_Y,
-      dir: 0,
-      ...TETRIS.randomTetromino(),
-    };
+    let block = blockQueue.shift() as blockInterface;
     let board = TETRIS.getEmptyArray(TETRIS.ROWS, TETRIS.COLS);
     let beforeBlock: blockInterface;
 
     let timer: number = 0;
+    let solidBlocks = 0;
 
     const canvas = canvasContainer.current as HTMLCanvasElement;
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
@@ -248,14 +281,13 @@ const RealBoard = ({
 
     ctx.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
 
-    let time = 0;
-
     img.onload = () => {
       drawBoard(board, ctx, img);
       drawBlock(block, ctx, img);
 
       const dropBlock = () => {
         const nextBlock = JSON.parse(JSON.stringify(block));
+
         if (
           blockConflictCheck({ ...nextBlock, posY: nextBlock.posY + 1 }, board)
         ) {
@@ -283,6 +315,9 @@ const RealBoard = ({
               clearInterval(start);
             }
 
+            setFreeze(board, block);
+            clearLine(board);
+
             //gameover
             if (isGameOver(block)) {
               clearInterval(drop);
@@ -293,29 +328,25 @@ const RealBoard = ({
               return;
             }
 
-            setFreeze(board, block);
-            clearLine(board);
             block = blockQueue.shift() as blockInterface;
-            blockQueue.push({
-              posX: TETRIS.START_X,
-              posY: TETRIS.START_Y,
-              dir: 0,
-              ...TETRIS.randomTetromino(),
-            });
-            drawGameBoard(board, block, ctx, img);
 
+            if (blockQueue.length == 5) {
+              blockQueue.push(...getPreviewBlocks());
+            }
+
+            setSolidBlock(board, solidBlocks);
+            solidBlocks = 0;
             timer = 0;
             drop = setInterval(dropBlock, 900);
+            // drawGameBoard(board, block, ctx, img);
           }
         }
         timer += 0.5;
 
         if (timer >= 20) {
-          // 블록을 가장 하단으로 땡겨서 쌓기 구현 필요
           if (drop) {
             clearInterval(drop);
           }
-
           //gameover
           if (isGameOver(block)) {
             clearInterval(drop);
@@ -329,18 +360,25 @@ const RealBoard = ({
           setFreeze(board, block);
           clearLine(board);
           block = blockQueue.shift() as blockInterface;
-          blockQueue.push({
-            posX: TETRIS.START_X,
-            posY: TETRIS.START_Y,
-            dir: 0,
-            ...TETRIS.randomTetromino(),
-          });
-          drawGameBoard(board, block, ctx, img);
+
+          if (blockQueue.length == 5) {
+            blockQueue.push(...getPreviewBlocks());
+          }
+
+          setSolidBlock(board, solidBlocks);
+          solidBlocks = 0;
           timer = 0;
           drop = setInterval(dropBlock, 900);
+          drawGameBoard(board, block, ctx, img);
         }
       }, 500);
     };
+
+    const solidBlockTimer = setTimeout(() => {
+      setInterval(() => {
+        solidBlocks++;
+      }, 3000);
+    }, 120000);
 
     const keyEventHandler = (event: KeyboardEvent) => {
       if (!moves[event.key]) return;
