@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import SectionTitle from '../../components/SectionTitle';
 import AppbarLayout from '../../layout/AppbarLayout';
 import './style.scss';
 
-function LobbyPage() {
+type locationState = { user: { login: string }; name?: string };
 
+function LobbyPage() {
   const {
     location: { state },
   } = useHistory<locationState>();
@@ -13,8 +15,7 @@ function LobbyPage() {
 
   const handleClick = () => {
     history.push('/tetris');
-  }
-
+  };
 
   const [currentIdx, setCurrentIdx] = useState(0);
 
@@ -215,7 +216,9 @@ function LobbyPage() {
           </div>
           <div className="button__group">
             <button className="lobby__btn lobby__btn--dark">방 생성</button>
-            <button className="lobby__btn" onClick={handleClick}>빠른 입장</button>
+            <button className="lobby__btn" onClick={handleClick}>
+              빠른 입장
+            </button>
           </div>
         </div>
         <div className="section__divider"></div>
