@@ -46,15 +46,16 @@ const Tetris = (): JSX.Element => {
   return (
     <>
       <div className="tetris">
-        {/* <Board />
-        <RealBoard gameStart={gameStart} endGame={endGame} /> */}
-        <Temp getHoldBlock={getHoldBlock}></Temp>
-        <HoldBlock holdBlock={holdBlock} />
+        <Board />
+        <RealBoard gameStart={gameStart} endGame={endGame} />
         <BubbleButton
           variant={gameStart ? 'inactive' : 'active'}
           label="게임 시작"
           handleClick={clickStartButton}
         />
+        {/* <Temp getHoldBlock={getHoldBlock}></Temp>
+        <HoldBlock holdBlock={holdBlock} />
+         */}
       </div>
     </>
   );

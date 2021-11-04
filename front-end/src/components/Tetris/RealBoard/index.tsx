@@ -8,6 +8,7 @@ interface blockInterface {
   name: string;
   shape: Array<Array<number>>;
   color: number;
+  index: number;
 }
 
 interface offsetInterface {
@@ -28,7 +29,7 @@ const getPreviewBlocks = () => {
   randomBlocks.forEach((block) => {
     queue.push({
       posX: TETRIS.START_X,
-      posY: TETRIS.START_Y,
+      posY: TETRIS.START_Y - 1,
       dir: 0,
       ...TETRIS.TETROMINO[block],
     });
@@ -98,10 +99,11 @@ const draw = (
 ) => {
   ctx.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
   drawBoard(board, ctx, img);
-  drawBlock(block, ctx, img);
+  drawBlock(board, block, ctx, img);
 };
 
 const drawBlock = (
+  board: number[][],
   block: blockInterface,
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement
@@ -111,7 +113,7 @@ const drawBlock = (
       const nX: number = block.posX + x;
       const nY: number = block.posY + y;
 
-      if (TETRIS.withInRange(nX, nY)) {
+      if (TETRIS.withInRange(nX, nY) && board[nY][nX] === 0) {
         ctx.drawImage(
           img,
           TETRIS.BLOCK_ONE_SIZE * (value - 1),
@@ -119,7 +121,7 @@ const drawBlock = (
           TETRIS.BLOCK_ONE_SIZE,
           TETRIS.BLOCK_ONE_SIZE,
           (block.posX + x) * TETRIS.BOARD_ONE_SIZE,
-          (block.posY + y) * TETRIS.BOARD_ONE_SIZE,
+          (block.posY + y - TETRIS.START_Y) * TETRIS.BOARD_ONE_SIZE,
           TETRIS.BLOCK_ONE_SIZE,
           TETRIS.BLOCK_ONE_SIZE
         );
@@ -143,7 +145,7 @@ const drawBoard = (
           TETRIS.BLOCK_ONE_SIZE,
           TETRIS.BLOCK_ONE_SIZE,
           x * TETRIS.BOARD_ONE_SIZE,
-          y * TETRIS.BOARD_ONE_SIZE,
+          (y - TETRIS.START_Y) * TETRIS.BOARD_ONE_SIZE,
           TETRIS.BLOCK_ONE_SIZE,
           TETRIS.BLOCK_ONE_SIZE
         );
@@ -215,6 +217,33 @@ const SRSAlgorithm = (
   return block;
 };
 
+const isGameOver = (board: number[][], block: blockInterface) => {
+  const gameOverArr = board.slice(0, 4);
+
+  const outRange = gameOverArr.every((row: Array<number>, y: number) => {
+    // 블록의 범위 검사
+    return row.every((value: number, x: number) => value !== 0);
+  });
+
+  const overlapBlock = block.shape.some((row: number[], y: number) => {
+    // 블록이 겹치는지 검사
+    return row.some((value: number, x: number) => {
+      const nX = block.posX + x;
+      const nY = block.posY + y;
+
+      return value > 0 && board[nY][nX] != 0; // 겹치면 true 반환
+    });
+  });
+
+  return outRange || overlapBlock;
+};
+
+const gameoverBlocks = (board: number[][]) => {
+  for (let i = 0; i < board.length; i++)
+    for (let j = 0; j < board[i].length; j++)
+      if (board[i][j] != 0) board[i][j] = 1;
+};
+
 const moves = {
   [TETRIS.KEY.LEFT]: (prev: blockInterface) => ({
     ...prev,
@@ -232,6 +261,7 @@ const moves = {
     rotate(JSON.parse(JSON.stringify(prev)), true),
   [TETRIS.KEY.TURN_LEFT]: (prev: blockInterface) =>
     rotate(JSON.parse(JSON.stringify(prev)), false),
+  [TETRIS.KEY.HOLD]: (prev: blockInterface) => prev,
 };
 
 const RealBoard = ({
@@ -245,11 +275,13 @@ const RealBoard = ({
 
   useEffect(() => {
     if (!gameStart) return;
-    const blockQueue: Array<blockInterface> = getPreviewBlocks();
 
-    let block = blockQueue.shift() as blockInterface;
-    let board = TETRIS.getEmptyArray(TETRIS.ROWS, TETRIS.COLS);
+    const board = TETRIS.getEmptyArray(TETRIS.ROWS, TETRIS.COLS);
+    const blockQueue: Array<blockInterface> = getPreviewBlocks();
+    let nowBlock = blockQueue.shift() as blockInterface;
     let beforeBlock: blockInterface;
+    let holdBlock: blockInterface;
+    let holdBlockFlag = true;
 
     let timer: number = 0;
     let solidBlocks = 0;
@@ -262,47 +294,43 @@ const RealBoard = ({
     ctx.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
 
     img.onload = () => {
-      draw(board, block, ctx, img);
+      draw(board, nowBlock, ctx, img);
 
       const dropBlock = () => {
-        const nextBlock = JSON.parse(JSON.stringify(block));
-        beforeBlock = block;
+        const nextBlock = JSON.parse(JSON.stringify(nowBlock));
+        beforeBlock = nowBlock;
 
         if (isNotConflict({ ...nextBlock, posY: nextBlock.posY + 1 }, board)) {
           nextBlock.posY += 1;
           draw(board, nextBlock, ctx, img);
-          block = nextBlock;
+          nowBlock = nextBlock;
         }
       };
 
-      const start = setInterval(dropBlock, 900);
-
-      let drop: any;
+      let drop: any = setInterval(dropBlock, 900);
 
       const conflictCheck = setInterval(() => {
-        if (isBottom(board, block)) {
-          if (JSON.stringify(block) === JSON.stringify(beforeBlock)) {
+        if (isBottom(board, nowBlock)) {
+          if (JSON.stringify(nowBlock) === JSON.stringify(beforeBlock)) {
             if (drop) {
               clearInterval(drop);
             }
-            if (start) {
-              clearInterval(start);
-            }
 
-            setFreeze(board, block);
+            setFreeze(board, nowBlock);
             clearLine(board);
 
+            const nextBlock = blockQueue.shift() as blockInterface;
             //gameover
-            // if (isGameOver(block)) {
-            //   clearInterval(drop);
-            //   clearInterval(start);
-            //   clearInterval(conflictCheck);
-            //   //draw gray block
-            //   endGame();
-            //   return;
-            // }
+            if (isGameOver(board, nextBlock)) {
+              clearInterval(drop);
+              clearInterval(conflictCheck);
+              gameoverBlocks(board);
+              drawBoard(board, ctx, img);
+              endGame();
+              return;
+            }
 
-            block = blockQueue.shift() as blockInterface;
+            nowBlock = nextBlock;
 
             if (blockQueue.length === 5) {
               blockQueue.push(...getPreviewBlocks());
@@ -311,7 +339,9 @@ const RealBoard = ({
             setSolidBlock(board, solidBlocks);
             solidBlocks = 0;
             timer = 0;
+            holdBlockFlag = true;
             drop = setInterval(dropBlock, 900);
+            draw(board, nowBlock, ctx, img);
           }
         }
         timer += 0.5;
@@ -320,19 +350,22 @@ const RealBoard = ({
           if (drop) {
             clearInterval(drop);
           }
-          //gameover
-          // if (isGameOver(block)) {
-          //   clearInterval(drop);
-          //   clearInterval(start);
-          //   clearInterval(conflictCheck);
-          //   //draw gray block
-          //   endGame();
-          //   return;
-          // }
 
-          setFreeze(board, block);
+          setFreeze(board, nowBlock);
           clearLine(board);
-          block = blockQueue.shift() as blockInterface;
+
+          const nextBlock = blockQueue.shift() as blockInterface;
+          //gameover
+          if (isGameOver(board, nextBlock)) {
+            clearInterval(drop);
+            clearInterval(conflictCheck);
+            gameoverBlocks(board);
+            drawBoard(board, ctx, img);
+            endGame();
+            return;
+          }
+
+          nowBlock = nextBlock;
 
           if (blockQueue.length === 5) {
             blockQueue.push(...getPreviewBlocks());
@@ -341,43 +374,74 @@ const RealBoard = ({
           setSolidBlock(board, solidBlocks);
           solidBlocks = 0;
           timer = 0;
+          holdBlockFlag = true;
           drop = setInterval(dropBlock, 900);
-          draw(board, block, ctx, img);
+          draw(board, nowBlock, ctx, img);
         }
       }, 500);
     };
 
     const solidBlockTimer = setTimeout(() => {
+      // Solid Garbage 생성 타이머
       setInterval(() => {
         solidBlocks++;
-      }, 3000);
+      }, 5000);
     }, 120000);
 
     const keyEventHandler = (event: KeyboardEvent) => {
-      if (!moves[event.key]) return;
-      const nextBlock = moves[event.key](block);
+      if (
+        !moves[event.key] &&
+        !(event.key === TETRIS.KEY.HOLD || event.key === TETRIS.KEY.HARD_DROP)
+      )
+        return;
+
+      const nextBlock = moves[event.key](nowBlock);
 
       switch (event.key) {
         case TETRIS.KEY.LEFT:
         case TETRIS.KEY.RIGHT:
         case TETRIS.KEY.DOWN:
           if (isNotConflict(nextBlock, board)) {
-            beforeBlock = block;
-            block = nextBlock;
-            draw(board, block, ctx, img);
+            beforeBlock = nowBlock;
+            nowBlock = nextBlock;
+            draw(board, nowBlock, ctx, img);
           }
           break;
         case TETRIS.KEY.TURN_RIGHT:
         case TETRIS.KEY.TURN_LEFT:
-          beforeBlock = block;
-          block = SRSAlgorithm(
-            block.name !== 'I' ? TETRIS.SRS : TETRIS.SRS_I,
-            block,
+          beforeBlock = nowBlock;
+          nowBlock = SRSAlgorithm(
+            nowBlock.name !== 'I' ? TETRIS.SRS : TETRIS.SRS_I,
+            nowBlock,
             nextBlock,
             board,
             event.key
           );
-          draw(board, block, ctx, img);
+          draw(board, nowBlock, ctx, img);
+          break;
+        case TETRIS.KEY.HOLD:
+          if (holdBlockFlag) {
+            holdBlockFlag = false;
+
+            if (!holdBlock) {
+              holdBlock = {
+                posX: TETRIS.START_X,
+                posY: TETRIS.START_Y - 1,
+                dir: 0,
+                ...TETRIS.TETROMINO[nowBlock.index],
+              };
+              nowBlock = blockQueue.shift() as blockInterface;
+            } else {
+              const tmp = holdBlock;
+              holdBlock = {
+                posX: TETRIS.START_X,
+                posY: TETRIS.START_Y - 1,
+                dir: 0,
+                ...TETRIS.TETROMINO[nowBlock.index],
+              };
+              nowBlock = tmp;
+            }
+          }
           break;
         default:
           break;

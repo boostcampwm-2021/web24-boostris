@@ -1,30 +1,6 @@
-// 게임판 배열
-export const BOARD: Array<Array<number>> = [
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-];
-
 // 보드 크기 설정
 export const COLS: number = 10;
-export const ROWS: number = 20;
+export const ROWS: number = 24;
 export const BLOCK_SIZE: number = 24;
 
 // 실제 보드 한칸의 크기
@@ -43,7 +19,13 @@ export const BOARD_HEIGHT: number = 481;
 
 // 블록 시작 좌표
 export const START_X: number = 3;
-export const START_Y: number = -1;
+export const START_Y: number = 4;
+
+// 보드 GAME OVER 범위
+export const GAME_OVER_MIN_X: number = 0;
+export const GAME_OVER_MAX_X: number = 10;
+export const GAME_OVER_MIN_Y: number = 0;
+export const GAME_OVER_MAX_Y: number = 3;
 
 // KEY 이벤트
 export const KEY = {
@@ -66,6 +48,7 @@ export const TETROMINO = [
       [0, 0, 0],
     ],
     color: 3,
+    index: 0,
   },
   {
     name: 'L',
@@ -75,6 +58,7 @@ export const TETROMINO = [
       [0, 0, 0],
     ],
     color: 4,
+    index: 1,
   },
   {
     name: 'O',
@@ -84,6 +68,7 @@ export const TETROMINO = [
       [0, 0, 0, 0],
     ],
     color: 5,
+    index: 2,
   },
   {
     name: 'S',
@@ -93,6 +78,7 @@ export const TETROMINO = [
       [0, 0, 0],
     ],
     color: 6,
+    index: 3,
   },
   {
     name: 'I',
@@ -103,6 +89,7 @@ export const TETROMINO = [
       [0, 0, 0, 0],
     ],
     color: 7,
+    index: 4,
   },
   {
     name: 'J',
@@ -112,6 +99,7 @@ export const TETROMINO = [
       [0, 0, 0],
     ],
     color: 8,
+    index: 5,
   },
   {
     name: 'T',
@@ -121,6 +109,7 @@ export const TETROMINO = [
       [0, 0, 0],
     ],
     color: 9,
+    index: 6,
   },
 ];
 
