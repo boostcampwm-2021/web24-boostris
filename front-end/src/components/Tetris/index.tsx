@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import BubbleButton from '../BubbleButton';
 import HoldBlock from './HoldBlock';
 import PreviewBlocks from './PreviewBlocks';
-import RealBoard from './RealBoard';
+import Board from './Board';
 
 interface blockInterface {
   posX: number;
@@ -42,7 +42,7 @@ const Tetris = (): JSX.Element => {
     <div style={{ width: '100%', display: 'flex', padding: '50px' }}>
       <HoldBlock holdBlock={holdBlock} />
       <div style={{ margin: '0px 40px' }}>
-        <RealBoard
+        <Board
           gameStart={gameStart}
           endGame={endGame}
           getHoldBlockState={getHoldBlock}
