@@ -9,6 +9,6 @@
     "experimentalDecorators": true,
     "sourceMap": true
   },
-  "exclude" : [ ],
-  "include" : [ ]
+  "exclude": [],
+  "include": ["./src/"]
 }

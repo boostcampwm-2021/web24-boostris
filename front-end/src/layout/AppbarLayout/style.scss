@@ -1,0 +1,43 @@
+@import 'common/styles/base';
+
+.layout__root {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  .appbar__container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    img {
+      display: block;
+    }
+    .appbar__conatiner--link {
+      display: flex;
+      align-items: center;
+      flex-basis: 490px;
+
+      .appbar__link {
+        color: $white;
+        font-size: 20px;
+        line-height: 23px;
+        text-decoration: none;
+        padding: 1rem;
+        flex: 1;
+        text-align: center;
+      }
+    }
+  }
+  .layout__content--root {
+    background-color: $navy;
+    flex: 1;
+    display: flex;
+  }
+  .footer__space {
+    flex-grow: 0;
+    flex-basis: 230px;
+    flex-shrink: 1;
+  }
+}
