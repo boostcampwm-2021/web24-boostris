@@ -38,12 +38,6 @@ const getPreviewBlocks = () => {
   return queue;
 };
 
-const isOverflow = (block: blockInterface) => {
-  return block.shape.some((row, y) =>
-    row.some((value) => value > 0 && block.posY + y < 0)
-  );
-};
-
 const setFreeze = (board: number[][], block: blockInterface) => {
   block.shape.forEach((row: Array<number>, y: number) => {
     row.forEach((value: number, x: number) => {
@@ -94,20 +88,23 @@ const isBottom = (board: number[][], block: blockInterface) => {
 const draw = (
   board: number[][],
   block: blockInterface,
+  ghost: blockInterface,
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement
 ) => {
   drawBoard(board, ctx, img);
-  drawBlock(board, block, ctx, img);
+  drawBlock(board, block, ghost, ctx, img);
 };
 
 const drawBlock = (
   board: number[][],
   block: blockInterface,
+  ghost: blockInterface,
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement
 ) => {
   block.shape.forEach((row: Array<number>, y: number) => {
+    ctx.globalAlpha = 1;
     row.forEach((value: number, x: number) => {
       const nX: number = block.posX + x;
       const nY: number = block.posY + y;
@@ -127,6 +124,28 @@ const drawBlock = (
       }
     });
   });
+
+  ctx.globalAlpha = 0.7;
+  ghost.shape.forEach((row: Array<number>, y: number) => {
+    row.forEach((value: number, x: number) => {
+      const nX: number = ghost.posX + x;
+      const nY: number = ghost.posY + y;
+
+      if (TETRIS.withInRange(nX, nY) && board[nY][nX] === 0) {
+        ctx.drawImage(
+          img,
+          TETRIS.BLOCK_ONE_SIZE * (value - 1),
+          0,
+          TETRIS.BLOCK_ONE_SIZE,
+          TETRIS.BLOCK_ONE_SIZE,
+          (ghost.posX + x) * TETRIS.BOARD_ONE_SIZE,
+          (ghost.posY + y - TETRIS.START_Y) * TETRIS.BOARD_ONE_SIZE,
+          TETRIS.BLOCK_ONE_SIZE,
+          TETRIS.BLOCK_ONE_SIZE
+        );
+      }
+    });
+  });
 };
 
 const drawBoard = (
@@ -134,6 +153,7 @@ const drawBoard = (
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement
 ) => {
+  ctx.globalAlpha = 1;
   ctx.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
   board.forEach((row: Array<number>, y: number) => {
     row.forEach((value: number, x: number) => {
@@ -297,6 +317,8 @@ const RealBoard = ({
     const board = TETRIS.getEmptyArray(TETRIS.ROWS, TETRIS.COLS);
     const blockQueue: Array<blockInterface> = getPreviewBlocks();
     let nowBlock = blockQueue.shift() as blockInterface;
+    let ghostBlock = hardDropBlock(board, nowBlock);
+
     getPreviewBlocksList(blockQueue);
     let beforeBlock: blockInterface;
     let holdBlock: blockInterface;
@@ -321,15 +343,15 @@ const RealBoard = ({
       beforeBlock = nowBlock;
 
       if (isNotConflict({ ...nextBlock, posY: nextBlock.posY + 1 }, board)) {
-        console.log(nextBlock);
         nextBlock.posY += 1;
-        draw(board, nextBlock, ctx, img);
+        draw(board, nextBlock, ghostBlock, ctx, img);
         nowBlock = nextBlock;
+        ghostBlock = hardDropBlock(board, nowBlock);
       }
     };
 
     img.onload = () => {
-      draw(board, nowBlock, ctx, img);
+      draw(board, nowBlock, ghostBlock, ctx, img);
 
       drop = setInterval(dropBlock, 900);
 
@@ -363,11 +385,12 @@ const RealBoard = ({
             }
 
             setSolidBlock(board, solidBlocks);
+            ghostBlock = hardDropBlock(board, nowBlock);
             solidBlocks = 0;
             timer = 0;
             holdBlockFlag = true;
             drop = setInterval(dropBlock, 900);
-            draw(board, nowBlock, ctx, img);
+            draw(board, nowBlock, ghostBlock, ctx, img);
           }
         }
         timer += 0.5;
@@ -394,17 +417,19 @@ const RealBoard = ({
           }
 
           nowBlock = nextBlock;
+          ghostBlock = hardDropBlock(board, nowBlock);
 
           if (blockQueue.length === 5) {
             blockQueue.push(...getPreviewBlocks());
           }
 
           setSolidBlock(board, solidBlocks);
+          ghostBlock = hardDropBlock(board, nowBlock);
           solidBlocks = 0;
           timer = 0;
           holdBlockFlag = true;
           drop = setInterval(dropBlock, 900);
-          draw(board, nowBlock, ctx, img);
+          draw(board, nowBlock, ghostBlock, ctx, img);
         }
       }, 500);
     };
@@ -434,7 +459,8 @@ const RealBoard = ({
           if (isNotConflict(nextBlock, board)) {
             beforeBlock = nowBlock;
             nowBlock = nextBlock;
-            draw(board, nowBlock, ctx, img);
+            ghostBlock = hardDropBlock(board, nowBlock);
+            draw(board, nowBlock, ghostBlock, ctx, img);
           }
           break;
         case TETRIS.KEY.TURN_RIGHT:
@@ -449,7 +475,8 @@ const RealBoard = ({
             board,
             event.key
           );
-          draw(board, nowBlock, ctx, img);
+          ghostBlock = hardDropBlock(board, nowBlock);
+          draw(board, nowBlock, ghostBlock, ctx, img);
           break;
         case TETRIS.KEY.HOLD: // 홀드
           if (holdBlockFlag) {
@@ -463,10 +490,11 @@ const RealBoard = ({
                 ...TETRIS.TETROMINO[nowBlock.index],
               };
               nowBlock = blockQueue.shift() as blockInterface;
+              ghostBlock = hardDropBlock(board, nowBlock);
               if (blockQueue.length === 5) {
                 blockQueue.push(...getPreviewBlocks());
               }
-              draw(board, nowBlock, ctx, img);
+              draw(board, nowBlock, ghostBlock, ctx, img);
               getHoldBlockState(holdBlock);
             } else {
               const tmp = holdBlock;
@@ -477,7 +505,8 @@ const RealBoard = ({
                 ...TETRIS.TETROMINO[nowBlock.index],
               };
               nowBlock = tmp;
-              draw(board, nowBlock, ctx, img);
+              ghostBlock = hardDropBlock(board, nowBlock);
+              draw(board, nowBlock, ghostBlock, ctx, img);
               getHoldBlockState(holdBlock);
             }
           }
@@ -514,11 +543,12 @@ const RealBoard = ({
           }
 
           setSolidBlock(board, solidBlocks);
+          ghostBlock = hardDropBlock(board, nowBlock);
           solidBlocks = 0;
           timer = 0;
           holdBlockFlag = true;
           drop = setInterval(dropBlock, 900);
-          draw(board, nowBlock, ctx, img);
+          draw(board, nowBlock, ghostBlock, ctx, img);
           break;
         default:
           break;
