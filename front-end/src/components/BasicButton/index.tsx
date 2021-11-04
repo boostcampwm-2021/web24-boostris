@@ -1,20 +1,20 @@
 import './style.scss';
-import { useHistory } from 'react-router-dom';
+import { MouseEventHandler } from 'react';
 
-function BasicButton({ 
-  variant = 'contained', 
-  label = '', 
-  registerData = {},
-  submit
+function BasicButton({
+  variant = 'contained',
+  label = '',
+  handleClick,
 }: {
-  variant: string, 
-  label: string, 
-  registerData: object,
-  submit: Function,
+  variant: string;
+  label: string;
+  handleClick: MouseEventHandler<HTMLButtonElement>;
 }) {
-  const history = useHistory();
-
-  return <button onClick={()=>{submit(registerData, label, history)}} className={`btn__root btn__root--${variant}`}>{label}</button>;
+  return (
+    <button onClick={handleClick} className={`btn__root btn__root--${variant}`}>
+      {label}
+    </button>
+  );
 }
 
 export default BasicButton;

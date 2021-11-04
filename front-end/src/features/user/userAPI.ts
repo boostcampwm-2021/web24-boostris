@@ -4,6 +4,24 @@ export type googleUserInfoProps = {
   vendor: string;
 };
 
+export interface registerDataContent {
+  nickname: string;
+  message: string;
+  oauthInfo: any;
+}
+
+export const postNewUser = async (registerData: registerDataContent) => {
+  return fetch('/register/insert', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({ registerData }),
+  }).then((res) => res.json());
+};
+
 export const fetchGithubUserData = async (code: string) => {
   return fetch('/auth/github/code', {
     method: 'POST',
