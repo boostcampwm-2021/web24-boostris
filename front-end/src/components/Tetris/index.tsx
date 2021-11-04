@@ -57,6 +57,7 @@ const Tetris = (): JSX.Element => {
           variant={gameStart ? 'inactive' : 'active'}
           label="게임 시작"
           handleClick={clickStartButton}
+          disabled={gameStart}
         />
       </div>
     </div>

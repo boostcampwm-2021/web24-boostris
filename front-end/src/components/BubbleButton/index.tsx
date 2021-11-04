@@ -5,13 +5,19 @@ function BubbleButton({
   variant = '',
   label = '',
   handleClick = () => {},
+  disabled = false,
 }: {
   variant: string;
   label: string;
   handleClick: () => void;
+  disabled: boolean;
 }) {
   return (
-    <button className={`bubbleBtn bubbleBtn--${variant}`} onClick={handleClick}>
+    <button
+      className={`bubbleBtn bubbleBtn--${variant}`}
+      onClick={handleClick}
+      disabled={disabled}
+    >
       {label}
     </button>
   );
