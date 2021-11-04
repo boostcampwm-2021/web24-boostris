@@ -1,34 +1,19 @@
 import { useEffect } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { fetchNaverUser, selectUser } from '../../features/user/userSlice';
 
 function NaverCallback() {
   const location = useLocation();
-  const history = useHistory();
+  const user = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
+
+  const accessToken = location.hash.split('=')[1].split('&')[0];
 
   useEffect(() => {
-    const fetchNaverUserData = async (accessToken: any) => {
-      let response = await fetch(`/auth/naver/token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ accessToken, vendor: 'naver' }),
-      });
-      return response.json();
-    };
-    const accessToken = location.hash.split('=')[1].split('&')[0];
+    dispatch(fetchNaverUser(accessToken));
+  }, [accessToken, dispatch]);
 
-    fetchNaverUserData(accessToken).then(({ id, isOurUser }) => {
-      console.log(isOurUser);
-      if (isOurUser) {
-        history.replace('/', {id});
-      } else {
-        history.replace('/register', {id});
-      }
-    });
-  }, [history, location.hash]);
-  return <div></div>;
+  return <div>{user.status}</div>;
 }
 export default NaverCallback;
