@@ -1,38 +1,30 @@
 import { useEffect } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { fetchGoogleUser, selectUser } from '../../features/user/userSlice';
 
 function GoogleCallback() {
-  const history = useHistory();
-  const { state } = useLocation();
-
-  const loginSuccess = async (res: any) => {
-    const googleUserInfo = {
-      email: res.profileObj.email,
-      name: res.profileObj.name,
-      vendor: 'google',
+  const {
+    state,
+  }: {
+    state: {
+      profileObj: any;
     };
-    let response = await fetch(`/auth/google/user`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(googleUserInfo),
-    });
-    return response.json();
-  };
+  } = useLocation();
+
+  const user = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    loginSuccess(state).then(({ email, isOurUser }) => {
-      const id = email;
-      if (isOurUser) {
-        history.replace('/', { id });
-      } else {
-        history.replace('/register', { id } );
-      }
-    });
-  }, [history, state]);
+    dispatch(
+      fetchGoogleUser({
+        email: state.profileObj.email,
+        name: state.profileObj.name,
+        vendor: 'google',
+      })
+    );
+  }, [dispatch, state.profileObj.email, state.profileObj.name]);
 
-  return <div>Redirecting...</div>;
+  return <div>{user.status}</div>;
 }
 export default GoogleCallback;

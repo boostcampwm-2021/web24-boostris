@@ -1,3 +1,9 @@
+export type googleUserInfoProps = {
+  email: string;
+  name: string;
+  vendor: string;
+};
+
 export const fetchGithubUserData = async (code: string) => {
   return fetch('/auth/github/code', {
     method: 'POST',
@@ -20,5 +26,18 @@ export const fetchNaverUserData = async (accessToken: any) => {
     },
     credentials: 'include',
     body: JSON.stringify({ accessToken, vendor: 'naver' }),
+  }).then((res) => res.json());
+};
+
+export const fetchGoogleUserData = async (
+  googleUserInfo: googleUserInfoProps
+) => {
+  return fetch(`/auth/google/user`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify(googleUserInfo),
   }).then((res) => res.json());
 };

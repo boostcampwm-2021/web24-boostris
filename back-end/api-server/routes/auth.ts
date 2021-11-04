@@ -71,7 +71,7 @@ AuthRouter.post('/naver/token', async (req, res) => {
 AuthRouter.post('/google/user', async (req, res) => {
   const { email, name } = req.body;
   const isOurUser = await oauthDupCheck(email, req, res);
-  res.json({ email, isOurUser });
+  res.json({ id: email, isOurUser });
 });
 
 export default AuthRouter;

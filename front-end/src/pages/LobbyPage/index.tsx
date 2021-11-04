@@ -1,16 +1,9 @@
 import { useState } from 'react';
-import { useHistory } from 'react-router-dom';
 import SectionTitle from '../../components/SectionTitle';
 import AppbarLayout from '../../layout/AppbarLayout';
 import './style.scss';
 
-type locationState = { user: { login: string }; name?: string };
-
 function LobbyPage() {
-  const {
-    location: { state },
-  } = useHistory<locationState>();
-
   const [currentIdx, setCurrentIdx] = useState(0);
 
   return (

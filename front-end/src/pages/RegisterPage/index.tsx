@@ -1,7 +1,8 @@
 import BasicButton from '../../components/BasicButton';
 import BasicInput from '../../components/BasicInput';
-import { useHistory } from 'react-router';
 import './style.scss';
+import { selectUser } from '../../features/user/userSlice';
+import { useAppSelector } from '../../app/hooks';
 
 const registerButtonHandler = async (
   registerData: any,
@@ -70,9 +71,10 @@ function RegisterPage() {
     message: '',
     oauthInfo: {},
   };
-  const history = useHistory();
-  registerData['oauthInfo'] = history.location.state;
-  registerData['oauthInfo'] = registerData['oauthInfo'].id;
+  const user = useAppSelector(selectUser);
+
+  registerData.oauthInfo = user.profile.id;
+
   return (
     <div className="register__root full__page--root">
       <div className="register__card--root">

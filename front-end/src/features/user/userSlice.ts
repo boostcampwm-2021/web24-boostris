@@ -1,5 +1,10 @@
-import { fetchGithubUserData, fetchNaverUserData } from './userAPI';
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  fetchGithubUserData,
+  fetchGoogleUserData,
+  fetchNaverUserData,
+  googleUserInfoProps,
+} from './userAPI';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 
 export interface UserState {
@@ -28,6 +33,14 @@ export const fetchNaverUser = createAsyncThunk(
   }
 );
 
+export const fetchGoogleUser = createAsyncThunk(
+  'user/fetchGoogleuser',
+  async (user: googleUserInfoProps) => {
+    const response = await fetchGoogleUserData(user);
+    return response;
+  }
+);
+
 export const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -48,6 +61,13 @@ export const userSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(fetchNaverUser.fulfilled, (state, action) => {
+        state.status = 'idle';
+        state.profile = action.payload;
+      })
+      .addCase(fetchGoogleUser.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchGoogleUser.fulfilled, (state, action) => {
         state.status = 'idle';
         state.profile = action.payload;
       });
