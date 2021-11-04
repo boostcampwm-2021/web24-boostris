@@ -24,6 +24,7 @@ function AppbarLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <div className="layout__content--root">{children}</div>
+      <div className="footer__space"></div>
     </div>
   );
 }
