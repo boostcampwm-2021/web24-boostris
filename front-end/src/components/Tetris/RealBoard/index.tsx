@@ -231,7 +231,7 @@ const isGameOver = (board: number[][], block: blockInterface) => {
       const nX = block.posX + x;
       const nY = block.posY + y;
 
-      return value > 0 && board[nY][nX] != 0; // 겹치면 true 반환
+      return value > 0 && board[nY][nX] !== 0; // 겹치면 true 반환
     });
   });
 
@@ -241,7 +241,7 @@ const isGameOver = (board: number[][], block: blockInterface) => {
 const gameoverBlocks = (board: number[][]) => {
   for (let i = 0; i < board.length; i++)
     for (let j = 0; j < board[i].length; j++)
-      if (board[i][j] != 0) board[i][j] = 1;
+      if (board[i][j] !== 0) board[i][j] = 1;
 };
 
 const moves = {
@@ -432,8 +432,12 @@ const RealBoard = ({
                 dir: 0,
                 ...TETRIS.TETROMINO[nowBlock.index],
               };
-              getHoldBlockState(holdBlock);
               nowBlock = blockQueue.shift() as blockInterface;
+              if (blockQueue.length === 5) {
+                blockQueue.push(...getPreviewBlocks());
+              }
+              draw(board, nowBlock, ctx, img);
+              getHoldBlockState(holdBlock);
             } else {
               const tmp = holdBlock;
               holdBlock = {
@@ -442,8 +446,9 @@ const RealBoard = ({
                 dir: 0,
                 ...TETRIS.TETROMINO[nowBlock.index],
               };
-              getHoldBlockState(holdBlock);
               nowBlock = tmp;
+              draw(board, nowBlock, ctx, img);
+              getHoldBlockState(holdBlock);
             }
           }
           break;
