@@ -71,7 +71,6 @@ function RegisterPage() {
     oauthInfo: {},
   };
   const history = useHistory();
-  console.log(history.location.state);
   registerData['oauthInfo'] = history.location.state;
   registerData['oauthInfo'] = registerData['oauthInfo'].id;
   return (

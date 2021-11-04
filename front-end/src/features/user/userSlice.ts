@@ -1,4 +1,4 @@
-import { fetchGithubUserData } from './userAPI';
+import { fetchGithubUserData, fetchNaverUserData } from './userAPI';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 
@@ -20,6 +20,14 @@ export const fetchGithubUser = createAsyncThunk(
   }
 );
 
+export const fetchNaverUser = createAsyncThunk(
+  'user/fetchNaverUser',
+  async (accessToken: string) => {
+    const response = await fetchNaverUserData(accessToken);
+    return response;
+  }
+);
+
 export const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -33,6 +41,13 @@ export const userSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(fetchGithubUser.fulfilled, (state, action) => {
+        state.status = 'idle';
+        state.profile = action.payload;
+      })
+      .addCase(fetchNaverUser.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchNaverUser.fulfilled, (state, action) => {
         state.status = 'idle';
         state.profile = action.payload;
       });
