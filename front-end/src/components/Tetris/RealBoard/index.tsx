@@ -267,9 +267,11 @@ const moves = {
 const RealBoard = ({
   gameStart,
   endGame,
+  getHoldBlockState,
 }: {
   gameStart: boolean;
   endGame: () => void;
+  getHoldBlockState: (newBlock: blockInterface) => void;
 }): JSX.Element => {
   const canvasContainer = useRef<HTMLCanvasElement>(null);
 
@@ -430,6 +432,7 @@ const RealBoard = ({
                 dir: 0,
                 ...TETRIS.TETROMINO[nowBlock.index],
               };
+              getHoldBlockState(holdBlock);
               nowBlock = blockQueue.shift() as blockInterface;
             } else {
               const tmp = holdBlock;
@@ -439,6 +442,7 @@ const RealBoard = ({
                 dir: 0,
                 ...TETRIS.TETROMINO[nowBlock.index],
               };
+              getHoldBlockState(holdBlock);
               nowBlock = tmp;
             }
           }

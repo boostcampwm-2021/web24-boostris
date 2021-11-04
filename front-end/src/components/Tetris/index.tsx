@@ -12,24 +12,12 @@ interface blockInterface {
   name: string;
   shape: Array<Array<number>>;
   color: number;
+  index: number;
 }
-
-// interface blockInterface {
-//   name: string;
-//   shape: Array<Array<number>>;
-//   color: number;
-// }
 
 const Tetris = (): JSX.Element => {
   const [gameStart, setgameStart] = useState(false);
-  const [holdBlock, setHoldBlock] = useState({
-    posX: 0,
-    posY: 0,
-    dir: 0,
-    name: 'EMPTY',
-    shape: [[0]],
-    color: 0,
-  });
+  const [holdBlock, setHoldBlock] = useState<blockInterface | null>(null);
 
   const clickStartButton = () => {
     if (!gameStart) setgameStart(true);
@@ -37,6 +25,7 @@ const Tetris = (): JSX.Element => {
 
   const endGame = () => {
     setgameStart(false);
+    setHoldBlock(null);
   };
 
   const getHoldBlock = (newBlock: blockInterface) => {
@@ -46,16 +35,18 @@ const Tetris = (): JSX.Element => {
   return (
     <>
       <div className="tetris">
+        <HoldBlock holdBlock={holdBlock} />
         <Board />
-        <RealBoard gameStart={gameStart} endGame={endGame} />
+        <RealBoard
+          gameStart={gameStart}
+          endGame={endGame}
+          getHoldBlockState={getHoldBlock}
+        />
         <BubbleButton
           variant={gameStart ? 'inactive' : 'active'}
           label="게임 시작"
           handleClick={clickStartButton}
         />
-        {/* <Temp getHoldBlock={getHoldBlock}></Temp>
-        <HoldBlock holdBlock={holdBlock} />
-         */}
       </div>
     </>
   );

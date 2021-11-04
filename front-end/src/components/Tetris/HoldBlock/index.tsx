@@ -8,7 +8,10 @@ interface blockInterface {
   name: string;
   shape: Array<Array<number>>;
   color: number;
+  index: number;
 }
+
+const HOLD_BOARD_SIZE = 4 * TETRIS.BLOCK_ONE_SIZE;
 
 const drawBlock = (
   block: blockInterface,
@@ -32,37 +35,29 @@ const drawBlock = (
   });
 };
 
-const getCanvasSize = (block: blockInterface) => {
-  let height = block.shape.length * TETRIS.BLOCK_ONE_SIZE;
-  let width = block.shape[0].length * TETRIS.BLOCK_ONE_SIZE;
-  return [height, width];
-};
-
-function HoldBlock({ holdBlock }: { holdBlock: blockInterface }) {
+function HoldBlock({ holdBlock }: { holdBlock: blockInterface | null }) {
   const canvasContainer = useRef<HTMLCanvasElement>(null);
-  const [HOLDBOARD_HEIGHT, HOLDBOARD_WIDTH] = getCanvasSize(holdBlock);
 
   useEffect(() => {
     const canvas = canvasContainer.current as HTMLCanvasElement;
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+    ctx.clearRect(0, 0, HOLD_BOARD_SIZE, HOLD_BOARD_SIZE);
+    if (!holdBlock) return;
 
     const img: HTMLImageElement = new Image();
     img.src = 'assets/block.png';
 
     img.onload = () => {
-      ctx.clearRect(0, 0, HOLDBOARD_WIDTH, HOLDBOARD_HEIGHT);
       drawBlock(holdBlock, ctx, img);
     };
   }, [holdBlock]);
 
   return (
-    <div>
-      <canvas
-        width={HOLDBOARD_WIDTH}
-        height={HOLDBOARD_HEIGHT}
-        ref={canvasContainer}
-      />
-    </div>
+    <canvas
+      width={HOLD_BOARD_SIZE}
+      height={HOLD_BOARD_SIZE}
+      ref={canvasContainer}
+    />
   );
 }
 
