@@ -11,7 +11,7 @@ interface blockInterface {
   index: number;
 }
 
-const PREVIEW_BOARD_HEIGHT = 20 * TETRIS.BLOCK_ONE_SIZE;
+const PREVIEW_BOARD_HEIGHT = 16 * TETRIS.BLOCK_ONE_SIZE;
 const PREVIEW_BOARD_WIDTH = 4 * TETRIS.BLOCK_ONE_SIZE;
 
 const drawBlock = (
@@ -66,6 +66,7 @@ function PreviewBlocks({
 
   return (
     <canvas
+      style={{ display: 'block' }}
       width={PREVIEW_BOARD_WIDTH}
       height={PREVIEW_BOARD_HEIGHT}
       ref={canvasContainer}

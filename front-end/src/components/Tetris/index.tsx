@@ -33,32 +33,33 @@ const Tetris = (): JSX.Element => {
   };
 
   const getHoldBlock = (newBlock: blockInterface) => {
-    setHoldBlock(newBlock);
+    setHoldBlock({ ...newBlock });
   };
 
   const getPreviewBlocks = (newBlocks: Array<blockInterface>) => {
-    setPreviewBlock([...newBlocks]);
+    setPreviewBlock(JSON.parse(JSON.stringify(newBlocks)));
   };
 
   return (
-    <>
-      <div className="tetris">
-        <HoldBlock holdBlock={holdBlock} />
-        <Board />
+    <div style={{ width: '100%', display: 'flex', padding: '50px' }}>
+      <HoldBlock holdBlock={holdBlock} />
+      <div style={{ margin: '0px 40px' }}>
         <RealBoard
           gameStart={gameStart}
           endGame={endGame}
           getHoldBlockState={getHoldBlock}
           getPreviewBlocksList={getPreviewBlocks}
         />
+      </div>
+      <div>
+        <PreviewBlocks previewBlock={previewBlock} />
         <BubbleButton
           variant={gameStart ? 'inactive' : 'active'}
           label="게임 시작"
           handleClick={clickStartButton}
         />
-        <PreviewBlocks previewBlock={previewBlock} />
       </div>
-    </>
+    </div>
   );
 };
 export default Tetris;

@@ -472,15 +472,16 @@ const RealBoard = ({
   }, [gameStart]);
 
   return (
-    <>
-      <canvas
-        style={{ position: 'relative' }}
-        className="board"
-        width={TETRIS.BOARD_WIDTH}
-        height={TETRIS.BOARD_HEIGHT}
-        ref={canvasContainer}
-      ></canvas>
-    </>
+    <canvas
+      style={{
+        position: 'relative',
+        background: `url(assets/board.png)`,
+      }}
+      className="board"
+      width={TETRIS.BOARD_WIDTH}
+      height={TETRIS.BOARD_HEIGHT}
+      ref={canvasContainer}
+    ></canvas>
   );
 };
 

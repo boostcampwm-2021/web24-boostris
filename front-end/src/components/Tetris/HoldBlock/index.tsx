@@ -53,11 +53,14 @@ function HoldBlock({ holdBlock }: { holdBlock: blockInterface | null }) {
   }, [holdBlock]);
 
   return (
-    <canvas
-      width={HOLD_BOARD_SIZE}
-      height={HOLD_BOARD_SIZE}
-      ref={canvasContainer}
-    />
+    <div>
+      <div className="header__mini">{'> Hold'}</div>
+      <canvas
+        width={HOLD_BOARD_SIZE}
+        height={HOLD_BOARD_SIZE}
+        ref={canvasContainer}
+      />
+    </div>
   );
 }
 
