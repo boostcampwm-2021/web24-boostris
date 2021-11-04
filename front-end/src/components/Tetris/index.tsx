@@ -1,10 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import BubbleButton from '../BubbleButton';
-import Board from './Board';
 import HoldBlock from './HoldBlock';
 import PreviewBlocks from './PreviewBlocks';
 import RealBoard from './RealBoard';
-import Temp from './Temp';
 
 interface blockInterface {
   posX: number;
