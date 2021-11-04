@@ -268,10 +268,12 @@ const RealBoard = ({
   gameStart,
   endGame,
   getHoldBlockState,
+  getPreviewBlocksList,
 }: {
   gameStart: boolean;
   endGame: () => void;
   getHoldBlockState: (newBlock: blockInterface) => void;
+  getPreviewBlocksList: (newBlocks: Array<blockInterface>) => void;
 }): JSX.Element => {
   const canvasContainer = useRef<HTMLCanvasElement>(null);
 
@@ -281,6 +283,8 @@ const RealBoard = ({
     const board = TETRIS.getEmptyArray(TETRIS.ROWS, TETRIS.COLS);
     const blockQueue: Array<blockInterface> = getPreviewBlocks();
     let nowBlock = blockQueue.shift() as blockInterface;
+    getPreviewBlocksList(blockQueue);
+
     let beforeBlock: blockInterface;
     let holdBlock: blockInterface;
     let holdBlockFlag = true;
@@ -322,6 +326,8 @@ const RealBoard = ({
             clearLine(board);
 
             const nextBlock = blockQueue.shift() as blockInterface;
+            getPreviewBlocksList(blockQueue);
+
             //gameover
             if (isGameOver(board, nextBlock)) {
               clearInterval(drop);
@@ -357,6 +363,8 @@ const RealBoard = ({
           clearLine(board);
 
           const nextBlock = blockQueue.shift() as blockInterface;
+          getPreviewBlocksList(blockQueue);
+
           //gameover
           if (isGameOver(board, nextBlock)) {
             clearInterval(drop);
