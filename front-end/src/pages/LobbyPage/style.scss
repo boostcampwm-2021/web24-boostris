@@ -123,12 +123,43 @@
   }
   .lobby__main {
     flex: 3;
+    display: flex;
+    flex-direction: column;
     .lobby__container {
-      display: flex;
-      flex-wrap: wrap;
       padding-top: 25px;
       padding-left: 52px;
-      gap: 34px 46px;
+      .room__list__scroll__root {
+        display: flex;
+        flex-wrap: wrap;
+        overflow: auto;
+        gap: 34px 46px;
+        height: 380px;
+        min-height: 100%;
+        align-content: flex-start;
+        /* width */
+        &::-webkit-scrollbar {
+          width: 6px;
+          border-radius: 10px;
+        }
+
+        /* Track */
+        &::-webkit-scrollbar-track {
+          background: $new-color;
+          border-radius: 10px;
+        }
+
+        /* Handle */
+        &::-webkit-scrollbar-thumb {
+          background: $white;
+          border-radius: 10px;
+        }
+
+        /* Handle on hover */
+        &::-webkit-scrollbar-thumb:hover {
+          background: $azure-blue;
+        }
+      }
+      flex: 1;
       .empty__item,
       &::after {
         content: '';
