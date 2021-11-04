@@ -4,6 +4,18 @@ import AppbarLayout from '../../layout/AppbarLayout';
 import './style.scss';
 
 function LobbyPage() {
+
+  const {
+    location: { state },
+  } = useHistory<locationState>();
+
+  let history = useHistory();
+
+  const handleClick = () => {
+    history.push('/tetris');
+  }
+
+
   const [currentIdx, setCurrentIdx] = useState(0);
 
   return (
@@ -203,7 +215,7 @@ function LobbyPage() {
           </div>
           <div className="button__group">
             <button className="lobby__btn lobby__btn--dark">방 생성</button>
-            <button className="lobby__btn">빠른 입장</button>
+            <button className="lobby__btn" onClick={handleClick}>빠른 입장</button>
           </div>
         </div>
         <div className="section__divider"></div>
