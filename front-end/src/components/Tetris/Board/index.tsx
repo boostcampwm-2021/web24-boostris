@@ -400,6 +400,7 @@ const Board = ({
             clearInterval(drop);
           }
 
+          nowBlock = hardDropBlock(board, nowBlock);
           setFreeze(board, nowBlock);
           clearLine(board);
 
