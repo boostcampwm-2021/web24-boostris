@@ -1,26 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as TETRIS from '../../../constants/tetris';
-
-interface blockInterface {
-  posX: number;
-  posY: number;
-  dir: number;
-  name: string;
-  shape: Array<Array<number>>;
-  color: number;
-  index: number;
-}
-
-interface offsetInterface {
-  x: number;
-  y: number;
-}
-
-interface SRSInterface {
-  start: number;
-  end: number;
-  offset: Array<offsetInterface>;
-}
+import { blockInterface, offsetInterface, SRSInterface } from '../types';
 
 const getPreviewBlocks = () => {
   const randomBlocks = TETRIS.randomTetromino();
@@ -41,9 +21,7 @@ const getPreviewBlocks = () => {
 const setFreeze = (board: number[][], block: blockInterface) => {
   block.shape.forEach((row: Array<number>, y: number) => {
     row.forEach((value: number, x: number) => {
-      let nX = block.posX + x;
-      let nY = block.posY + y;
-
+      const [nX, nY] = [block.posX + x, block.posY + y];
       if (value > 0 && TETRIS.withInRange(nX, nY)) {
         board[nY][nX] = block.color;
       }
@@ -71,8 +49,7 @@ const isBottom = (board: number[][], block: blockInterface) => {
   return block.shape.some((row, y) =>
     row.some((value: number, x: number) => {
       if (value > 0) {
-        let nX = block.posX + x;
-        let nY = block.posY + y;
+        const [nX, nY] = [block.posX + x, block.posY + y];
         if (!TETRIS.withInRange(nX, nY)) return false;
 
         return (
@@ -106,9 +83,7 @@ const drawBlock = (
   block.shape.forEach((row: Array<number>, y: number) => {
     ctx.globalAlpha = 1;
     row.forEach((value: number, x: number) => {
-      const nX: number = block.posX + x;
-      const nY: number = block.posY + y;
-
+      const [nX, nY] = [block.posX + x, block.posY + y];
       if (TETRIS.withInRange(nX, nY) && board[nY][nX] === 0) {
         ctx.drawImage(
           img,
@@ -128,8 +103,7 @@ const drawBlock = (
   ctx.globalAlpha = 0.7;
   ghost.shape.forEach((row: Array<number>, y: number) => {
     row.forEach((value: number, x: number) => {
-      const nX: number = ghost.posX + x;
-      const nY: number = ghost.posY + y;
+      const [nX, nY] = [ghost.posX + x, ghost.posY + y];
 
       if (TETRIS.withInRange(nX, nY) && board[nY][nX] === 0) {
         ctx.drawImage(
@@ -177,8 +151,7 @@ const drawBoard = (
 const isNotConflict = (block: blockInterface, board: number[][]) => {
   return block.shape.every((row: Array<number>, y: number) => {
     return row.every((value: number, x: number) => {
-      const nX: number = block.posX + x;
-      const nY: number = block.posY + y;
+      const [nX, nY] = [block.posX + x, block.posY + y];
       return value === 0 || (TETRIS.withInRange(nX, nY) && board[nY][nX] === 0);
     });
   });
@@ -186,7 +159,6 @@ const isNotConflict = (block: blockInterface, board: number[][]) => {
 
 const rotate = (block: blockInterface, isRight: boolean) => {
   if (block.name === 'O') return block;
-
   for (let y = 0; y < block.shape.length; ++y) {
     for (let x = 0; x < y; ++x) {
       [block.shape[x][y], block.shape[y][x]] = [
@@ -248,9 +220,7 @@ const isGameOver = (board: number[][], block: blockInterface) => {
   const overlapBlock = block.shape.some((row: number[], y: number) => {
     // 블록이 겹치는지 검사
     return row.some((value: number, x: number) => {
-      const nX = block.posX + x;
-      const nY = block.posY + y;
-
+      const [nX, nY] = [block.posX + x, block.posY + y];
       return value > 0 && board[nY][nX] !== 0; // 겹치면 true 반환
     });
   });
@@ -259,9 +229,11 @@ const isGameOver = (board: number[][], block: blockInterface) => {
 };
 
 const gameoverBlocks = (board: number[][]) => {
-  for (let i = 0; i < board.length; i++)
-    for (let j = 0; j < board[i].length; j++)
-      if (board[i][j] !== 0) board[i][j] = 1;
+  board.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0) board[y][x] = 1;
+    });
+  });
 };
 
 const hardDropBlock = (board: number[][], block: blockInterface) => {
