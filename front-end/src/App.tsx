@@ -1,4 +1,4 @@
-import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import './App.scss';
 import LobbyPage from './pages/LobbyPage';
@@ -12,15 +12,13 @@ function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <Switch>
-          {/* <PrivateRoute exact path="/" component={Town} /> */}
-          <Route exact path="/" component={LobbyPage} />
-          <Route path="/login" component={LoginPage} />
-          <Route path="/register" component={RegisterPage} />
-          <Route path="/tetris" component={Tetris}></Route>
-          <Route path="/oauth" component={OauthCallbackRouter}></Route>
-          {/* <Redirect path="*" to="/" /> */}
-        </Switch>
+        <Routes>
+          <Route path="/" element={<LobbyPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/tetris" element={<Tetris />} />
+          <Route path="/oauth/*" element={<OauthCallbackRouter />} />
+        </Routes>
       </BrowserRouter>
     </div>
   );
