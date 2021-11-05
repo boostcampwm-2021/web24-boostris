@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as TETRIS from '../../../constants/tetris';
 import { blockInterface, offsetInterface, SRSInterface } from '../types';
+import { drawBlock } from '../refactor/block';
 
 const getPreviewBlocks = () => {
   const randomBlocks = TETRIS.randomTetromino();
@@ -52,10 +53,7 @@ const isBottom = (board: number[][], block: blockInterface) => {
         const [nX, nY] = [block.posX + x, block.posY + y];
         if (!TETRIS.withInRange(nX, nY)) return false;
 
-        return (
-          (nY + 1 < TETRIS.ROWS && board[nY + 1][nX] !== 0) ||
-          nY + 1 >= TETRIS.ROWS
-        );
+        return (nY + 1 < TETRIS.ROWS && board[nY + 1][nX] !== 0) || nY + 1 >= TETRIS.ROWS;
       }
       return false;
     })
@@ -69,83 +67,10 @@ const draw = (
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement
 ) => {
-  drawBoard(board, ctx, img);
-  drawBlock(board, block, ghost, ctx, img);
-};
-
-const drawBlock = (
-  board: number[][],
-  block: blockInterface,
-  ghost: blockInterface,
-  ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement
-) => {
-  block.shape.forEach((row: Array<number>, y: number) => {
-    ctx.globalAlpha = 1;
-    row.forEach((value: number, x: number) => {
-      const [nX, nY] = [block.posX + x, block.posY + y];
-      if (TETRIS.withInRange(nX, nY) && board[nY][nX] === 0) {
-        ctx.drawImage(
-          img,
-          TETRIS.BLOCK_ONE_SIZE * (value - 1),
-          0,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          (block.posX + x) * TETRIS.BOARD_ONE_SIZE,
-          (block.posY + y - TETRIS.START_Y) * TETRIS.BOARD_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE
-        );
-      }
-    });
-  });
-
-  ctx.globalAlpha = 0.7;
-  ghost.shape.forEach((row: Array<number>, y: number) => {
-    row.forEach((value: number, x: number) => {
-      const [nX, nY] = [ghost.posX + x, ghost.posY + y];
-
-      if (TETRIS.withInRange(nX, nY) && board[nY][nX] === 0) {
-        ctx.drawImage(
-          img,
-          TETRIS.BLOCK_ONE_SIZE * (value - 1),
-          0,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          (ghost.posX + x) * TETRIS.BOARD_ONE_SIZE,
-          (ghost.posY + y - TETRIS.START_Y) * TETRIS.BOARD_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE
-        );
-      }
-    });
-  });
-};
-
-const drawBoard = (
-  board: number[][],
-  ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement
-) => {
-  ctx.globalAlpha = 1;
   ctx.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
-  board.forEach((row: Array<number>, y: number) => {
-    row.forEach((value: number, x: number) => {
-      if (value > 0) {
-        ctx.drawImage(
-          img,
-          TETRIS.BLOCK_ONE_SIZE * (value - 1),
-          0,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          x * TETRIS.BOARD_ONE_SIZE,
-          (y - TETRIS.START_Y) * TETRIS.BOARD_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE
-        );
-      }
-    });
-  });
+  drawBlock(board, 0, -TETRIS.START_Y, 1, ctx, img);
+  drawBlock(block.shape, block.posX, block.posY - TETRIS.START_Y, 1, ctx, img);
+  drawBlock(ghost.shape, ghost.posX, ghost.posY - TETRIS.START_Y, 0.5, ctx, img);
 };
 
 const isNotConflict = (block: blockInterface, board: number[][]) => {
@@ -161,10 +86,7 @@ const rotate = (block: blockInterface, isRight: boolean) => {
   if (block.name === 'O') return block;
   for (let y = 0; y < block.shape.length; ++y) {
     for (let x = 0; x < y; ++x) {
-      [block.shape[x][y], block.shape[y][x]] = [
-        block.shape[y][x],
-        block.shape[x][y],
-      ];
+      [block.shape[x][y], block.shape[y][x]] = [block.shape[y][x], block.shape[x][y]];
     }
   }
 
@@ -262,10 +184,8 @@ const moves = {
     ...prev,
     posY: prev.posY + 1,
   }),
-  [TETRIS.KEY.TURN_RIGHT]: (prev: blockInterface) =>
-    rotate(JSON.parse(JSON.stringify(prev)), true),
-  [TETRIS.KEY.TURN_LEFT]: (prev: blockInterface) =>
-    rotate(JSON.parse(JSON.stringify(prev)), false),
+  [TETRIS.KEY.TURN_RIGHT]: (prev: blockInterface) => rotate(JSON.parse(JSON.stringify(prev)), true),
+  [TETRIS.KEY.TURN_LEFT]: (prev: blockInterface) => rotate(JSON.parse(JSON.stringify(prev)), false),
   [TETRIS.KEY.HOLD]: (prev: blockInterface) => prev,
   [TETRIS.KEY.HARD_DROP]: (prev: blockInterface) => prev,
 };
@@ -345,7 +265,8 @@ const Board = ({
               clearInterval(drop);
               clearInterval(conflictCheck);
               gameoverBlocks(board);
-              drawBoard(board, ctx, img);
+
+              drawBlock(board, 0, 0, 1, ctx, img);
               endGame();
               return;
             }
@@ -383,7 +304,7 @@ const Board = ({
             clearInterval(drop);
             clearInterval(conflictCheck);
             gameoverBlocks(board);
-            drawBoard(board, ctx, img);
+            drawBlock(board, 0, 0, 1, ctx, img);
             endGame();
             return;
           }
@@ -503,7 +424,8 @@ const Board = ({
             clearInterval(drop);
             clearInterval(conflictCheck);
             gameoverBlocks(board);
-            drawBoard(board, ctx, img);
+            ctx.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
+            drawBlock(board, 0, -TETRIS.START_Y, 1, ctx, img);
             endGame();
             return;
           }
