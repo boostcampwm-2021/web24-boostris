@@ -208,6 +208,7 @@ const Board = ({
 
     const board = TETRIS.getEmptyArray(TETRIS.ROWS, TETRIS.COLS);
     const blockQueue: Array<blockInterface> = getPreviewBlocks();
+
     let nowBlock = blockQueue.shift() as blockInterface;
     let ghostBlock = hardDropBlock(board, nowBlock);
 
@@ -337,14 +338,11 @@ const Board = ({
     let keydown = false;
 
     const keyEventHandler = (event: KeyboardEvent) => {
-      if (
-        !moves[event.key] &&
-        !(event.key === TETRIS.KEY.HOLD || event.key === TETRIS.KEY.HARD_DROP)
-      )
-        return;
+      if (!moves[event.key]) return;
 
       let nextBlock = moves[event.key](nowBlock);
-
+      // nowBlock.shape[0][0] = 1;
+      // console.log(nextBlock.shape[0][0]);
       switch (event.key) {
         case TETRIS.KEY.LEFT:
         case TETRIS.KEY.RIGHT:
@@ -424,6 +422,7 @@ const Board = ({
             clearInterval(drop);
             clearInterval(conflictCheck);
             gameoverBlocks(board);
+            //마음에 안드는 부분
             ctx.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
             drawBlock(board, 0, -TETRIS.START_Y, 1, ctx, img);
             endGame();

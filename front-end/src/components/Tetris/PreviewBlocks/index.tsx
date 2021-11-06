@@ -1,48 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import * as TETRIS from '../../../constants/tetris';
-
-interface blockInterface {
-  posX: number;
-  posY: number;
-  dir: number;
-  name: string;
-  shape: Array<Array<number>>;
-  color: number;
-  index: number;
-}
+import { drawBlock } from '../refactor/block';
+import { blockInterface, offsetInterface, SRSInterface } from '../types';
 
 const PREVIEW_BOARD_HEIGHT = 16 * TETRIS.BLOCK_ONE_SIZE;
 const PREVIEW_BOARD_WIDTH = 4 * TETRIS.BLOCK_ONE_SIZE;
 
-const drawBlock = (
-  block: blockInterface,
-  ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement
-) => {
-  block.shape.forEach((row: Array<number>, y: number) => {
-    row.forEach((value: number, x: number) => {
-      if (value > 0) {
-        ctx.drawImage(
-          img,
-          TETRIS.BLOCK_ONE_SIZE * (value - 1),
-          0,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          (block.posX + x) * TETRIS.BOARD_ONE_SIZE,
-          (block.posY + y) * TETRIS.BOARD_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE
-        );
-      }
-    });
-  });
-};
-
-function PreviewBlocks({
-  previewBlock,
-}: {
-  previewBlock: Array<blockInterface> | null;
-}) {
+function PreviewBlocks({ previewBlock }: { previewBlock: Array<blockInterface> | null }) {
   const canvasContainer = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -57,9 +21,7 @@ function PreviewBlocks({
     img.onload = () => {
       previewBlock.forEach((block, i) => {
         if (i >= 5) return;
-        block.posX = 0;
-        block.posY = i * 3;
-        drawBlock(block, ctx, img);
+        drawBlock(block.shape, 0, i * 3 - TETRIS.START_Y, 1, ctx, img);
       });
     };
   }, [previewBlock]);
