@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import * as TETRIS from '../../../constants/tetris';
 import { drawBlock } from '../refactor/block';
-import { blockInterface, offsetInterface, SRSInterface } from '../types';
+import { Block } from '../types';
 
 const PREVIEW_BOARD_HEIGHT = 16 * TETRIS.BLOCK_ONE_SIZE;
 const PREVIEW_BOARD_WIDTH = 4 * TETRIS.BLOCK_ONE_SIZE;
 
-function PreviewBlocks({ previewBlock }: { previewBlock: Array<blockInterface> | null }) {
+function PreviewBlocks({ previewBlock }: { previewBlock: Array<Block> | null }) {
   const canvasContainer = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
