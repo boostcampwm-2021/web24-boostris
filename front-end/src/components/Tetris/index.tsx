@@ -34,7 +34,7 @@ const Tetris = (): JSX.Element => {
     setHoldBlock({ ...newBlock });
   };
 
-  const getPreviewBlocks = (newBlocks: Array<blockInterface>) => {
+  const getPreviewBlocks = (newBlocks: null | Array<blockInterface>) => {
     setPreviewBlock(JSON.parse(JSON.stringify(newBlocks)));
   };
 
