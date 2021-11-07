@@ -405,6 +405,32 @@ const dropBlock = (
   initNewBlockCycle(BOARD, BLOCK, STATE, TIMER, BACKGROUND);
 };
 
+//블록을 홀드함
+const holdBlock = (
+  BOARD: number[][],
+  BLOCK: TetrisBlocks,
+  STATE: TetrisState,
+  PROPS_FUNC: TetrisPropsFunc,
+  BACKGROUND: TetrisBackground
+) => {
+  const tmpBlock = {
+    posX: TETRIS.START_X,
+    posY: TETRIS.START_Y - 1,
+    dir: 0,
+    ...TETRIS.TETROMINO[BLOCK.NOW.index],
+  };
+
+  if (!BLOCK.HOLD) {
+    BLOCK.HOLD = tmpBlock;
+    BLOCK.NOW = popBlockQueue(STATE, PROPS_FUNC);
+  } else {
+    [BLOCK.NOW, BLOCK.HOLD] = [BLOCK.HOLD, tmpBlock];
+  }
+  BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
+  draw(BOARD, BLOCK, BACKGROUND);
+  PROPS_FUNC.HOLD_FUNC(BLOCK.HOLD);
+};
+
 const Board = ({
   gameStart,
   endGame,
@@ -487,22 +513,7 @@ const Board = ({
         case TETRIS.KEY.HOLD:
           if (STATE.CAN_HOLD) {
             STATE.CAN_HOLD = false;
-            const tmpBlock = {
-              posX: TETRIS.START_X,
-              posY: TETRIS.START_Y - 1,
-              dir: 0,
-              ...TETRIS.TETROMINO[BLOCK.NOW.index],
-            };
-
-            if (!BLOCK.HOLD) {
-              BLOCK.HOLD = tmpBlock;
-              BLOCK.NOW = popBlockQueue(STATE, PROPS_FUNC);
-            } else {
-              [BLOCK.NOW, BLOCK.HOLD] = [BLOCK.HOLD, tmpBlock];
-            }
-            BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
-            draw(BOARD, BLOCK, BACKGROUND);
-            getHoldBlockState(BLOCK.HOLD);
+            holdBlock(BOARD, BLOCK, STATE, PROPS_FUNC, BACKGROUND);
           }
           break;
         // 하드 드롭(스페이스 키)
