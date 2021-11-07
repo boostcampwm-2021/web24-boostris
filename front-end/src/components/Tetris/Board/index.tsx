@@ -355,6 +355,7 @@ const finishGame = (
 ) => {
   clearInterval(TIMER.DROP);
   clearInterval(TIMER.CONFLICT);
+  clearInterval(TIMER.SOLID_GARBAGE);
   gameoverBlocks(BOARD);
   drawBoard(BOARD, BACKGROUND);
   PROPS_FUNC.GAMEOVER_FUNC();
@@ -488,11 +489,8 @@ const Board = ({
         }
         TIMER.PLAY_TIME += 0.5;
       }, 500);
-
-      TIMER.SOLID_GARBAGE = setTimeout(
-        () => setInterval(() => STATE.SOLID_GARBAGES++, 5000),
-        120000
-      ); // 솔리드 가비지 타이머
+      
+      setTimeout(() => TIMER.SOLID_GARBAGE = setInterval(() => STATE.SOLID_GARBAGES++, 5000), 120000); // 솔리드 가비지 타이머
     };
 
     const keyDownEventHandler = (event: KeyboardEvent) => {  
