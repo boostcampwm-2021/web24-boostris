@@ -10,33 +10,7 @@ import {
 } from '../types';
 import { drawCell } from '../refactor/block';
 
-// 상수로 빼고 싶은 부분
-const BOARD: number[][] = [
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-];
+const BOARD: number[][] = TETRIS.BOARD;
 
 const BLOCK: TetrisBlocks = {
   NOW: null as unknown as Block,
@@ -127,7 +101,6 @@ const isBottom = (board: number[][], block: Block) => {
       if (value > 0) {
         const [nX, nY] = [block.posX + x, block.posY + y];
         if (!TETRIS.withInRange(nX, nY)) return false;
-
         return (nY + 1 < TETRIS.ROWS && board[nY + 1][nX] !== 0) || nY + 1 >= TETRIS.ROWS;
       }
       return false;
@@ -296,6 +269,10 @@ const initTetris = (
   TIMER: TetrisTimer,
   BACKGROUND: TetrisBackground
 ) => {
+  for (let i = 0; i < BOARD.length; i++) {
+    for (let j = 0; j < BOARD[i].length; j++) BOARD[i][j] = 0;
+  }
+
   STATE.QUEUE = getPreviewBlocks();
   STATE.CAN_HOLD = true;
   STATE.SOLID_GARBAGES = 0;
@@ -320,8 +297,8 @@ const dropBlock = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBac
 
   if (isNotConflict({ ...BLOCK.NEXT, posY: BLOCK.NEXT.posY + 1 }, BOARD)) {
     BLOCK.NEXT.posY += 1;
-    draw(BOARD, BLOCK, BACKGROUND);
     BLOCK.NOW = BLOCK.NEXT;
+    draw(BOARD, BLOCK, BACKGROUND);
     BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
   }
 };
