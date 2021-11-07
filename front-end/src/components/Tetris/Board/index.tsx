@@ -290,17 +290,19 @@ const initTetris = (
   BACKGROUND.IMAGE.src = 'assets/block.png';
 };
 
-// 충돌이 나지 않으면 블록을 1칸씩 떨어뜨리는 함수
+const moveBlock = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground) => {
+  BLOCK.BEFORE = BLOCK.NOW;
+  BLOCK.NOW = BLOCK.NEXT;
+  BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
+  draw(BOARD, BLOCK, BACKGROUND);
+};
+
+//수정수정
 const dropBlock = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground) => {
   BLOCK.NEXT = JSON.parse(JSON.stringify(BLOCK.NOW));
+  BLOCK.NEXT.posY += 1;
   BLOCK.BEFORE = BLOCK.NOW;
-
-  if (isNotConflict({ ...BLOCK.NEXT, posY: BLOCK.NEXT.posY + 1 }, BOARD)) {
-    BLOCK.NEXT.posY += 1;
-    BLOCK.NOW = BLOCK.NEXT;
-    draw(BOARD, BLOCK, BACKGROUND);
-    BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
-  }
+  if (isNotConflict(BLOCK.NEXT, BOARD)) moveBlock(BOARD, BLOCK, BACKGROUND);
 };
 
 // 블록을 Freeze, clearLine, 다음 블록을 꺼내오는 함수
@@ -416,10 +418,7 @@ const Board = ({
         case TETRIS.KEY.RIGHT:
         case TETRIS.KEY.DOWN:
           if (isNotConflict(BLOCK.NEXT, BOARD)) {
-            BLOCK.BEFORE = BLOCK.NOW;
-            BLOCK.NOW = BLOCK.NEXT;
-            BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
-            draw(BOARD, BLOCK, BACKGROUND);
+            moveBlock(BOARD, BLOCK, BACKGROUND);
           }
           break;
         // 회전 키 이벤트(위, z)
@@ -427,10 +426,8 @@ const Board = ({
         case TETRIS.KEY.TURN_LEFT:
           if (STATE.KEYDOWN) return;
           STATE.KEYDOWN = true;
-          BLOCK.BEFORE = BLOCK.NOW;
-          BLOCK.NOW = SRSAlgorithm(BOARD, BLOCK, event.key);
-          BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
-          draw(BOARD, BLOCK, BACKGROUND);
+          BLOCK.NEXT = SRSAlgorithm(BOARD, BLOCK, event.key);
+          moveBlock(BOARD, BLOCK, BACKGROUND);
           break;
         // 홀드 키(c)
         case TETRIS.KEY.HOLD:
@@ -445,12 +442,9 @@ const Board = ({
                 ...TETRIS.TETROMINO[BLOCK.NOW.index],
               };
               BLOCK.NOW = STATE.QUEUE.shift() as Block;
-              BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
               if (STATE.QUEUE.length === 5) {
                 STATE.QUEUE.push(...getPreviewBlocks());
               }
-              draw(BOARD, BLOCK, BACKGROUND);
-              getHoldBlockState(BLOCK.HOLD);
             } else {
               const tmp = BLOCK.HOLD;
               BLOCK.HOLD = {
@@ -460,10 +454,10 @@ const Board = ({
                 ...TETRIS.TETROMINO[BLOCK.NOW.index],
               };
               BLOCK.NOW = tmp;
-              BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
-              draw(BOARD, BLOCK, BACKGROUND);
-              getHoldBlockState(BLOCK.HOLD);
             }
+            BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
+            draw(BOARD, BLOCK, BACKGROUND);
+            getHoldBlockState(BLOCK.HOLD);
           }
           break;
         // 하드 드롭(스페이스 키)
