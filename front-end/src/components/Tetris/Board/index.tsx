@@ -9,7 +9,7 @@ import {
   TetrisOptions,
   TetrisPropsFunc,
 } from '../types';
-import { drawCell } from '../refactor/block';
+import { drawCell } from '../utils/block';
 
 const BOARD: number[][] = TETRIS.BOARD;
 
@@ -214,6 +214,7 @@ const isGameOver = (board: number[][], block: Block) => {
     return row.every((value: number, x: number) => value !== 0);
   });
 
+  //const overlapBlock = isNotConflict(block, board); :: 이걸로 대체하면, 맨 마지막 줄을 채우고 clear 되는 게 안되는 걸까?
   const overlapBlock = block.shape.some((row: number[], y: number) => {
     // 블록이 겹치는지 검사
     return row.some((value: number, x: number) => {
@@ -341,11 +342,17 @@ const freezeBlock = (
 };
 
 // 게임 종료 시 처리해야할 것들을 모아둔 함수
-const finishGame = (BOARD: number[][], TIMER: TetrisTimer, BACKGROUND: TetrisBackground) => {
+const finishGame = (
+  BOARD: number[][],
+  TIMER: TetrisTimer,
+  BACKGROUND: TetrisBackground,
+  PROPS_FUNC: TetrisPropsFunc
+) => {
   clearInterval(TIMER.DROP);
   clearInterval(TIMER.CONFLICT);
   gameoverBlocks(BOARD);
   drawBoard(BOARD, BACKGROUND);
+  PROPS_FUNC.GAMEOVER_FUNC();
 };
 
 // 블록이 Freeze되고 새로운 블록이 생성될 때 초기화 되어야 하는 것들을 모아둔 함수
@@ -377,6 +384,25 @@ const initNewBlockCycle = (
   }, 900);
 
   draw(BOARD, BLOCK, BACKGROUND);
+};
+
+// 블록이 내려감 : freeze, clearLine, gameOver 판단
+const dropBlock = (
+  BOARD: number[][],
+  BLOCK: TetrisBlocks,
+  STATE: TetrisState,
+  TIMER: TetrisTimer,
+  option: string,
+  PROPS_FUNC: TetrisPropsFunc,
+  BACKGROUND: TetrisBackground
+) => {
+  freezeBlock(BOARD, BLOCK, STATE, TIMER, option, PROPS_FUNC);
+  // 게임 오버 검사
+  if (isGameOver(BOARD, BLOCK.NEXT)) {
+    finishGame(BOARD, TIMER, BACKGROUND, PROPS_FUNC);
+    return;
+  }
+  initNewBlockCycle(BOARD, BLOCK, STATE, TIMER, BACKGROUND);
 };
 
 const Board = ({
@@ -418,21 +444,15 @@ const Board = ({
         // 블록이 떨어지면서 바닥에 도달한 경우, 0.5초 마다 움직임이 있는지 검사하는 타이머, 움직임이 없으면 freeze 있으면 다시 0.5초 동안 반복
         if (isBottom(BOARD, BLOCK.NOW)) {
           if (JSON.stringify(BLOCK.NOW) === JSON.stringify(BLOCK.BEFORE) || TIMER.PLAY_TIME >= 20) {
-            freezeBlock(
+            dropBlock(
               BOARD,
               BLOCK,
               STATE,
               TIMER,
               TIMER.PLAY_TIME >= 20 ? OPTIONS.TIME_OUT : '',
-              PROPS_FUNC
+              PROPS_FUNC,
+              BACKGROUND
             );
-            // 게임 오버 검사
-            if (isGameOver(BOARD, BLOCK.NEXT)) {
-              finishGame(BOARD, TIMER, BACKGROUND);
-              endGame();
-              return;
-            }
-            initNewBlockCycle(BOARD, BLOCK, STATE, TIMER, BACKGROUND);
           }
         }
         TIMER.PLAY_TIME += 0.5;
@@ -467,24 +487,18 @@ const Board = ({
         case TETRIS.KEY.HOLD:
           if (STATE.CAN_HOLD) {
             STATE.CAN_HOLD = false;
+            const tmpBlock = {
+              posX: TETRIS.START_X,
+              posY: TETRIS.START_Y - 1,
+              dir: 0,
+              ...TETRIS.TETROMINO[BLOCK.NOW.index],
+            };
 
             if (!BLOCK.HOLD) {
-              BLOCK.HOLD = {
-                posX: TETRIS.START_X,
-                posY: TETRIS.START_Y - 1,
-                dir: 0,
-                ...TETRIS.TETROMINO[BLOCK.NOW.index],
-              };
+              BLOCK.HOLD = tmpBlock;
               BLOCK.NOW = popBlockQueue(STATE, PROPS_FUNC);
             } else {
-              const tmp = BLOCK.HOLD;
-              BLOCK.HOLD = {
-                posX: TETRIS.START_X,
-                posY: TETRIS.START_Y - 1,
-                dir: 0,
-                ...TETRIS.TETROMINO[BLOCK.NOW.index],
-              };
-              BLOCK.NOW = tmp;
+              [BLOCK.NOW, BLOCK.HOLD] = [BLOCK.HOLD, tmpBlock];
             }
             BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
             draw(BOARD, BLOCK, BACKGROUND);
@@ -495,14 +509,7 @@ const Board = ({
         case TETRIS.KEY.HARD_DROP:
           if (STATE.KEYDOWN) return;
           STATE.KEYDOWN = true;
-          freezeBlock(BOARD, BLOCK, STATE, TIMER, OPTIONS.HARD_DROP, PROPS_FUNC);
-          // gameover
-          if (isGameOver(BOARD, BLOCK.NEXT)) {
-            finishGame(BOARD, TIMER, BACKGROUND);
-            endGame();
-            return;
-          }
-          initNewBlockCycle(BOARD, BLOCK, STATE, TIMER, BACKGROUND);
+          dropBlock(BOARD, BLOCK, STATE, TIMER, OPTIONS.HARD_DROP, PROPS_FUNC, BACKGROUND);
           break;
         default:
           break;

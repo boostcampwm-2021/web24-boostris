@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as TETRIS from '../../../constants/tetris';
-import { drawCell } from '../refactor/block';
+import { drawCell } from '../utils/block';
 import { Block } from '../types';
 
 const PREVIEW_BOARD_HEIGHT = 16 * TETRIS.BLOCK_ONE_SIZE;
