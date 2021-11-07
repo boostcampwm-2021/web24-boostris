@@ -17,8 +17,7 @@ interface blockInterface {
 const Tetris = (): JSX.Element => {
   const [gameStart, setgameStart] = useState(false);
   const [holdBlock, setHoldBlock] = useState<blockInterface | null>(null);
-  const [previewBlock, setPreviewBlock] =
-    useState<Array<blockInterface> | null>(null);
+  const [previewBlock, setPreviewBlock] = useState<Array<blockInterface> | null>(null);
 
   const clickStartButton = () => {
     if (!gameStart) setgameStart(true);

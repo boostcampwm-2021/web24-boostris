@@ -51,3 +51,9 @@ export interface TetrisOptions {
   TIME_OUT: string;
   HARD_DROP: string;
 }
+
+export interface TetrisPropsFunc {
+  HOLD_FUNC: (newBlock: Block) => void;
+  PREVIEW_FUNC: (newBlocks: null | Array<Block>) => void;
+  GAMEOVER_FUNC: () => void;
+}
