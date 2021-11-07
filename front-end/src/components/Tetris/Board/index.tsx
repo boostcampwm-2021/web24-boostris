@@ -304,6 +304,7 @@ const initTetris = (
 
   BLOCK.NOW = popBlockQueue(STATE, PROPS_FUNC);
   BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
+  BLOCK.HOLD = null as unknown as Block;
 
   TIMER.PLAY_TIME = 0;
 

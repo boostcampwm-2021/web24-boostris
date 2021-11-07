@@ -20,13 +20,15 @@ const Tetris = (): JSX.Element => {
   const [previewBlock, setPreviewBlock] = useState<Array<blockInterface> | null>(null);
 
   const clickStartButton = () => {
-    if (!gameStart) setgameStart(true);
+    if (!gameStart) {
+      setgameStart(true);
+      setHoldBlock(null);
+      setPreviewBlock(null);
+    }
   };
 
   const endGame = () => {
     setgameStart(false);
-    setHoldBlock(null);
-    setPreviewBlock(null);
   };
 
   const getHoldBlock = (newBlock: blockInterface) => {
