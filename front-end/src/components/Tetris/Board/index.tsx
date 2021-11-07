@@ -2,14 +2,13 @@ import React, { useEffect, useRef } from 'react';
 import * as TETRIS from '../../../constants/tetris';
 import {
   Block,
-  offsetInterface,
-  SRSInterface,
   TetrisBlocks,
   TetrisState,
   TetrisTimer,
   TetrisBackground,
   TetrisOptions,
 } from '../types';
+import { drawBlock } from '../refactor/block';
 
 // 상수로 빼고 싶은 부분
 const BOARD: number[][] = [
@@ -138,78 +137,24 @@ const isBottom = (board: number[][], block: Block) => {
 
 // BOARD와 BLOCK을 다시 그리는 함수
 const draw = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground) => {
-  drawBoard(BOARD, BACKGROUND);
-  drawBlock(BOARD, BLOCK, BACKGROUND);
-};
-
-// BOARD를 다시 그리는 함수
-const drawBoard = (BOARD: number[][], BACKGROUND: TetrisBackground) => {
-  BACKGROUND.CTX.globalAlpha = 1;
   BACKGROUND.CTX.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
-  BOARD.forEach((row: Array<number>, y: number) => {
-    row.forEach((value: number, x: number) => {
-      if (value > 0) {
-        BACKGROUND.CTX.drawImage(
-          BACKGROUND.IMAGE,
-          TETRIS.BLOCK_ONE_SIZE * (value - 1),
-          0,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          x * TETRIS.BOARD_ONE_SIZE,
-          (y - TETRIS.START_Y) * TETRIS.BOARD_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE
-        );
-      }
-    });
-  });
-};
-
-// BLOCK을 다시 그리는 함수
-const drawBlock = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground) => {
-  BLOCK.NOW.shape.forEach((row: Array<number>, y: number) => {
-    BACKGROUND.CTX.globalAlpha = 1;
-    row.forEach((value: number, x: number) => {
-      const nX: number = BLOCK.NOW.posX + x;
-      const nY: number = BLOCK.NOW.posY + y;
-
-      if (TETRIS.withInRange(nX, nY) && BOARD[nY][nX] === 0) {
-        BACKGROUND.CTX.drawImage(
-          BACKGROUND.IMAGE,
-          TETRIS.BLOCK_ONE_SIZE * (value - 1),
-          0,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          (BLOCK.NOW.posX + x) * TETRIS.BOARD_ONE_SIZE,
-          (BLOCK.NOW.posY + y - TETRIS.START_Y) * TETRIS.BOARD_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE
-        );
-      }
-    });
-  });
-
-  BACKGROUND.CTX.globalAlpha = 0.6;
-  BLOCK.GHOST.shape.forEach((row: Array<number>, y: number) => {
-    row.forEach((value: number, x: number) => {
-      const nX: number = BLOCK.GHOST.posX + x;
-      const nY: number = BLOCK.GHOST.posY + y;
-
-      if (TETRIS.withInRange(nX, nY) && BOARD[nY][nX] === 0) {
-        BACKGROUND.CTX.drawImage(
-          BACKGROUND.IMAGE,
-          TETRIS.BLOCK_ONE_SIZE * (value - 1),
-          0,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          (BLOCK.GHOST.posX + x) * TETRIS.BOARD_ONE_SIZE,
-          (BLOCK.GHOST.posY + y - TETRIS.START_Y) * TETRIS.BOARD_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE
-        );
-      }
-    });
-  });
+  drawBlock(BOARD, 0, -TETRIS.START_Y, 1, BACKGROUND.CTX, BACKGROUND.IMAGE);
+  drawBlock(
+    BLOCK.NOW.shape,
+    BLOCK.NOW.posX,
+    BLOCK.NOW.posY - TETRIS.START_Y,
+    1,
+    BACKGROUND.CTX,
+    BACKGROUND.IMAGE
+  );
+  drawBlock(
+    BLOCK.GHOST.shape,
+    BLOCK.GHOST.posX,
+    BLOCK.GHOST.posY - TETRIS.START_Y,
+    0.6,
+    BACKGROUND.CTX,
+    BACKGROUND.IMAGE
+  );
 };
 
 // 충돌이 있는지 없는지 검사하는 함수
@@ -381,7 +326,7 @@ const freezeBlock = (
   TIMER: TetrisTimer,
   option: string
 ) => {
-  if (option == 'TIME_OUT' || option == 'HARD_DROP') {
+  if (option === 'TIME_OUT' || option === 'HARD_DROP') {
     BLOCK.NOW = hardDropBlock(BOARD, BLOCK.NOW);
   }
 
@@ -396,7 +341,7 @@ const finishGame = (BOARD: number[][], TIMER: TetrisTimer, BACKGROUND: TetrisBac
   clearInterval(TIMER.DROP);
   clearInterval(TIMER.CONFLICT);
   gameoverBlocks(BOARD);
-  drawBoard(BOARD, BACKGROUND);
+  drawBlock(BOARD, 0, -TETRIS.START_Y, 1, BACKGROUND.CTX, BACKGROUND.IMAGE);
 };
 
 // 블록이 Freeze되고 새로운 블록이 생성될 때 초기화 되어야 하는 것들을 모아둔 함수
@@ -475,7 +420,7 @@ const Board = ({
       ); // 솔리드 가비지 타이머
     };
 
-    const keyEventHandler = (event: KeyboardEvent) => {
+    const keyDownEventHandler = (event: KeyboardEvent) => {
       if (!moves[event.key]) return;
 
       BLOCK.NEXT = moves[event.key](BLOCK.NOW);
@@ -561,16 +506,16 @@ const Board = ({
       STATE.KEYDOWN = false;
     };
 
-    window.addEventListener('keydown', keyEventHandler);
+    window.addEventListener('keydown', keyDownEventHandler);
     window.addEventListener('keyup', keyUpEventHandler);
     return () => {
-      window.removeEventListener('keydown', keyEventHandler);
+      window.removeEventListener('keydown', keyDownEventHandler);
       window.removeEventListener('keyup', keyUpEventHandler);
     };
   }, [gameStart]);
 
   return (
-    <Canvas
+    <canvas
       style={{
         position: 'relative',
         background: `url(assets/board.png)`,
@@ -579,7 +524,7 @@ const Board = ({
       width={TETRIS.BOARD_WIDTH}
       height={TETRIS.BOARD_HEIGHT}
       ref={canvasContainer}
-    ></Canvas>
+    ></canvas>
   );
 };
 

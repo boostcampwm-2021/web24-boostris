@@ -21,7 +21,7 @@ function PreviewBlocks({ previewBlock }: { previewBlock: Array<Block> | null }) 
     img.onload = () => {
       previewBlock.forEach((block, i) => {
         if (i >= 5) return;
-        drawBlock(block.shape, 0, i * 3 - TETRIS.START_Y, 1, ctx, img);
+        drawBlock(block.shape, 0, i * 3, 1, ctx, img);
       });
     };
   }, [previewBlock]);
