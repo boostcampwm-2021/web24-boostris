@@ -31,7 +31,9 @@ export interface TetrisState {
   QUEUE: Block[];
   CAN_HOLD: boolean;
   SOLID_GARBAGES: number;
-  KEYDOWN: boolean;
+  KEYDOWN_TURN_RIGHT: boolean,
+  KEYDOWN_TURN_LEFT: boolean,
+  KEYDOWN_HARD_DROP: boolean
 }
 
 export interface TetrisTimer {

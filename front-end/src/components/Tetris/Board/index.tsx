@@ -25,7 +25,9 @@ const STATE: TetrisState = {
   QUEUE: null as unknown as Block[],
   CAN_HOLD: null as unknown as boolean,
   SOLID_GARBAGES: null as unknown as number,
-  KEYDOWN: null as unknown as boolean,
+  KEYDOWN_TURN_RIGHT: null as unknown as boolean,
+  KEYDOWN_TURN_LEFT: null as unknown as boolean,
+  KEYDOWN_HARD_DROP: null as unknown as boolean
 };
 
 const TIMER: TetrisTimer = {
@@ -300,7 +302,9 @@ const initTetris = (
   STATE.QUEUE = getPreviewBlocks();
   STATE.CAN_HOLD = true;
   STATE.SOLID_GARBAGES = 0;
-  STATE.KEYDOWN = false;
+  STATE.KEYDOWN_TURN_RIGHT = false;
+  STATE.KEYDOWN_TURN_LEFT = false;
+  STATE.KEYDOWN_HARD_DROP = false;
 
   BLOCK.NOW = popBlockQueue(STATE, PROPS_FUNC);
   BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
@@ -388,7 +392,7 @@ const initNewBlockCycle = (
 };
 
 // 블록이 내려감 : freeze, clearLine, gameOver 판단
-const dropBlock = (
+const dropBlockCycle = (
   BOARD: number[][],
   BLOCK: TetrisBlocks,
   STATE: TetrisState,
@@ -471,7 +475,7 @@ const Board = ({
         // 블록이 떨어지면서 바닥에 도달한 경우, 0.5초 마다 움직임이 있는지 검사하는 타이머, 움직임이 없으면 freeze 있으면 다시 0.5초 동안 반복
         if (isBottom(BOARD, BLOCK.NOW)) {
           if (JSON.stringify(BLOCK.NOW) === JSON.stringify(BLOCK.BEFORE) || TIMER.PLAY_TIME >= 20) {
-            dropBlock(
+            dropBlockCycle(
               BOARD,
               BLOCK,
               STATE,
@@ -491,7 +495,7 @@ const Board = ({
       ); // 솔리드 가비지 타이머
     };
 
-    const keyDownEventHandler = (event: KeyboardEvent) => {
+    const keyDownEventHandler = (event: KeyboardEvent) => {  
       if (!moves[event.key]) return;
       BLOCK.NEXT = moves[event.key](BLOCK.NOW);
 
@@ -504,9 +508,14 @@ const Board = ({
           break;
         // 회전 키 이벤트(위, z)
         case TETRIS.KEY.TURN_RIGHT:
+          if(STATE.KEYDOWN_TURN_RIGHT) return;
+          STATE.KEYDOWN_TURN_RIGHT = true;
+          BLOCK.NEXT = SRSAlgorithm(BOARD, BLOCK, event.key);
+          moveBlock(BOARD, BLOCK, BACKGROUND);
+          break;
         case TETRIS.KEY.TURN_LEFT:
-          if (STATE.KEYDOWN) return;
-          STATE.KEYDOWN = true;
+          if (STATE.KEYDOWN_TURN_LEFT) return;
+          STATE.KEYDOWN_TURN_LEFT = true;
           BLOCK.NEXT = SRSAlgorithm(BOARD, BLOCK, event.key);
           moveBlock(BOARD, BLOCK, BACKGROUND);
           break;
@@ -519,16 +528,31 @@ const Board = ({
           break;
         // 하드 드롭(스페이스 키)
         case TETRIS.KEY.HARD_DROP:
-          if (STATE.KEYDOWN) return;
-          STATE.KEYDOWN = true;
-          dropBlock(BOARD, BLOCK, STATE, TIMER, OPTIONS.HARD_DROP, PROPS_FUNC, BACKGROUND);
+          if (STATE.KEYDOWN_HARD_DROP) return;
+          STATE.KEYDOWN_HARD_DROP = true;
+          dropBlockCycle(BOARD, BLOCK, STATE, TIMER, OPTIONS.HARD_DROP, PROPS_FUNC, BACKGROUND);
           break;
         default:
           break;
       }
     };
 
-    const keyUpEventHandler = () => (STATE.KEYDOWN = false);
+    const keyUpEventHandler = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case TETRIS.KEY.TURN_RIGHT:
+          STATE.KEYDOWN_TURN_RIGHT = false;
+          break;
+        case TETRIS.KEY.TURN_LEFT:
+          STATE.KEYDOWN_TURN_LEFT = false;
+          break;
+        case TETRIS.KEY.HARD_DROP:
+          STATE.KEYDOWN_HARD_DROP = false;
+          break;
+        default:
+          break;
+      }
+    };
+  
     window.addEventListener('keydown', keyDownEventHandler);
     window.addEventListener('keyup', keyUpEventHandler);
     return () => {
