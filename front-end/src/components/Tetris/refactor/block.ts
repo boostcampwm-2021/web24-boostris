@@ -1,6 +1,6 @@
 import * as TETRIS from '../../../constants/tetris';
 
-export const drawBlock = (
+export const drawCell = (
   shape: number[][],
   X: number,
   Y: number,

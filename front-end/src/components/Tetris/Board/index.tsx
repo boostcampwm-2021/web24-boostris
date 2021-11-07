@@ -8,7 +8,7 @@ import {
   TetrisBackground,
   TetrisOptions,
 } from '../types';
-import { drawBlock } from '../refactor/block';
+import { drawCell } from '../refactor/block';
 
 // 상수로 빼고 싶은 부분
 const BOARD: number[][] = [
@@ -135,11 +135,13 @@ const isBottom = (board: number[][], block: Block) => {
   );
 };
 
-// BOARD와 BLOCK을 다시 그리는 함수
-const draw = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground) => {
+const drawBoard = (BOARD: number[][], BACKGROUND: TetrisBackground) => {
   BACKGROUND.CTX.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
-  drawBlock(BOARD, 0, -TETRIS.START_Y, 1, BACKGROUND.CTX, BACKGROUND.IMAGE);
-  drawBlock(
+  drawCell(BOARD, 0, -TETRIS.START_Y, 1, BACKGROUND.CTX, BACKGROUND.IMAGE);
+};
+
+const drawBlock = (BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground) => {
+  drawCell(
     BLOCK.NOW.shape,
     BLOCK.NOW.posX,
     BLOCK.NOW.posY - TETRIS.START_Y,
@@ -147,7 +149,7 @@ const draw = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBackgrou
     BACKGROUND.CTX,
     BACKGROUND.IMAGE
   );
-  drawBlock(
+  drawCell(
     BLOCK.GHOST.shape,
     BLOCK.GHOST.posX,
     BLOCK.GHOST.posY - TETRIS.START_Y,
@@ -155,6 +157,12 @@ const draw = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBackgrou
     BACKGROUND.CTX,
     BACKGROUND.IMAGE
   );
+};
+
+// BOARD와 BLOCK을 다시 그리는 함수
+const draw = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground) => {
+  drawBoard(BOARD, BACKGROUND);
+  drawBlock(BLOCK, BACKGROUND);
 };
 
 // 충돌이 있는지 없는지 검사하는 함수
@@ -341,7 +349,7 @@ const finishGame = (BOARD: number[][], TIMER: TetrisTimer, BACKGROUND: TetrisBac
   clearInterval(TIMER.DROP);
   clearInterval(TIMER.CONFLICT);
   gameoverBlocks(BOARD);
-  drawBlock(BOARD, 0, -TETRIS.START_Y, 1, BACKGROUND.CTX, BACKGROUND.IMAGE);
+  drawBoard(BOARD, BACKGROUND);
 };
 
 // 블록이 Freeze되고 새로운 블록이 생성될 때 초기화 되어야 하는 것들을 모아둔 함수

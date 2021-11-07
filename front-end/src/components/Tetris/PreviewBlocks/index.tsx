@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as TETRIS from '../../../constants/tetris';
-import { drawBlock } from '../refactor/block';
+import { drawCell } from '../refactor/block';
 import { Block } from '../types';
 
 const PREVIEW_BOARD_HEIGHT = 16 * TETRIS.BLOCK_ONE_SIZE;
@@ -21,7 +21,7 @@ function PreviewBlocks({ previewBlock }: { previewBlock: Array<Block> | null }) 
     img.onload = () => {
       previewBlock.forEach((block, i) => {
         if (i >= 5) return;
-        drawBlock(block.shape, 0, i * 3, 1, ctx, img);
+        drawCell(block.shape, 0, i * 3, 1, ctx, img);
       });
     };
   }, [previewBlock]);

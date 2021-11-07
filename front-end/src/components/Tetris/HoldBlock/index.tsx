@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as TETRIS from '../../../constants/tetris';
-import { drawBlock } from '../refactor/block';
+import { drawCell } from '../refactor/block';
 import { Block } from '../types';
 
 const HOLD_BOARD_SIZE = 4 * TETRIS.BLOCK_ONE_SIZE;
@@ -18,7 +18,7 @@ function HoldBlock({ holdBlock }: { holdBlock: Block | null }) {
     img.src = 'assets/block.png';
 
     img.onload = () => {
-      drawBlock(holdBlock.shape, 0, 0, 1, ctx, img);
+      drawCell(holdBlock.shape, 0, 0, 1, ctx, img);
     };
   }, [holdBlock]);
 
