@@ -1,0 +1,25 @@
+@import 'common/styles/base';
+
+.register__root {
+  .register__card--root {
+    background-color: $white;
+    color: $dark-navy;
+    min-width: 293px;
+    padding: 24px 30px 30px;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .register__card--title {
+      font-size: 30px;
+      line-height: 35px;
+      margin-bottom: 24px;
+    }
+    .register__card--footer {
+      display: flex;
+      width: 100%;
+      justify-content: space-evenly;
+    }
+  }
+}

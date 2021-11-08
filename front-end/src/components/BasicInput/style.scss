@@ -1,0 +1,26 @@
+@import 'common/styles/base';
+
+.input__label--root {
+  width: 100%;
+  .input__label--text {
+    font-size: 15px;
+    line-height: 18px;
+  }
+  input,
+  textarea {
+    width: 100%;
+    padding: 12px 0 8px;
+    border: none;
+    border-bottom: 1px solid $dark-navy;
+    outline: none;
+    font-size: 15px;
+    line-height: 15px;
+    resize: none;
+  }
+  textarea {
+    margin-top: 15px;
+    border: 1px solid $dark-navy;
+    padding: 12px;
+    border-radius: 10px;
+  }
+}
