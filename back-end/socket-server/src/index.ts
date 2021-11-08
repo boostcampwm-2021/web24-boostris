@@ -25,17 +25,20 @@ app.use(logger('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/', (req: express.Request, res: express.Response) => {
+app.get('/socket/hello', (req: express.Request, res: express.Response) => {
+  res.json('world');
+});
+app.get('/socket', (req: express.Request, res: express.Response) => {
   res.send('start');
 });
 
 const server = http.createServer(app);
-const io = require("socket.io")(server, { cors: { origin: "*" } });
+const io = require('socket.io')(server, { cors: { origin: '*' } });
 
-io.sockets.on("connection", (socket) => {
+io.sockets.on('connection', (socket) => {
   console.log(`socket ${socket.id} connect`);
 
-  socket.on("disconnect", () => {
+  socket.on('disconnect', () => {
     console.log(`disconnect ${socket.id}`);
   });
 });

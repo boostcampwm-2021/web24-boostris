@@ -27,10 +27,10 @@ app.use(
 app.use(logger('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/auth', AuthRouter);
-app.use('/register', checkDupNickRegister, InsertDbRegister);
+app.use('/api/auth', AuthRouter);
+app.use('/api/register', checkDupNickRegister, InsertDbRegister);
 
-app.get('/', (req: express.Request, res: express.Response) => {
+app.get('/api', (req: express.Request, res: express.Response) => {
   res.send('start');
 });
 
