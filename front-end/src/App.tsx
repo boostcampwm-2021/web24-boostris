@@ -5,14 +5,19 @@ import LobbyPage from './pages/LobbyPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Tetris from './components/Tetris';
-// import Login from './components/login';
 import OauthCallbackRouter from './routes/OauthCallbackRouter';
 import RequireAuth from './routes/RequireAuth';
+
 import { useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
+import { useAppDispatch } from './app/hooks';
+import { checkAuth } from './features/user/userSlice';
+import useAuth from './hooks/use-auth';
 
 function App() {
   const socketRef = useRef<any>(null);
+  let { auth } = useAuth();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     socketRef.current = io('/ad', {
@@ -20,6 +25,15 @@ function App() {
       path: '/socket.io',
     });
   }, []);
+
+  useEffect(() => {
+    dispatch(checkAuth());
+  }, [dispatch]);
+
+  if (auth.status === 'loading') {
+    return <div className="App">loading...</div>;
+  }
+
   return (
     <div className="App">
       <BrowserRouter>

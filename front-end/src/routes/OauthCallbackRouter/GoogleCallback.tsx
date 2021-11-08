@@ -25,6 +25,6 @@ function GoogleCallback() {
     );
   }, [dispatch, state.profileObj.email, state.profileObj.name]);
 
-  return <div>{user.status}</div>;
+  return <div>{user.profile.status}</div>;
 }
 export default GoogleCallback;

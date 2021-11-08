@@ -1,7 +1,8 @@
 import * as express from 'express';
 import axios from 'axios';
-import 'dotenv/config';
+import * as jwt from 'jsonwebtoken';
 import { selectTable } from '../database/query';
+import 'dotenv/config';
 
 import { getGithubUser, getUserInfoFromNaver, setJWT } from '../services/auth';
 
@@ -72,6 +73,25 @@ AuthRouter.post('/google/user', async (req, res) => {
   const { email, name } = req.body;
   const isOurUser = await oauthDupCheck(email, req, res);
   res.json({ id: email, isOurUser });
+});
+
+AuthRouter.get('/jwt', async (req, res) => {
+  try {
+    if (req.cookies.user) {
+      var decoded = jwt.verify(req.cookies.user, process.env.JWT_SECRET_KEY);
+      console.log(decoded);
+      res.json({ authenticated: true });
+    } else {
+      throw new Error('no-cookie');
+    }
+  } catch (error) {
+    res.json({ authenticated: false });
+  }
+});
+
+AuthRouter.get('/logout', async (req, res) => {
+  res.clearCookie('user');
+  res.json({ authenticated: false });
 });
 
 export default AuthRouter;

@@ -1,10 +1,10 @@
-import { useAppSelector } from '../../app/hooks';
-import { selectUser } from '../../features/user/userSlice';
+import { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { checkAuth, selectUser } from '../../features/user/userSlice';
 
 function useAuth() {
-  const { profile } = useAppSelector(selectUser);
-
-  return { profile };
+  const { auth } = useAppSelector(selectUser);
+  return { auth };
 }
 
 export default useAuth;
