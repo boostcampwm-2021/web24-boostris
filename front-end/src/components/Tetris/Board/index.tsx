@@ -1,30 +1,63 @@
 import React, { useEffect, useRef } from 'react';
 import * as TETRIS from '../../../constants/tetris';
+import {
+  Block,
+  TetrisBlocks,
+  TetrisState,
+  TetrisTimer,
+  TetrisBackground,
+  TetrisOptions,
+  TetrisPropsFunc,
+} from '../types';
+import { drawCell } from '../utils/block';
 
-interface blockInterface {
-  posX: number;
-  posY: number;
-  dir: number;
-  name: string;
-  shape: Array<Array<number>>;
-  color: number;
-  index: number;
-}
+const BOARD: number[][] = TETRIS.BOARD;
 
-interface offsetInterface {
-  x: number;
-  y: number;
-}
+const BLOCK: TetrisBlocks = {
+  NOW: null as unknown as Block,
+  BEFORE: null as unknown as Block,
+  NEXT: null as unknown as Block,
+  GHOST: null as unknown as Block,
+  HOLD: null as unknown as Block,
+};
 
-interface SRSInterface {
-  start: number;
-  end: number;
-  offset: Array<offsetInterface>;
-}
+const STATE: TetrisState = {
+  QUEUE: null as unknown as Block[],
+  CAN_HOLD: null as unknown as boolean,
+  SOLID_GARBAGES: null as unknown as number,
+  KEYDOWN_TURN_RIGHT: null as unknown as boolean,
+  KEYDOWN_TURN_LEFT: null as unknown as boolean,
+  KEYDOWN_HARD_DROP: null as unknown as boolean
+};
 
+const TIMER: TetrisTimer = {
+  PLAY_TIME: null as unknown as number,
+  DROP: null as unknown as NodeJS.Timeout,
+  CONFLICT: null as unknown as NodeJS.Timeout,
+  SOLID_GARBAGE: null as unknown as NodeJS.Timeout,
+};
+
+const BACKGROUND: TetrisBackground = {
+  CANVAS: null as unknown as HTMLCanvasElement,
+  CTX: null as unknown as CanvasRenderingContext2D,
+  IMAGE: null as unknown as HTMLImageElement,
+};
+
+const OPTIONS: TetrisOptions = {
+  TIME_OUT: 'TIME_OUT',
+  HARD_DROP: 'HARD_DROP',
+};
+
+const PROPS_FUNC: TetrisPropsFunc = {
+  HOLD_FUNC: null as unknown as () => {},
+  PREVIEW_FUNC: null as unknown as () => {},
+  GAMEOVER_FUNC: null as unknown as () => {},
+};
+
+// 추가 블록 7개를 반환하는 함수
 const getPreviewBlocks = () => {
   const randomBlocks = TETRIS.randomTetromino();
-  const queue: blockInterface[] = [];
+  const queue: Block[] = [];
 
   randomBlocks.forEach((block) => {
     queue.push({
@@ -38,19 +71,19 @@ const getPreviewBlocks = () => {
   return queue;
 };
 
-const setFreeze = (board: number[][], block: blockInterface) => {
-  block.shape.forEach((row: Array<number>, y: number) => {
+// 블록의 현재 위치를 기준으로 BOARD에 고정시키는 함수
+const setFreeze = (BOARD: number[][], BLOCK: Block) => {
+  BLOCK.shape.forEach((row: Array<number>, y: number) => {
     row.forEach((value: number, x: number) => {
-      let nX = block.posX + x;
-      let nY = block.posY + y;
-
+      const [nX, nY] = [BLOCK.posX + x, BLOCK.posY + y];
       if (value > 0 && TETRIS.withInRange(nX, nY)) {
-        board[nY][nX] = block.color;
+        BOARD[nY][nX] = BLOCK.color;
       }
     });
   });
 };
 
+// 한 줄을 지우고 그 위 줄들을 내리는 함수
 const clearLine = (board: number[][]) => {
   board.forEach((row, y) => {
     if (row.every((value) => value > 1)) {
@@ -60,6 +93,7 @@ const clearLine = (board: number[][]) => {
   });
 };
 
+// BOARD에 SOLID GARBAGE를 만드는 함수
 const setSolidBlock = (board: number[][], solidBlocks: number) => {
   for (let i = 0; i < solidBlocks; i++) {
     board.shift();
@@ -67,132 +101,68 @@ const setSolidBlock = (board: number[][], solidBlocks: number) => {
   }
 };
 
-const isBottom = (board: number[][], block: blockInterface) => {
+// 블록이 한칸 다음으로 더 나아갈 수 있는지 아닌지 확인하는 함수 (블록이 바닥으로 내려오거나, 다른 블록 위에 떠 있는 경우 확인)
+const isBottom = (board: number[][], block: Block) => {
   return block.shape.some((row, y) =>
     row.some((value: number, x: number) => {
       if (value > 0) {
-        let nX = block.posX + x;
-        let nY = block.posY + y;
+        const [nX, nY] = [block.posX + x, block.posY + y];
         if (!TETRIS.withInRange(nX, nY)) return false;
-
-        return (
-          (nY + 1 < TETRIS.ROWS && board[nY + 1][nX] !== 0) ||
-          nY + 1 >= TETRIS.ROWS
-        );
+        return (nY + 1 < TETRIS.ROWS && board[nY + 1][nX] !== 0) || nY + 1 >= TETRIS.ROWS;
       }
       return false;
     })
   );
 };
 
-const draw = (
-  board: number[][],
-  block: blockInterface,
-  ghost: blockInterface,
-  ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement
-) => {
-  drawBoard(board, ctx, img);
-  drawBlock(board, block, ghost, ctx, img);
+//BOARD를 그리는 함수
+const drawBoard = (BOARD: number[][], BACKGROUND: TetrisBackground) => {
+  BACKGROUND.CTX.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
+  drawCell(BOARD, 0, -TETRIS.START_Y, 1, BACKGROUND.CTX, BACKGROUND.IMAGE);
 };
 
-const drawBlock = (
-  board: number[][],
-  block: blockInterface,
-  ghost: blockInterface,
-  ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement
-) => {
-  block.shape.forEach((row: Array<number>, y: number) => {
-    ctx.globalAlpha = 1;
-    row.forEach((value: number, x: number) => {
-      const nX: number = block.posX + x;
-      const nY: number = block.posY + y;
-
-      if (TETRIS.withInRange(nX, nY) && board[nY][nX] === 0) {
-        ctx.drawImage(
-          img,
-          TETRIS.BLOCK_ONE_SIZE * (value - 1),
-          0,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          (block.posX + x) * TETRIS.BOARD_ONE_SIZE,
-          (block.posY + y - TETRIS.START_Y) * TETRIS.BOARD_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE
-        );
-      }
-    });
-  });
-
-  ctx.globalAlpha = 0.7;
-  ghost.shape.forEach((row: Array<number>, y: number) => {
-    row.forEach((value: number, x: number) => {
-      const nX: number = ghost.posX + x;
-      const nY: number = ghost.posY + y;
-
-      if (TETRIS.withInRange(nX, nY) && board[nY][nX] === 0) {
-        ctx.drawImage(
-          img,
-          TETRIS.BLOCK_ONE_SIZE * (value - 1),
-          0,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          (ghost.posX + x) * TETRIS.BOARD_ONE_SIZE,
-          (ghost.posY + y - TETRIS.START_Y) * TETRIS.BOARD_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE
-        );
-      }
-    });
-  });
+//BLOCK(GHOST, BLOCK)를 그리는 함수
+const drawBlock = (BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground) => {
+  drawCell(
+    BLOCK.NOW.shape,
+    BLOCK.NOW.posX,
+    BLOCK.NOW.posY - TETRIS.START_Y,
+    1,
+    BACKGROUND.CTX,
+    BACKGROUND.IMAGE
+  );
+  drawCell(
+    BLOCK.GHOST.shape,
+    BLOCK.GHOST.posX,
+    BLOCK.GHOST.posY - TETRIS.START_Y,
+    0.6,
+    BACKGROUND.CTX,
+    BACKGROUND.IMAGE
+  );
 };
 
-const drawBoard = (
-  board: number[][],
-  ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement
-) => {
-  ctx.globalAlpha = 1;
-  ctx.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
-  board.forEach((row: Array<number>, y: number) => {
-    row.forEach((value: number, x: number) => {
-      if (value > 0) {
-        ctx.drawImage(
-          img,
-          TETRIS.BLOCK_ONE_SIZE * (value - 1),
-          0,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          x * TETRIS.BOARD_ONE_SIZE,
-          (y - TETRIS.START_Y) * TETRIS.BOARD_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE,
-          TETRIS.BLOCK_ONE_SIZE
-        );
-      }
-    });
-  });
+// BOARD와 BLOCK을 그리는 함수
+const draw = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground) => {
+  drawBoard(BOARD, BACKGROUND);
+  drawBlock(BLOCK, BACKGROUND);
 };
 
-const isNotConflict = (block: blockInterface, board: number[][]) => {
+// 충돌이 있는지 없는지 검사하는 함수
+const isNotConflict = (block: Block, board: number[][]) => {
   return block.shape.every((row: Array<number>, y: number) => {
     return row.every((value: number, x: number) => {
-      const nX: number = block.posX + x;
-      const nY: number = block.posY + y;
+      const [nX, nY] = [block.posX + x, block.posY + y];
       return value === 0 || (TETRIS.withInRange(nX, nY) && board[nY][nX] === 0);
     });
   });
 };
 
-const rotate = (block: blockInterface, isRight: boolean) => {
+// 블록을 45도 isRight에 따라 (시계 or 반시계)회전 시키는 함수
+const rotate = (block: Block, isRight: boolean) => {
   if (block.name === 'O') return block;
-
   for (let y = 0; y < block.shape.length; ++y) {
     for (let x = 0; x < y; ++x) {
-      [block.shape[x][y], block.shape[y][x]] = [
-        block.shape[y][x],
-        block.shape[x][y],
-      ];
+      [block.shape[x][y], block.shape[y][x]] = [block.shape[y][x], block.shape[x][y]];
     }
   }
 
@@ -201,21 +171,19 @@ const rotate = (block: blockInterface, isRight: boolean) => {
   return block;
 };
 
-const SRSAlgorithm = (
-  SRS: Array<SRSInterface>,
-  block: blockInterface,
-  nextBlock: blockInterface,
-  board: number[][],
-  key: string
-) => {
+// 다음 회전이 가능한지 검사하는 알고리즘 (SRS 상수 자체는 실제로 검사 표가 만들어져 있는 것을 참고함)
+// 좌회전일때는 -90 우회전일때는 +90 하는 방식으로 구현
+// start는 현재 블록의 dir이고 end는 현재 블록을 회전 시킨 다음에 dir임
+const SRSAlgorithm = (BOARD: number[][], BLOCK: TetrisBlocks, key: string) => {
+  const SRS = BLOCK.NOW.name !== 'I' ? TETRIS.SRS : TETRIS.SRS_I;
   const dir: number = key === 'ArrowUp' ? 90 : -90;
-  const start: number = nextBlock.dir;
+  const start: number = BLOCK.NEXT.dir;
   let end: number = start;
 
   if (key === 'ArrowUp') {
-    end = nextBlock.dir + dir === 360 ? 0 : nextBlock.dir + dir;
+    end = BLOCK.NEXT.dir + dir === 360 ? 0 : BLOCK.NEXT.dir + dir;
   } else {
-    end = nextBlock.dir + dir === -90 ? 270 : nextBlock.dir + dir;
+    end = BLOCK.NEXT.dir + dir === -90 ? 270 : BLOCK.NEXT.dir + dir;
   }
 
   for (let i = 0; i < SRS.length; i++) {
@@ -224,20 +192,23 @@ const SRSAlgorithm = (
 
     for (let j = 0; j < SRS[i].offset.length; j++) {
       // offset 비교
-      let tmpBlock = JSON.parse(JSON.stringify(nextBlock));
+      let tmpBlock = JSON.parse(JSON.stringify(BLOCK.NEXT));
       tmpBlock.posX += SRS[i].offset[j].x;
       tmpBlock.posY += SRS[i].offset[j].y;
 
-      if (isNotConflict(tmpBlock, board)) {
+      if (isNotConflict(tmpBlock, BOARD)) {
         tmpBlock.dir = end;
         return tmpBlock;
       }
     }
   }
-  return block;
+  return BLOCK.NOW;
 };
 
-const isGameOver = (board: number[][], block: blockInterface) => {
+// 게임 오버 상황인지 체크하는 함수
+// 1. BOARD에서 범위가 y 0~3인 부분에 블록이 있다면 게임 오버
+// 2. 새로운 블록이 생성 됐을때 그 자리에 이미 어떤 블록이 놓여져 있다면 게임 오버 (새로운 블록은 항상 y가 4인 곳 - 최상단에 위치하기 때문)
+const isGameOver = (board: number[][], block: Block) => {
   const gameOverArr = board.slice(0, 4);
 
   const outRange = gameOverArr.every((row: Array<number>, y: number) => {
@@ -245,12 +216,11 @@ const isGameOver = (board: number[][], block: blockInterface) => {
     return row.every((value: number, x: number) => value !== 0);
   });
 
+  //const overlapBlock = isNotConflict(block, board); :: 이걸로 대체하면, 맨 마지막 줄을 채우고 clear 되는 게 안되는 걸까?
   const overlapBlock = block.shape.some((row: number[], y: number) => {
     // 블록이 겹치는지 검사
     return row.some((value: number, x: number) => {
-      const nX = block.posX + x;
-      const nY = block.posY + y;
-
+      const [nX, nY] = [block.posX + x, block.posY + y];
       return value > 0 && board[nY][nX] !== 0; // 겹치면 true 반환
     });
   });
@@ -258,13 +228,17 @@ const isGameOver = (board: number[][], block: blockInterface) => {
   return outRange || overlapBlock;
 };
 
+// 게임 오버 후 BOARD에서 모든 블록을 하얀색으로 바꾸는 함수
 const gameoverBlocks = (board: number[][]) => {
-  for (let i = 0; i < board.length; i++)
-    for (let j = 0; j < board[i].length; j++)
-      if (board[i][j] !== 0) board[i][j] = 1;
+  board.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0) board[y][x] = 1;
+    });
+  });
 };
 
-const hardDropBlock = (board: number[][], block: blockInterface) => {
+// 블록이 현재 상태에서 바닥으로 떨어졌을 때 블록을 반환하는 함수
+const hardDropBlock = (board: number[][], block: Block) => {
   const nextBlock = JSON.parse(JSON.stringify(block));
 
   while (true) {
@@ -277,25 +251,190 @@ const hardDropBlock = (board: number[][], block: blockInterface) => {
   return nextBlock;
 };
 
+const popBlockQueue = (STATE: TetrisState, PROPS_FUNC: TetrisPropsFunc) => {
+  const next = STATE.QUEUE.shift() as Block;
+  if (STATE.QUEUE.length === 5) {
+    STATE.QUEUE.push(...getPreviewBlocks());
+  }
+  PROPS_FUNC.PREVIEW_FUNC([...STATE.QUEUE]);
+  return next;
+};
+
+// 각 event.key에 따라 블록을 바꿔서 반환
 const moves = {
-  [TETRIS.KEY.LEFT]: (prev: blockInterface) => ({
+  [TETRIS.KEY.LEFT]: (prev: Block) => ({
     ...prev,
     posX: prev.posX - 1,
   }),
-  [TETRIS.KEY.RIGHT]: (prev: blockInterface) => ({
+  [TETRIS.KEY.RIGHT]: (prev: Block) => ({
     ...prev,
     posX: prev.posX + 1,
   }),
-  [TETRIS.KEY.DOWN]: (prev: blockInterface) => ({
+  [TETRIS.KEY.DOWN]: (prev: Block) => ({
     ...prev,
     posY: prev.posY + 1,
   }),
-  [TETRIS.KEY.TURN_RIGHT]: (prev: blockInterface) =>
-    rotate(JSON.parse(JSON.stringify(prev)), true),
-  [TETRIS.KEY.TURN_LEFT]: (prev: blockInterface) =>
-    rotate(JSON.parse(JSON.stringify(prev)), false),
-  [TETRIS.KEY.HOLD]: (prev: blockInterface) => prev,
-  [TETRIS.KEY.HARD_DROP]: (prev: blockInterface) => prev,
+  [TETRIS.KEY.TURN_RIGHT]: (prev: Block) => rotate(JSON.parse(JSON.stringify(prev)), true),
+  [TETRIS.KEY.TURN_LEFT]: (prev: Block) => rotate(JSON.parse(JSON.stringify(prev)), false),
+  [TETRIS.KEY.HOLD]: (prev: Block) => prev,
+  [TETRIS.KEY.HARD_DROP]: (prev: Block) => prev,
+};
+
+// 시작 전 테트리스를 초기화 하는 함수
+const initTetris = (
+  BOARD: number[][],
+  BLOCK: TetrisBlocks,
+  STATE: TetrisState,
+  TIMER: TetrisTimer,
+  BACKGROUND: TetrisBackground,
+  endGame: () => void,
+  getHoldBlockState: (newBlock: Block) => void,
+  getPreviewBlocksList: (newBlocks: null | Array<Block>) => void
+) => {
+  PROPS_FUNC.GAMEOVER_FUNC = endGame;
+  PROPS_FUNC.HOLD_FUNC = getHoldBlockState;
+  PROPS_FUNC.PREVIEW_FUNC = getPreviewBlocksList;
+
+  for (let i = 0; i < BOARD.length; i++) {
+    for (let j = 0; j < BOARD[i].length; j++) BOARD[i][j] = 0;
+  }
+
+  STATE.QUEUE = getPreviewBlocks();
+  STATE.CAN_HOLD = true;
+  STATE.SOLID_GARBAGES = 0;
+  STATE.KEYDOWN_TURN_RIGHT = false;
+  STATE.KEYDOWN_TURN_LEFT = false;
+  STATE.KEYDOWN_HARD_DROP = false;
+
+  BLOCK.NOW = popBlockQueue(STATE, PROPS_FUNC);
+  BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
+  BLOCK.HOLD = null as unknown as Block;
+
+  TIMER.PLAY_TIME = 0;
+
+  BACKGROUND.CANVAS = document.querySelector('.board') as HTMLCanvasElement;
+  BACKGROUND.CTX = BACKGROUND.CANVAS?.getContext('2d') as CanvasRenderingContext2D;
+  BACKGROUND.CTX.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
+  BACKGROUND.IMAGE = new Image();
+  BACKGROUND.IMAGE.src = 'assets/block.png';
+};
+
+// 블록이 움직이면 BLOCK의 상태를 업데이트하고 이를 그려줌.
+const moveBlock = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground) => {
+  BLOCK.BEFORE = BLOCK.NOW;
+  if (isNotConflict(BLOCK.NEXT, BOARD)) {
+    BLOCK.NOW = BLOCK.NEXT;
+    BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
+    draw(BOARD, BLOCK, BACKGROUND);
+  }
+};
+
+// 블록을 Freeze, clearLine, 다음 블록을 꺼내오는 함수
+const freezeBlock = (
+  BOARD: number[][],
+  BLOCK: TetrisBlocks,
+  STATE: TetrisState,
+  TIMER: TetrisTimer,
+  option: string,
+  PROPS_FUNC: TetrisPropsFunc
+) => {
+  if (option === 'TIME_OUT' || option === 'HARD_DROP') {
+    BLOCK.NOW = hardDropBlock(BOARD, BLOCK.NOW);
+  }
+  setFreeze(BOARD, BLOCK.NOW);
+  clearLine(BOARD);
+  BLOCK.NEXT = popBlockQueue(STATE, PROPS_FUNC);
+};
+
+// 게임 종료 시 처리해야할 것들을 모아둔 함수
+const finishGame = (
+  BOARD: number[][],
+  TIMER: TetrisTimer,
+  BACKGROUND: TetrisBackground,
+  PROPS_FUNC: TetrisPropsFunc
+) => {
+  clearInterval(TIMER.DROP);
+  clearInterval(TIMER.CONFLICT);
+  clearInterval(TIMER.SOLID_GARBAGE);
+  gameoverBlocks(BOARD);
+  drawBoard(BOARD, BACKGROUND);
+  PROPS_FUNC.GAMEOVER_FUNC();
+};
+
+// 블록이 Freeze되고 새로운 블록이 생성될 때 초기화 되어야 하는 것들을 모아둔 함수
+const initNewBlockCycle = (
+  BOARD: number[][],
+  BLOCK: TetrisBlocks,
+  STATE: TetrisState,
+  TIMER: TetrisTimer,
+  BACKGROUND: TetrisBackground
+) => {
+  BLOCK.NOW = BLOCK.NEXT;
+
+  if (STATE.QUEUE.length === 5) {
+    STATE.QUEUE.push(...getPreviewBlocks());
+  }
+
+  setSolidBlock(BOARD, STATE.SOLID_GARBAGES);
+
+  BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
+
+  STATE.SOLID_GARBAGES = 0;
+  STATE.CAN_HOLD = true;
+
+  clearInterval(TIMER.DROP);
+  TIMER.PLAY_TIME = 0;
+  TIMER.DROP = setInterval(() => {
+    BLOCK.NEXT = moves[TETRIS.KEY.DOWN](BLOCK.NOW);
+    moveBlock(BOARD, BLOCK, BACKGROUND);
+  }, 900);
+
+  draw(BOARD, BLOCK, BACKGROUND);
+};
+
+// 블록이 내려감 : freeze, clearLine, gameOver 판단
+const dropBlockCycle = (
+  BOARD: number[][],
+  BLOCK: TetrisBlocks,
+  STATE: TetrisState,
+  TIMER: TetrisTimer,
+  option: string,
+  PROPS_FUNC: TetrisPropsFunc,
+  BACKGROUND: TetrisBackground
+) => {
+  freezeBlock(BOARD, BLOCK, STATE, TIMER, option, PROPS_FUNC);
+  // 게임 오버 검사
+  if (isGameOver(BOARD, BLOCK.NEXT)) {
+    finishGame(BOARD, TIMER, BACKGROUND, PROPS_FUNC);
+    return;
+  }
+  initNewBlockCycle(BOARD, BLOCK, STATE, TIMER, BACKGROUND);
+};
+
+//블록을 홀드함
+const holdBlock = (
+  BOARD: number[][],
+  BLOCK: TetrisBlocks,
+  STATE: TetrisState,
+  PROPS_FUNC: TetrisPropsFunc,
+  BACKGROUND: TetrisBackground
+) => {
+  const tmpBlock = {
+    posX: TETRIS.START_X,
+    posY: TETRIS.START_Y - 1,
+    dir: 0,
+    ...TETRIS.TETROMINO[BLOCK.NOW.index],
+  };
+
+  if (!BLOCK.HOLD) {
+    BLOCK.HOLD = tmpBlock;
+    BLOCK.NOW = popBlockQueue(STATE, PROPS_FUNC);
+  } else {
+    [BLOCK.NOW, BLOCK.HOLD] = [BLOCK.HOLD, tmpBlock];
+  }
+  BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
+  draw(BOARD, BLOCK, BACKGROUND);
+  PROPS_FUNC.HOLD_FUNC(BLOCK.HOLD);
 };
 
 const Board = ({
@@ -306,263 +445,116 @@ const Board = ({
 }: {
   gameStart: boolean;
   endGame: () => void;
-  getHoldBlockState: (newBlock: blockInterface) => void;
-  getPreviewBlocksList: (newBlocks: Array<blockInterface>) => void;
+  getHoldBlockState: (newBlock: Block) => void;
+  getPreviewBlocksList: (newBlocks: null | Array<Block>) => void;
 }): JSX.Element => {
   const canvasContainer = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (!gameStart) return;
 
-    const board = TETRIS.getEmptyArray(TETRIS.ROWS, TETRIS.COLS);
-    const blockQueue: Array<blockInterface> = getPreviewBlocks();
-    let nowBlock = blockQueue.shift() as blockInterface;
-    let ghostBlock = hardDropBlock(board, nowBlock);
+    initTetris(
+      BOARD,
+      BLOCK,
+      STATE,
+      TIMER,
+      BACKGROUND,
+      endGame,
+      getHoldBlockState,
+      getPreviewBlocksList
+    ); // 테트리스 초기화
 
-    getPreviewBlocksList(blockQueue);
-    let beforeBlock: blockInterface;
-    let holdBlock: blockInterface;
-    let holdBlockFlag = true;
+    BACKGROUND.IMAGE.onload = () => {
+      draw(BOARD, BLOCK, BACKGROUND); // 초기 화면을 그린다
 
-    let timer: number = 0;
-    let solidBlocks = 0;
+      TIMER.DROP = setInterval(() => {
+        BLOCK.NEXT = moves[TETRIS.KEY.DOWN](BLOCK.NOW);
+        moveBlock(BOARD, BLOCK, BACKGROUND);
+      }, 900); // 블록을 0.9초마다 한칸씩 떨어뜨리는 타이머 등록
 
-    // 타이머
-    let drop: NodeJS.Timeout;
-    let conflictCheck: NodeJS.Timeout;
-
-    const canvas = canvasContainer.current as HTMLCanvasElement;
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-    const img: HTMLImageElement = new Image();
-    img.src = 'assets/block.png';
-
-    ctx.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
-
-    const dropBlock = () => {
-      const nextBlock = JSON.parse(JSON.stringify(nowBlock));
-      beforeBlock = nowBlock;
-
-      if (isNotConflict({ ...nextBlock, posY: nextBlock.posY + 1 }, board)) {
-        nextBlock.posY += 1;
-        draw(board, nextBlock, ghostBlock, ctx, img);
-        nowBlock = nextBlock;
-        ghostBlock = hardDropBlock(board, nowBlock);
-      }
-    };
-
-    img.onload = () => {
-      draw(board, nowBlock, ghostBlock, ctx, img);
-
-      drop = setInterval(dropBlock, 900);
-
-      conflictCheck = setInterval(() => {
-        if (isBottom(board, nowBlock)) {
-          if (JSON.stringify(nowBlock) === JSON.stringify(beforeBlock)) {
-            if (drop) {
-              clearInterval(drop);
-            }
-
-            setFreeze(board, nowBlock);
-            clearLine(board);
-
-            const nextBlock = blockQueue.shift() as blockInterface;
-            getPreviewBlocksList(blockQueue);
-
-            //gameover
-            if (isGameOver(board, nextBlock)) {
-              clearInterval(drop);
-              clearInterval(conflictCheck);
-              gameoverBlocks(board);
-              drawBoard(board, ctx, img);
-              endGame();
-              return;
-            }
-
-            nowBlock = nextBlock;
-
-            if (blockQueue.length === 5) {
-              blockQueue.push(...getPreviewBlocks());
-            }
-
-            setSolidBlock(board, solidBlocks);
-            ghostBlock = hardDropBlock(board, nowBlock);
-            solidBlocks = 0;
-            timer = 0;
-            holdBlockFlag = true;
-            drop = setInterval(dropBlock, 900);
-            draw(board, nowBlock, ghostBlock, ctx, img);
+      TIMER.CONFLICT = setInterval(() => {
+        // 블록이 떨어지면서 바닥에 도달한 경우, 0.5초 마다 움직임이 있는지 검사하는 타이머, 움직임이 없으면 freeze 있으면 다시 0.5초 동안 반복
+        if (isBottom(BOARD, BLOCK.NOW)) {
+          if (JSON.stringify(BLOCK.NOW) === JSON.stringify(BLOCK.BEFORE) || TIMER.PLAY_TIME >= 20) {
+            dropBlockCycle(
+              BOARD,
+              BLOCK,
+              STATE,
+              TIMER,
+              TIMER.PLAY_TIME >= 20 ? OPTIONS.TIME_OUT : '',
+              PROPS_FUNC,
+              BACKGROUND
+            );
           }
         }
-        timer += 0.5;
-
-        if (timer >= 20) {
-          if (drop) {
-            clearInterval(drop);
-          }
-
-          setFreeze(board, nowBlock);
-          clearLine(board);
-
-          const nextBlock = blockQueue.shift() as blockInterface;
-          getPreviewBlocksList(blockQueue);
-
-          //gameover
-          if (isGameOver(board, nextBlock)) {
-            clearInterval(drop);
-            clearInterval(conflictCheck);
-            gameoverBlocks(board);
-            drawBoard(board, ctx, img);
-            endGame();
-            return;
-          }
-
-          nowBlock = nextBlock;
-          ghostBlock = hardDropBlock(board, nowBlock);
-
-          if (blockQueue.length === 5) {
-            blockQueue.push(...getPreviewBlocks());
-          }
-
-          setSolidBlock(board, solidBlocks);
-          ghostBlock = hardDropBlock(board, nowBlock);
-          solidBlocks = 0;
-          timer = 0;
-          holdBlockFlag = true;
-          drop = setInterval(dropBlock, 900);
-          draw(board, nowBlock, ghostBlock, ctx, img);
-        }
+        TIMER.PLAY_TIME += 0.5;
       }, 500);
+      
+      setTimeout(() => TIMER.SOLID_GARBAGE = setInterval(() => STATE.SOLID_GARBAGES++, 5000), 120000); // 솔리드 가비지 타이머
     };
 
-    const solidBlockTimer = setTimeout(() => {
-      // Solid Garbage 생성 타이머
-      setInterval(() => {
-        solidBlocks++;
-      }, 5000);
-    }, 120000);
-
-    let keydown = false;
-
-    const keyEventHandler = (event: KeyboardEvent) => {
-      if (
-        !moves[event.key] &&
-        !(event.key === TETRIS.KEY.HOLD || event.key === TETRIS.KEY.HARD_DROP)
-      )
-        return;
-
-      let nextBlock = moves[event.key](nowBlock);
+    const keyDownEventHandler = (event: KeyboardEvent) => {  
+      if (!moves[event.key]) return;
+      BLOCK.NEXT = moves[event.key](BLOCK.NOW);
 
       switch (event.key) {
+        // 방향 키 이벤트(왼쪽, 오른쪽, 아래)
         case TETRIS.KEY.LEFT:
         case TETRIS.KEY.RIGHT:
         case TETRIS.KEY.DOWN:
-          if (isNotConflict(nextBlock, board)) {
-            beforeBlock = nowBlock;
-            nowBlock = nextBlock;
-            ghostBlock = hardDropBlock(board, nowBlock);
-            draw(board, nowBlock, ghostBlock, ctx, img);
-          }
+          moveBlock(BOARD, BLOCK, BACKGROUND);
           break;
+        // 회전 키 이벤트(위, z)
         case TETRIS.KEY.TURN_RIGHT:
+          if(STATE.KEYDOWN_TURN_RIGHT) return;
+          STATE.KEYDOWN_TURN_RIGHT = true;
+          BLOCK.NEXT = SRSAlgorithm(BOARD, BLOCK, event.key);
+          moveBlock(BOARD, BLOCK, BACKGROUND);
+          break;
         case TETRIS.KEY.TURN_LEFT:
-          if (keydown) return;
-          keydown = true;
-          beforeBlock = nowBlock;
-          nowBlock = SRSAlgorithm(
-            nowBlock.name !== 'I' ? TETRIS.SRS : TETRIS.SRS_I,
-            nowBlock,
-            nextBlock,
-            board,
-            event.key
-          );
-          ghostBlock = hardDropBlock(board, nowBlock);
-          draw(board, nowBlock, ghostBlock, ctx, img);
+          if (STATE.KEYDOWN_TURN_LEFT) return;
+          STATE.KEYDOWN_TURN_LEFT = true;
+          BLOCK.NEXT = SRSAlgorithm(BOARD, BLOCK, event.key);
+          moveBlock(BOARD, BLOCK, BACKGROUND);
           break;
-        case TETRIS.KEY.HOLD: // 홀드
-          if (holdBlockFlag) {
-            holdBlockFlag = false;
-
-            if (!holdBlock) {
-              holdBlock = {
-                posX: TETRIS.START_X,
-                posY: TETRIS.START_Y - 1,
-                dir: 0,
-                ...TETRIS.TETROMINO[nowBlock.index],
-              };
-              nowBlock = blockQueue.shift() as blockInterface;
-              ghostBlock = hardDropBlock(board, nowBlock);
-              if (blockQueue.length === 5) {
-                blockQueue.push(...getPreviewBlocks());
-              }
-              draw(board, nowBlock, ghostBlock, ctx, img);
-              getHoldBlockState(holdBlock);
-            } else {
-              const tmp = holdBlock;
-              holdBlock = {
-                posX: TETRIS.START_X,
-                posY: TETRIS.START_Y - 1,
-                dir: 0,
-                ...TETRIS.TETROMINO[nowBlock.index],
-              };
-              nowBlock = tmp;
-              ghostBlock = hardDropBlock(board, nowBlock);
-              draw(board, nowBlock, ghostBlock, ctx, img);
-              getHoldBlockState(holdBlock);
-            }
+        // 홀드 키(c)
+        case TETRIS.KEY.HOLD:
+          if (STATE.CAN_HOLD) {
+            STATE.CAN_HOLD = false;
+            holdBlock(BOARD, BLOCK, STATE, PROPS_FUNC, BACKGROUND);
           }
           break;
-        case TETRIS.KEY.HARD_DROP: // 하드 드롭
-          if (keydown) return;
-          keydown = true;
-
-          if (drop) {
-            clearInterval(drop);
-          }
-
-          nowBlock = hardDropBlock(board, nowBlock);
-
-          setFreeze(board, nowBlock);
-          clearLine(board);
-
-          const tmp = blockQueue.shift() as blockInterface;
-          getPreviewBlocksList(blockQueue);
-          // gameover
-          if (isGameOver(board, tmp)) {
-            clearInterval(drop);
-            clearInterval(conflictCheck);
-            gameoverBlocks(board);
-            drawBoard(board, ctx, img);
-            endGame();
-            return;
-          }
-
-          nowBlock = tmp;
-
-          if (blockQueue.length === 5) {
-            blockQueue.push(...getPreviewBlocks());
-          }
-
-          setSolidBlock(board, solidBlocks);
-          ghostBlock = hardDropBlock(board, nowBlock);
-          solidBlocks = 0;
-          timer = 0;
-          holdBlockFlag = true;
-          drop = setInterval(dropBlock, 900);
-          draw(board, nowBlock, ghostBlock, ctx, img);
+        // 하드 드롭(스페이스 키)
+        case TETRIS.KEY.HARD_DROP:
+          if (STATE.KEYDOWN_HARD_DROP) return;
+          STATE.KEYDOWN_HARD_DROP = true;
+          dropBlockCycle(BOARD, BLOCK, STATE, TIMER, OPTIONS.HARD_DROP, PROPS_FUNC, BACKGROUND);
           break;
         default:
           break;
       }
     };
 
-    const keyUpEventHandler = () => {
-      keydown = false;
+    const keyUpEventHandler = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case TETRIS.KEY.TURN_RIGHT:
+          STATE.KEYDOWN_TURN_RIGHT = false;
+          break;
+        case TETRIS.KEY.TURN_LEFT:
+          STATE.KEYDOWN_TURN_LEFT = false;
+          break;
+        case TETRIS.KEY.HARD_DROP:
+          STATE.KEYDOWN_HARD_DROP = false;
+          break;
+        default:
+          break;
+      }
     };
-
-    window.addEventListener('keydown', keyEventHandler);
+  
+    window.addEventListener('keydown', keyDownEventHandler);
     window.addEventListener('keyup', keyUpEventHandler);
     return () => {
-      window.removeEventListener('keydown', keyEventHandler);
+      window.removeEventListener('keydown', keyDownEventHandler);
       window.removeEventListener('keyup', keyUpEventHandler);
     };
   }, [gameStart]);

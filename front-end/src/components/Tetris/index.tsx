@@ -17,24 +17,25 @@ interface blockInterface {
 const Tetris = (): JSX.Element => {
   const [gameStart, setgameStart] = useState(false);
   const [holdBlock, setHoldBlock] = useState<blockInterface | null>(null);
-  const [previewBlock, setPreviewBlock] =
-    useState<Array<blockInterface> | null>(null);
+  const [previewBlock, setPreviewBlock] = useState<Array<blockInterface> | null>(null);
 
   const clickStartButton = () => {
-    if (!gameStart) setgameStart(true);
+    if (!gameStart) {
+      setgameStart(true);
+      setHoldBlock(null);
+      setPreviewBlock(null);
+    }
   };
 
   const endGame = () => {
     setgameStart(false);
-    setHoldBlock(null);
-    setPreviewBlock(null);
   };
 
   const getHoldBlock = (newBlock: blockInterface) => {
     setHoldBlock({ ...newBlock });
   };
 
-  const getPreviewBlocks = (newBlocks: Array<blockInterface>) => {
+  const getPreviewBlocks = (newBlocks: null | Array<blockInterface>) => {
     setPreviewBlock(JSON.parse(JSON.stringify(newBlocks)));
   };
 

@@ -1,41 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import * as TETRIS from '../../../constants/tetris';
-
-interface blockInterface {
-  posX: number;
-  posY: number;
-  dir: number;
-  name: string;
-  shape: Array<Array<number>>;
-  color: number;
-  index: number;
-}
+import { drawCell } from '../utils/block';
+import { Block } from '../types';
 
 const HOLD_BOARD_SIZE = 4 * TETRIS.BLOCK_ONE_SIZE;
 
-const drawBlock = (
-  block: blockInterface,
-  ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement
-) => {
-  block.shape.forEach((row: Array<number>, y: number) => {
-    row.forEach((value: number, x: number) => {
-      ctx.drawImage(
-        img,
-        TETRIS.BLOCK_ONE_SIZE * (value - 1),
-        0,
-        TETRIS.BLOCK_ONE_SIZE,
-        TETRIS.BLOCK_ONE_SIZE,
-        x * TETRIS.BOARD_ONE_SIZE,
-        y * TETRIS.BOARD_ONE_SIZE,
-        TETRIS.BLOCK_ONE_SIZE,
-        TETRIS.BLOCK_ONE_SIZE
-      );
-    });
-  });
-};
-
-function HoldBlock({ holdBlock }: { holdBlock: blockInterface | null }) {
+function HoldBlock({ holdBlock }: { holdBlock: Block | null }) {
   const canvasContainer = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -48,18 +18,14 @@ function HoldBlock({ holdBlock }: { holdBlock: blockInterface | null }) {
     img.src = 'assets/block.png';
 
     img.onload = () => {
-      drawBlock(holdBlock, ctx, img);
+      drawCell(holdBlock.shape, 0, 0, 1, ctx, img);
     };
   }, [holdBlock]);
 
   return (
     <div>
       <div className="header__mini">{'> Hold'}</div>
-      <canvas
-        width={HOLD_BOARD_SIZE}
-        height={HOLD_BOARD_SIZE}
-        ref={canvasContainer}
-      />
+      <canvas width={HOLD_BOARD_SIZE} height={HOLD_BOARD_SIZE} ref={canvasContainer} />
     </div>
   );
 }
