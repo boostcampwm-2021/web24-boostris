@@ -8,6 +8,7 @@ import Tetris from './components/Tetris';
 // import Login from './components/login';
 import OauthCallbackRouter from './routes/OauthCallbackRouter';
 import RequireAuth from './routes/RequireAuth';
+import RankPage from './pages/RankPage';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/oauth/*" element={<OauthCallbackRouter />} />
+          <Route path="rank" element={<RankPage />} />
         </Routes>
       </BrowserRouter>
     </div>
