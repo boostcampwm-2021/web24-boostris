@@ -1,5 +1,5 @@
 import { MouseEventHandler, useEffect, useRef } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   clearRegister,
   registerNewUser,
@@ -15,8 +15,8 @@ function RegisterPage() {
   const messageRef = useRef<HTMLTextAreaElement>(null);
 
   const user = useAppSelector(selectUser);
-  const history = useHistory();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const onChangeNickname = (e: React.ChangeEvent<HTMLInputElement>) => {
     const NICKNAME_MAX = 10;
@@ -51,18 +51,18 @@ function RegisterPage() {
 
   const onCancelClick = () => {
     dispatch(clearRegister());
-    history.replace('/login');
+    navigate('/login');
   };
 
   useEffect(() => {
     if (user.register.status === 'idle' && user.register.dupCheck !== null) {
       if (user.register.dupCheck) {
-        history.replace('/');
+        navigate('/');
       } else {
         alert('이미 존재하는 닉네임 입니다 !');
       }
     }
-  }, [history, user.register.dupCheck, user.register.status]);
+  }, [navigate, user.register.dupCheck, user.register.status]);
 
   return (
     <div className="register__root full__page--root">

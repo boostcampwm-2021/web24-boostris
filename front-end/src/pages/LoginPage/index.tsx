@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import GoogleLogin from 'react-google-login';
-import { useHistory } from 'react-router-dom';
+import { NavigateOptions, useNavigate } from 'react-router-dom';
 import Modal from '../../components/Modal';
 import OauthLoginButton from '../../components/OauthLoginButton';
 import { OAUTH_LIST } from '../../constants';
@@ -13,7 +13,7 @@ function LoginPage() {
   const naverLog: any = useRef(null);
   const googleLog: any = useRef();
   const googleCLientID: string = process.env.REACT_APP_GOOGLE_CLIENTID || '';
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleClick = (e: MouseEvent, name: string) => {
     if (name === 'github') {
@@ -58,7 +58,9 @@ function LoginPage() {
                 clientId={googleCLientID}
                 buttonText="Google"
                 onSuccess={(result) =>
-                  history.push('/oauth/google', { ...result })
+                  navigate('/oauth/google', {
+                    state: { ...result },
+                  } as NavigateOptions)
                 }
                 onFailure={(result) => console.log(result)}
               />
