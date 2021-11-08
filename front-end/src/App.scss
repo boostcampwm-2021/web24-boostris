@@ -1,0 +1,21 @@
+@import 'common/styles/base';
+
+.App {
+  color: $white;
+  background-color: $dark-navy;
+  display: flex;
+  flex: 1;
+  overflow: auto;
+
+  & > .full__page--root {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.mb--40 {
+  margin: 20px;
+}
