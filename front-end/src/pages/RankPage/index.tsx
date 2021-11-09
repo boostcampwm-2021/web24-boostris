@@ -15,12 +15,12 @@ function RankPage() {
   const [modeButtonState, modeButtonChange] = useState(1);
 
   function categoryButton(e: any) {
-    const value = categoryButtonState ? 0 : 1;
+    const value = e.target.id === 'attack-cnt' ? 0 : 1;
     categoryButtonChange(value);
   }
 
   function modeButton(e: any) {
-    const value = modeButtonState ? 0 : 1;
+    const value = e.target.id === 'normal' ? 0 : 1;
     modeButtonChange(value);
   }
 
@@ -45,12 +45,14 @@ function RankPage() {
             <div className="rank__input__box__row">
               분류 :{' '}
               <button
+                id="win-cnt"
                 className={`rank__input__box__button ${categoryButtonState && 'selected'}`}
                 onClick={categoryButton}
               >
                 승리 횟수
               </button>
               <button
+                id="attack-cnt"
                 className={`rank__input__box__button ${!categoryButtonState && 'selected'}`}
                 onClick={categoryButton}
               >
@@ -60,12 +62,14 @@ function RankPage() {
             <div className="rank__input__box__row">
               모드 :
               <button
+                id="1vs1"
                 className={`rank__input__box__button ${modeButtonState && 'selected'}`}
                 onClick={modeButton}
               >
                 1 vs 1
               </button>
               <button
+                id="normal"
                 className={`rank__input__box__button ${!modeButtonState && 'selected'}`}
                 onClick={modeButton}
               >
