@@ -8,8 +8,18 @@ import Tetris from './components/Tetris';
 // import Login from './components/login';
 import OauthCallbackRouter from './routes/OauthCallbackRouter';
 import RequireAuth from './routes/RequireAuth';
+import { useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
 
 function App() {
+  const socketRef = useRef<any>(null);
+
+  useEffect(() => {
+    socketRef.current = io('/ad', {
+      transports: ['websocket'],
+      path: '/socket.io',
+    });
+  }, []);
   return (
     <div className="App">
       <BrowserRouter>
