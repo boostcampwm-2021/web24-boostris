@@ -11,13 +11,13 @@ export interface registerDataContent {
 }
 
 export const fetchAuthData = async () => {
-  return fetch('/auth/jwt', {
+  return fetch('/api/auth/jwt', {
     credentials: 'include',
   }).then((res) => res.json());
 };
 
 export const clearCookie = async () => {
-  return fetch('/auth/logout', {
+  return fetch('/api/auth/logout', {
     credentials: 'include',
   }).then((res) => res.json());
 };
