@@ -1,7 +1,22 @@
+import { useEffect, useRef, useState } from 'react';
 import AppbarLayout from '../../layout/AppbarLayout';
 import './style.scss';
 
 function RankPage() {
+  const rankApiTemplate = {
+    category: 'attackCnt',
+    mode: '',
+    nickName: '',
+    offsetCnt: '',
+    offsetDate: '',
+  };
+
+  const [categoryButtonState, categoryButtonChange] = useState(0);
+
+  function categoryButton(e: any) {}
+
+  useEffect(() => {}, []);
+
   return (
     <AppbarLayout>
       <div className="rank__page--root">
@@ -19,13 +34,17 @@ function RankPage() {
           </div>
           <div className="rank__input__box">
             <div className="rank__input__box__row">
-              분류 : <div className="rank__input__box__button">승리 횟수</div>
-              <div className="rank__input__box__button">공격 횟수</div>
+              분류 :{' '}
+              <button className="rank__input__box__button" onClick={categoryButton}>
+                승리 횟수
+              </button>
+              <button className="rank__input__box__button" onClick={categoryButton}>
+                공격 횟수
+              </button>
             </div>
             <div className="rank__input__box__row">
-              인원 : <div className="rank__input__box__button">2인 모드</div>
-              <div className="rank__input__box__button">3인 모드</div>
-              <div className="rank__input__box__button">4인 모드</div>
+              모드 : <div className="rank__input__box__button">1 vs 1</div>
+              <div className="rank__input__box__button">일반전</div>
             </div>
             <div className="rank__nickname">
               <input
