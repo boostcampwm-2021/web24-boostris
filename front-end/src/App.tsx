@@ -7,6 +7,7 @@ import RegisterPage from './pages/RegisterPage';
 import Tetris from './components/Tetris';
 import OauthCallbackRouter from './routes/OauthCallbackRouter';
 import RequireAuth from './routes/RequireAuth';
+import RankPage from './pages/RankPage';
 
 import { useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
@@ -57,6 +58,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/oauth/*" element={<OauthCallbackRouter />} />
+          <Route path="rank" element={<RankPage />} />
         </Routes>
       </BrowserRouter>
     </div>
