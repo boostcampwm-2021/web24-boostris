@@ -117,4 +117,8 @@
   .display__header {
     border-bottom: 1px solid #ffffff;
   }
+  .selected {
+    background-color: $white;
+    color: $dark-navy;
+  }
 }

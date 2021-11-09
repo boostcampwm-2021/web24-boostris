@@ -11,9 +11,18 @@ function RankPage() {
     offsetDate: '',
   };
 
-  const [categoryButtonState, categoryButtonChange] = useState(0);
+  const [categoryButtonState, categoryButtonChange] = useState(1);
+  const [modeButtonState, modeButtonChange] = useState(1);
 
-  function categoryButton(e: any) {}
+  function categoryButton(e: any) {
+    const value = categoryButtonState ? 0 : 1;
+    categoryButtonChange(value);
+  }
+
+  function modeButton(e: any) {
+    const value = modeButtonState ? 0 : 1;
+    modeButtonChange(value);
+  }
 
   useEffect(() => {}, []);
 
@@ -35,16 +44,33 @@ function RankPage() {
           <div className="rank__input__box">
             <div className="rank__input__box__row">
               분류 :{' '}
-              <button className="rank__input__box__button" onClick={categoryButton}>
+              <button
+                className={`rank__input__box__button ${categoryButtonState && 'selected'}`}
+                onClick={categoryButton}
+              >
                 승리 횟수
               </button>
-              <button className="rank__input__box__button" onClick={categoryButton}>
+              <button
+                className={`rank__input__box__button ${!categoryButtonState && 'selected'}`}
+                onClick={categoryButton}
+              >
                 공격 횟수
               </button>
             </div>
             <div className="rank__input__box__row">
-              모드 : <div className="rank__input__box__button">1 vs 1</div>
-              <div className="rank__input__box__button">일반전</div>
+              모드 :
+              <button
+                className={`rank__input__box__button ${modeButtonState && 'selected'}`}
+                onClick={modeButton}
+              >
+                1 vs 1
+              </button>
+              <button
+                className={`rank__input__box__button ${!modeButtonState && 'selected'}`}
+                onClick={modeButton}
+              >
+                일반전
+              </button>
             </div>
             <div className="rank__nickname">
               <input
