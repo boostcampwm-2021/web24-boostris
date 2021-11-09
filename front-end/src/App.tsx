@@ -49,7 +49,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/oauth/*" element={<OauthCallbackRouter />} />
-          <Route path="rank" element={<RankPage />} />
+          <Route path="/rank" element={<RankPage />} />
         </Routes>
       </BrowserRouter>
     </div>

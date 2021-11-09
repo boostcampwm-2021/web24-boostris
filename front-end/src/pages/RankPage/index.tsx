@@ -2,29 +2,79 @@ import { useEffect, useRef, useState } from 'react';
 import AppbarLayout from '../../layout/AppbarLayout';
 import './style.scss';
 
+const fetchGetRank: any = async (rankApiTemplate: any) => {
+  return fetch(`/api/rank`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({ rankApiTemplate }),
+  }).then((res) => res.json());
+};
+
+const syncKeyWithServer = (
+  rankApiTemplate: any,
+  categoryButtonState: any,
+  modeButtonState: any
+) => {
+  const valueChanger = {
+    category: ['attackCnt', 'totalWin'],
+    mode: ['1 vs 1', 'normal'],
+  };
+  rankApiTemplate.category = valueChanger.category[categoryButtonState];
+  rankApiTemplate.mode = valueChanger.mode[modeButtonState];
+};
+
+function RankItemBox({ obj }: any) {
+  return (
+    <div className="rank__display__itembox">
+      <div className="rank__display__item display__rank">{obj['ranking']}등</div>
+      <div className="rank__display__item display__nickname">{obj['nickname']}</div>
+      <div className="rank__display__item display__message">
+        {obj['ANY_VALUE(u.state_message)']}
+      </div>
+      <div className="rank__display__item display__win">{obj[Object.keys(obj)[1]]}</div>
+    </div>
+  );
+}
+
 function RankPage() {
   const rankApiTemplate = {
-    category: 'attackCnt',
-    mode: '',
+    category: 'totalWin',
+    mode: '1 vs 1',
     nickName: '',
-    offsetCnt: '',
-    offsetDate: '',
+    offsetRank: '',
   };
 
   const [categoryButtonState, categoryButtonChange] = useState(1);
   const [modeButtonState, modeButtonChange] = useState(1);
+  const [players, changePlayerLists] = useState([]);
 
-  function categoryButton(e: any) {
-    const value = e.target.id === 'attack-cnt' ? 0 : 1;
+  async function categoryButton(e: any) {
+    const value = e.target.id === 'attackCnt' ? 0 : 1;
     categoryButtonChange(value);
   }
 
-  function modeButton(e: any) {
+  async function modeButton(e: any) {
     const value = e.target.id === 'normal' ? 0 : 1;
     modeButtonChange(value);
   }
 
-  useEffect(() => {}, []);
+  async function searchButton(e: any) {
+    syncKeyWithServer(rankApiTemplate, categoryButtonState, modeButtonState);
+    const res = await fetchGetRank(rankApiTemplate);
+    changePlayerLists(res.data);
+  }
+
+  useEffect(() => {
+    (async function effect() {
+      syncKeyWithServer(rankApiTemplate, categoryButtonState, modeButtonState);
+      const res = await fetchGetRank(rankApiTemplate);
+      changePlayerLists(res.data);
+    })();
+  }, [categoryButtonState, modeButtonState]);
 
   return (
     <AppbarLayout>
@@ -45,14 +95,14 @@ function RankPage() {
             <div className="rank__input__box__row">
               분류 :{' '}
               <button
-                id="win-cnt"
+                id="totalWin"
                 className={`rank__input__box__button ${categoryButtonState && 'selected'}`}
                 onClick={categoryButton}
               >
                 승리 횟수
               </button>
               <button
-                id="attack-cnt"
+                id="attackCnt"
                 className={`rank__input__box__button ${!categoryButtonState && 'selected'}`}
                 onClick={categoryButton}
               >
@@ -62,7 +112,7 @@ function RankPage() {
             <div className="rank__input__box__row">
               모드 :
               <button
-                id="1vs1"
+                id="1 vs 1"
                 className={`rank__input__box__button ${modeButtonState && 'selected'}`}
                 onClick={modeButton}
               >
@@ -81,7 +131,12 @@ function RankPage() {
                 className="rank__input__box__nickname"
                 placeholder="플레이어 닉네임을 입력해주세요."
               ></input>
-              <button className="rank__input__box__button rank__nickname__search">검색</button>
+              <button
+                className="rank__input__box__button rank__nickname__search"
+                onClick={searchButton}
+              >
+                검색
+              </button>
             </div>
           </div>
         </div>
@@ -92,46 +147,9 @@ function RankPage() {
             <div className="rank__display__item display__message">상태 메세지</div>
             <div className="rank__display__item display__win">승리 횟수</div>
           </div>
-          <div className="rank__display__itembox">
-            <div className="rank__display__item display__rank">1등</div>
-            <div className="rank__display__item display__nickname">플레이어1</div>
-            <div className="rank__display__item display__message">
-              플레이어의 상태 메세지가 들어갑니다.
-            </div>
-            <div className="rank__display__item display__win">3</div>
-          </div>
-          <div className="rank__display__itembox">
-            <div className="rank__display__item display__rank">1등</div>
-            <div className="rank__display__item display__nickname">플레이어1</div>
-            <div className="rank__display__item display__message">
-              플레이어의 상태 메세지가 들어갑니다.
-            </div>
-            <div className="rank__display__item display__win">3</div>
-          </div>
-          <div className="rank__display__itembox">
-            <div className="rank__display__item display__rank">1등</div>
-            <div className="rank__display__item display__nickname">플레이어1</div>
-            <div className="rank__display__item display__message">
-              플레이어의 상태 메세지가 들어갑니다.
-            </div>
-            <div className="rank__display__item display__win">3</div>
-          </div>
-          <div className="rank__display__itembox">
-            <div className="rank__display__item display__rank">1등</div>
-            <div className="rank__display__item display__nickname">플레이어1</div>
-            <div className="rank__display__item display__message">
-              플레이어의 상태 메세지가 들어갑니다.
-            </div>
-            <div className="rank__display__item display__win">3</div>
-          </div>
-          <div className="rank__display__itembox">
-            <div className="rank__display__item display__rank">1등</div>
-            <div className="rank__display__item display__nickname">플레이어1</div>
-            <div className="rank__display__item display__message">
-              플레이어의 상태 메세지가 들어갑니다.
-            </div>
-            <div className="rank__display__item display__win">3</div>
-          </div>
+          {players.map((obj) => (
+            <RankItemBox key={obj['nickname']} obj={obj} />
+          ))}
         </div>
       </div>
     </AppbarLayout>
