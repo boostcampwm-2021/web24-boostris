@@ -37,16 +37,4 @@ const server = http.createServer(app);
 
 initSocket(server);
 
-// const io = require('socket.io')(server, {
-//   cors: { origin: '*' },
-// });
-
-// io.sockets.on('connection', (socket) => {
-//   console.log(`socket ${socket.id} connect`);
-
-//   socket.on('disconnect', () => {
-//     console.log(`disconnect ${socket.id}`);
-//   });
-// });
-
 server.listen(5001);

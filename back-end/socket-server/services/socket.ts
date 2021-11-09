@@ -1,4 +1,5 @@
 import { Server } from 'socket.io';
+import { initTetrisSocket } from './tetrisSocket';
 
 export const initSocket = (httpServer) => {
   const io = new Server(httpServer, {
@@ -8,7 +9,8 @@ export const initSocket = (httpServer) => {
     },
   });
   const nsp = io.of('/ad');
-
+  const tetris = io.of('/tetris');
+  
   nsp.on('connection', (socket) => {
     console.log(socket.id);
     console.log('asdf');
@@ -20,4 +22,6 @@ export const initSocket = (httpServer) => {
 
     socket.on('disconnect', () => {});
   });
+
+  initTetrisSocket(tetris);
 };
