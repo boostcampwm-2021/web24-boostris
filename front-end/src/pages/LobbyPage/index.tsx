@@ -3,12 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
 import SectionTitle from '../../components/SectionTitle';
+import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
 import './style.scss';
 
 function LobbyPage() {
   const navigate = useNavigate();
   const socketRef = useRef<any>(null);
+  const { profile } = useAuth();
+
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     socketRef.current = io('/lobby/users', {
@@ -16,9 +20,13 @@ function LobbyPage() {
       path: '/socket.io',
     });
     socketRef.current.on('connect', () => {
-      // socketRef.current.emit('set username', )
+      socketRef.current.emit('set userName', profile.nickname);
     });
-  }, []);
+
+    socketRef.current.on('user list update', (list: any) => {
+      setUsers(list);
+    });
+  }, [profile.nickname]);
 
   const handleClick = () => {
     navigate('/tetris');
@@ -31,7 +39,7 @@ function LobbyPage() {
       <div className="lobby__page--root">
         <div className="lobby__section lobby__sidebar">
           <SectionTitle>내 정보</SectionTitle>
-          <p className="absolute_border_bottom my__nickname">플레이어 아이디</p>
+          <p className="absolute_border_bottom my__nickname">{profile.nickname}</p>
           <div className="absolute_border_bottom filter__container toggle__group">
             {['접속자', '친구목록'].map((btn, idx) => (
               <button
@@ -45,180 +53,12 @@ function LobbyPage() {
           </div>
           <div className="user__list__container">
             <div className="user__list__scroll__root">
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
-              <div className="user__list--item">
-                <span className="dot"></span>플레이어 아이디
-              </div>
+              {users.map((u) => (
+                <div className="user__list--item" key={u}>
+                  <span className="dot"></span>
+                  {u}
+                </div>
+              ))}
             </div>
           </div>
           <div className="button__group">

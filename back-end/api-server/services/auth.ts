@@ -37,6 +37,6 @@ export const setJWT = (req, res, { nickname, oauth_id }) => {
     process.env.JWT_SECRET_KEY
   );
   res.cookie('user', jwtSignature, {
-    expires: new Date(Date.now() + 600000),
+    expires: new Date(Date.now() + 10 * 60 * 60 * 1000),
   });
 };
