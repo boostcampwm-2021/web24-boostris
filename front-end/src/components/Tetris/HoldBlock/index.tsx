@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import * as TETRIS from '../../../constants/tetris';
 import { drawCell } from '../utils/block';
-import { Block } from '../types';
+import { TetrisBlock } from '../types';
 
 const HOLD_BOARD_SIZE = 4 * TETRIS.BLOCK_ONE_SIZE;
 
-function HoldBlock({ holdBlock }: { holdBlock: Block | null }) {
+function HoldBlock({ holdBlock }: { holdBlock: TetrisBlock | null }) {
   const canvasContainer = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {

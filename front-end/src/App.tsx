@@ -21,10 +21,10 @@ function App() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    socketRef.current = io('/ad', {
-      transports: ['websocket'],
-      path: '/socket.io',
-    });
+    // socketRef.current = io('/ad', {
+    //   transports: ['websocket'],
+    //   path: '/socket.io',
+    // });
   }, []);
 
   useEffect(() => {

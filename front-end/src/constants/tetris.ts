@@ -30,20 +30,27 @@ export const BOARD: number[][] = [
 export const COLS: number = 10;
 export const ROWS: number = 24;
 export const BLOCK_SIZE: number = 24;
+export const OTHER_BLOCK_SIZE: number = 12;
 
 // 실제 보드 한칸의 크기
 export const BOARD_ONE_SIZE: number = 24;
+export const OTHER_BOARD_ONE_SIZE: number = 12;
 
 // 실제 블록 한개의 크기
 export const BLOCK_ONE_SIZE: number = 25;
+export const OTHER_BLOCK_ONE_SIZE: number = 13;
 
 //실제 보드의 크기
 export const BOARD_REAL_WIDTH: number = 240;
 export const BOARD_REAL_HEIGHT: number = 480;
+export const OTHER_BOARD_REAL_WIDTH: number = 120;
+export const OTHER_BOARD_REAL_HEIGHT: number = 240;
 
 // 보드 이미지의 크기
 export const BOARD_WIDTH: number = 241;
 export const BOARD_HEIGHT: number = 481;
+export const OTHER_BOARD_WIDTH: number = 121;
+export const OTHER_BOARD_HEIGHT: number = 241;
 
 // 블록 시작 좌표
 export const START_X: number = 3;
