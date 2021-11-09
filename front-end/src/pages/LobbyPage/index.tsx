@@ -110,9 +110,9 @@ function LobbyPage() {
             </div>
           </div>
           <div className="modal__content__row">
-            <div className="modal__label">* 모드</div>
+            <div className="modal__label">* 최대인원</div>
             <div className="modal__input--container toggle__btn__container">
-              {['1vs1', '단체전'].map((btn, idx) => (
+              {['2인', '3인', '4인'].map((btn, idx) => (
                 <button
                   className={`${modalToggleIdx === idx && 'selected'} toggle__btn`}
                   key={btn}
