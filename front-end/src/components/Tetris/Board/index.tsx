@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
+import { Socket } from 'socket.io-client';
 import * as TETRIS from '../../../constants/tetris';
 import {
-  Block,
+  TetrisBlock,
   TetrisBlocks,
   TetrisState,
   TetrisTimer,
@@ -14,15 +15,15 @@ import { drawCell } from '../utils/block';
 const BOARD: number[][] = TETRIS.BOARD;
 
 const BLOCK: TetrisBlocks = {
-  NOW: null as unknown as Block,
-  BEFORE: null as unknown as Block,
-  NEXT: null as unknown as Block,
-  GHOST: null as unknown as Block,
-  HOLD: null as unknown as Block,
+  NOW: null as unknown as TetrisBlock,
+  BEFORE: null as unknown as TetrisBlock,
+  NEXT: null as unknown as TetrisBlock,
+  GHOST: null as unknown as TetrisBlock,
+  HOLD: null as unknown as TetrisBlock,
 };
 
 const STATE: TetrisState = {
-  QUEUE: null as unknown as Block[],
+  QUEUE: null as unknown as TetrisBlock[],
   CAN_HOLD: null as unknown as boolean,
   SOLID_GARBAGES: null as unknown as number,
   KEYDOWN_TURN_RIGHT: null as unknown as boolean,
@@ -57,7 +58,7 @@ const PROPS_FUNC: TetrisPropsFunc = {
 // 추가 블록 7개를 반환하는 함수
 const getPreviewBlocks = () => {
   const randomBlocks = TETRIS.randomTetromino();
-  const queue: Block[] = [];
+  const queue: TetrisBlock[] = [];
 
   randomBlocks.forEach((block) => {
     queue.push({
@@ -72,7 +73,7 @@ const getPreviewBlocks = () => {
 };
 
 // 블록의 현재 위치를 기준으로 BOARD에 고정시키는 함수
-const setFreeze = (BOARD: number[][], BLOCK: Block) => {
+const setFreeze = (BOARD: number[][], BLOCK: TetrisBlock) => {
   BLOCK.shape.forEach((row: Array<number>, y: number) => {
     row.forEach((value: number, x: number) => {
       const [nX, nY] = [BLOCK.posX + x, BLOCK.posY + y];
@@ -102,7 +103,7 @@ const setSolidBlock = (board: number[][], solidBlocks: number) => {
 };
 
 // 블록이 한칸 다음으로 더 나아갈 수 있는지 아닌지 확인하는 함수 (블록이 바닥으로 내려오거나, 다른 블록 위에 떠 있는 경우 확인)
-const isBottom = (board: number[][], block: Block) => {
+const isBottom = (board: number[][], block: TetrisBlock) => {
   return block.shape.some((row, y) =>
     row.some((value: number, x: number) => {
       if (value > 0) {
@@ -148,7 +149,7 @@ const draw = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBackgrou
 };
 
 // 충돌이 있는지 없는지 검사하는 함수
-const isNotConflict = (block: Block, board: number[][]) => {
+const isNotConflict = (block: TetrisBlock, board: number[][]) => {
   return block.shape.every((row: Array<number>, y: number) => {
     return row.every((value: number, x: number) => {
       const [nX, nY] = [block.posX + x, block.posY + y];
@@ -158,7 +159,7 @@ const isNotConflict = (block: Block, board: number[][]) => {
 };
 
 // 블록을 45도 isRight에 따라 (시계 or 반시계)회전 시키는 함수
-const rotate = (block: Block, isRight: boolean) => {
+const rotate = (block: TetrisBlock, isRight: boolean) => {
   if (block.name === 'O') return block;
   for (let y = 0; y < block.shape.length; ++y) {
     for (let x = 0; x < y; ++x) {
@@ -208,7 +209,7 @@ const SRSAlgorithm = (BOARD: number[][], BLOCK: TetrisBlocks, key: string) => {
 // 게임 오버 상황인지 체크하는 함수
 // 1. BOARD에서 범위가 y 0~3인 부분에 블록이 있다면 게임 오버
 // 2. 새로운 블록이 생성 됐을때 그 자리에 이미 어떤 블록이 놓여져 있다면 게임 오버 (새로운 블록은 항상 y가 4인 곳 - 최상단에 위치하기 때문)
-const isGameOver = (board: number[][], block: Block) => {
+const isGameOver = (board: number[][], block: TetrisBlock) => {
   const gameOverArr = board.slice(0, 4);
 
   const outRange = gameOverArr.every((row: Array<number>, y: number) => {
@@ -238,7 +239,7 @@ const gameoverBlocks = (board: number[][]) => {
 };
 
 // 블록이 현재 상태에서 바닥으로 떨어졌을 때 블록을 반환하는 함수
-const hardDropBlock = (board: number[][], block: Block) => {
+const hardDropBlock = (board: number[][], block: TetrisBlock) => {
   const nextBlock = JSON.parse(JSON.stringify(block));
 
   while (true) {
@@ -252,7 +253,7 @@ const hardDropBlock = (board: number[][], block: Block) => {
 };
 
 const popBlockQueue = (STATE: TetrisState, PROPS_FUNC: TetrisPropsFunc) => {
-  const next = STATE.QUEUE.shift() as Block;
+  const next = STATE.QUEUE.shift() as TetrisBlock;
   if (STATE.QUEUE.length === 5) {
     STATE.QUEUE.push(...getPreviewBlocks());
   }
@@ -262,22 +263,22 @@ const popBlockQueue = (STATE: TetrisState, PROPS_FUNC: TetrisPropsFunc) => {
 
 // 각 event.key에 따라 블록을 바꿔서 반환
 const moves = {
-  [TETRIS.KEY.LEFT]: (prev: Block) => ({
+  [TETRIS.KEY.LEFT]: (prev: TetrisBlock) => ({
     ...prev,
     posX: prev.posX - 1,
   }),
-  [TETRIS.KEY.RIGHT]: (prev: Block) => ({
+  [TETRIS.KEY.RIGHT]: (prev: TetrisBlock) => ({
     ...prev,
     posX: prev.posX + 1,
   }),
-  [TETRIS.KEY.DOWN]: (prev: Block) => ({
+  [TETRIS.KEY.DOWN]: (prev: TetrisBlock) => ({
     ...prev,
     posY: prev.posY + 1,
   }),
-  [TETRIS.KEY.TURN_RIGHT]: (prev: Block) => rotate(JSON.parse(JSON.stringify(prev)), true),
-  [TETRIS.KEY.TURN_LEFT]: (prev: Block) => rotate(JSON.parse(JSON.stringify(prev)), false),
-  [TETRIS.KEY.HOLD]: (prev: Block) => prev,
-  [TETRIS.KEY.HARD_DROP]: (prev: Block) => prev,
+  [TETRIS.KEY.TURN_RIGHT]: (prev: TetrisBlock) => rotate(JSON.parse(JSON.stringify(prev)), true),
+  [TETRIS.KEY.TURN_LEFT]: (prev: TetrisBlock) => rotate(JSON.parse(JSON.stringify(prev)), false),
+  [TETRIS.KEY.HOLD]: (prev: TetrisBlock) => prev,
+  [TETRIS.KEY.HARD_DROP]: (prev: TetrisBlock) => prev,
 };
 
 // 시작 전 테트리스를 초기화 하는 함수
@@ -288,8 +289,8 @@ const initTetris = (
   TIMER: TetrisTimer,
   BACKGROUND: TetrisBackground,
   endGame: () => void,
-  getHoldBlockState: (newBlock: Block) => void,
-  getPreviewBlocksList: (newBlocks: null | Array<Block>) => void
+  getHoldBlockState: (newBlock: TetrisBlock) => void,
+  getPreviewBlocksList: (newBlocks: null | Array<TetrisBlock>) => void
 ) => {
   PROPS_FUNC.GAMEOVER_FUNC = endGame;
   PROPS_FUNC.HOLD_FUNC = getHoldBlockState;
@@ -308,7 +309,7 @@ const initTetris = (
 
   BLOCK.NOW = popBlockQueue(STATE, PROPS_FUNC);
   BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
-  BLOCK.HOLD = null as unknown as Block;
+  BLOCK.HOLD = null as unknown as TetrisBlock;
 
   TIMER.PLAY_TIME = 0;
 
@@ -367,7 +368,8 @@ const initNewBlockCycle = (
   BLOCK: TetrisBlocks,
   STATE: TetrisState,
   TIMER: TetrisTimer,
-  BACKGROUND: TetrisBackground
+  BACKGROUND: TetrisBackground,
+  socket: Socket
 ) => {
   BLOCK.NOW = BLOCK.NEXT;
 
@@ -387,6 +389,7 @@ const initNewBlockCycle = (
   TIMER.DROP = setInterval(() => {
     BLOCK.NEXT = moves[TETRIS.KEY.DOWN](BLOCK.NOW);
     moveBlock(BOARD, BLOCK, BACKGROUND);
+    socket.emit('drop block', BLOCK.NOW);
   }, 900);
 
   draw(BOARD, BLOCK, BACKGROUND);
@@ -400,7 +403,8 @@ const dropBlockCycle = (
   TIMER: TetrisTimer,
   option: string,
   PROPS_FUNC: TetrisPropsFunc,
-  BACKGROUND: TetrisBackground
+  BACKGROUND: TetrisBackground,
+  socket: Socket
 ) => {
   freezeBlock(BOARD, BLOCK, STATE, TIMER, option, PROPS_FUNC);
   // 게임 오버 검사
@@ -408,7 +412,7 @@ const dropBlockCycle = (
     finishGame(BOARD, TIMER, BACKGROUND, PROPS_FUNC);
     return;
   }
-  initNewBlockCycle(BOARD, BLOCK, STATE, TIMER, BACKGROUND);
+  initNewBlockCycle(BOARD, BLOCK, STATE, TIMER, BACKGROUND, socket);
 };
 
 //블록을 홀드함
@@ -438,18 +442,18 @@ const holdBlock = (
 };
 
 const Board = ({
+  socket,
   gameStart,
   endGame,
   getHoldBlockState,
   getPreviewBlocksList,
 }: {
+  socket: Socket;
   gameStart: boolean;
   endGame: () => void;
-  getHoldBlockState: (newBlock: Block) => void;
-  getPreviewBlocksList: (newBlocks: null | Array<Block>) => void;
+  getHoldBlockState: (newBlock: TetrisBlock) => void;
+  getPreviewBlocksList: (newBlocks: null | Array<TetrisBlock>) => void;
 }): JSX.Element => {
-  const canvasContainer = useRef<HTMLCanvasElement>(null);
-
   useEffect(() => {
     if (!gameStart) return;
 
@@ -470,6 +474,7 @@ const Board = ({
       TIMER.DROP = setInterval(() => {
         BLOCK.NEXT = moves[TETRIS.KEY.DOWN](BLOCK.NOW);
         moveBlock(BOARD, BLOCK, BACKGROUND);
+        socket.emit('drop block', BLOCK.NOW);
       }, 900); // 블록을 0.9초마다 한칸씩 떨어뜨리는 타이머 등록
 
       TIMER.CONFLICT = setInterval(() => {
@@ -483,7 +488,8 @@ const Board = ({
               TIMER,
               TIMER.PLAY_TIME >= 20 ? OPTIONS.TIME_OUT : '',
               PROPS_FUNC,
-              BACKGROUND
+              BACKGROUND,
+              socket
             );
           }
         }
@@ -528,7 +534,7 @@ const Board = ({
         case TETRIS.KEY.HARD_DROP:
           if (STATE.KEYDOWN_HARD_DROP) return;
           STATE.KEYDOWN_HARD_DROP = true;
-          dropBlockCycle(BOARD, BLOCK, STATE, TIMER, OPTIONS.HARD_DROP, PROPS_FUNC, BACKGROUND);
+          dropBlockCycle(BOARD, BLOCK, STATE, TIMER, OPTIONS.HARD_DROP, PROPS_FUNC, BACKGROUND, socket);
           break;
         default:
           break;
@@ -563,12 +569,11 @@ const Board = ({
     <canvas
       style={{
         position: 'relative',
-        background: `url(assets/board.png)`,
+        background: `url(assets/player_board.png)`,
       }}
       className="board"
       width={TETRIS.BOARD_WIDTH}
       height={TETRIS.BOARD_HEIGHT}
-      ref={canvasContainer}
     ></canvas>
   );
 };
