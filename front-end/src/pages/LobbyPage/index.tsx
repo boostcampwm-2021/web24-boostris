@@ -73,10 +73,10 @@ function LobbyPage() {
           <SectionTitle>로비</SectionTitle>
           <div className="lobby__container">
             <div className="room__list__scroll__root">
-              <div className="room__container">
+              <div className="room__container room__type--secret">
                 <p className="room__title">플레이어1님의 방</p>
                 <p className="room__desc">방 설명 글자가 들어가는 부분입니다.</p>
-                <p className="room__desc"> - 인원 : 3 / 4 - 비밀방 : O</p>
+                <p className="room__desc"> * 인원 : 3 / 4</p>
               </div>
               <div className="room__container">
                 <p className="room__title">플레이어1님의 방</p>

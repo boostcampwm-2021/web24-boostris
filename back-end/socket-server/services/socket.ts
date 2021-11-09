@@ -35,6 +35,12 @@ export const initSocket = (httpServer) => {
 
     socket.on('chat', (msg) => {});
 
-    socket.on('disconnect', () => {});
+    socket.on('disconnect', async () => {
+      const sockets = (await lobbyUsers.fetchSockets()) as userRemote[];
+      lobbyUsers.emit(
+        'user list update',
+        sockets.map((s) => s.userName)
+      );
+    });
   });
 };
