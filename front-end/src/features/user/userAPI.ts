@@ -10,6 +10,18 @@ export interface registerDataContent {
   oauthInfo: any;
 }
 
+export const fetchAuthData = async () => {
+  return fetch('/api/auth/jwt', {
+    credentials: 'include',
+  }).then((res) => res.json());
+};
+
+export const clearCookie = async () => {
+  return fetch('/api/auth/logout', {
+    credentials: 'include',
+  }).then((res) => res.json());
+};
+
 export const postNewUser = async (registerData: registerDataContent) => {
   return fetch('/api/register/insert', {
     method: 'POST',

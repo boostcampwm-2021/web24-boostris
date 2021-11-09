@@ -12,17 +12,14 @@ function OauthCallbackRouter() {
   const user = useAppSelector(selectUser);
 
   useEffect(() => {
-    if (
-      (user.profile.id && user.status === 'idle') ||
-      user.status === 'failed'
-    ) {
+    if ((user.profile.id && user.profile.status === 'idle') || user.profile.status === 'failed') {
       if (user.profile.isOurUser) {
         navigate('/');
       } else {
         navigate('/register');
       }
     }
-  }, [navigate, user.profile.id, user.profile.isOurUser, user.status]);
+  }, [navigate, user.profile.id, user.profile.isOurUser, user.profile.status]);
 
   return (
     <Routes>

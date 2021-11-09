@@ -1,9 +1,10 @@
+import { initSocket } from './../services/socket';
 import * as express from 'express';
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const logger = require('morgan');
-var http = require('http');
+const http = require('http');
 
 class App {
   public application: express.Application;
@@ -33,14 +34,19 @@ app.get('/socket', (req: express.Request, res: express.Response) => {
 });
 
 const server = http.createServer(app);
-const io = require('socket.io')(server, { cors: { origin: '*' } });
 
-io.sockets.on('connection', (socket) => {
-  console.log(`socket ${socket.id} connect`);
+initSocket(server);
 
-  socket.on('disconnect', () => {
-    console.log(`disconnect ${socket.id}`);
-  });
-});
+// const io = require('socket.io')(server, {
+//   cors: { origin: '*' },
+// });
 
-server.listen(5000);
+// io.sockets.on('connection', (socket) => {
+//   console.log(`socket ${socket.id} connect`);
+
+//   socket.on('disconnect', () => {
+//     console.log(`disconnect ${socket.id}`);
+//   });
+// });
+
+server.listen(5001);
