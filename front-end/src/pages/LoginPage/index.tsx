@@ -9,7 +9,6 @@ import './style.scss';
 declare const window: any;
 
 function LoginPage() {
-  const modalRef = useRef<any>();
   const naverLog: any = useRef(null);
   const googleLog: any = useRef();
   const googleCLientID: string = process.env.REACT_APP_GOOGLE_CLIENTID || '';
@@ -68,10 +67,7 @@ function LoginPage() {
           )}
         </OauthLoginButton>
       ))}
-      <p className="login__title">
-        (C) Attendance starts from the first number
-      </p>
-      <Modal ref={modalRef}>hello</Modal>
+      <p className="login__title">(C) Attendance starts from the first number</p>
     </div>
   );
 }

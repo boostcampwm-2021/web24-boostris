@@ -27,7 +27,7 @@ export const initSocket = (httpServer) => {
       const sockets = (await lobbyUsers.fetchSockets()) as userRemote[];
       lobbyUsers.emit(
         'user list update',
-        sockets.map((s) => s.userName)
+        sockets.map((s) => ({ nickname: s.userName, id: s.id }))
       );
     });
 
@@ -39,7 +39,7 @@ export const initSocket = (httpServer) => {
       const sockets = (await lobbyUsers.fetchSockets()) as userRemote[];
       lobbyUsers.emit(
         'user list update',
-        sockets.map((s) => s.userName)
+        sockets.map((s) => ({ nickname: s.userName, id: s.id }))
       );
     });
   });
