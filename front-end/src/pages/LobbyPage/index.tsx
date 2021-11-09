@@ -1,11 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
+
 import SectionTitle from '../../components/SectionTitle';
 import AppbarLayout from '../../layout/AppbarLayout';
 import './style.scss';
 
 function LobbyPage() {
   const navigate = useNavigate();
+  const socketRef = useRef<any>(null);
+
+  useEffect(() => {
+    socketRef.current = io('/lobby/users', {
+      transports: ['websocket'],
+      path: '/socket.io',
+    });
+    socketRef.current.on('connect', () => {
+      // socketRef.current.emit('set username', )
+    });
+  }, []);
 
   const handleClick = () => {
     navigate('/tetris');

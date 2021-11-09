@@ -31,9 +31,9 @@ export const getUserInfoFromNaver = async (accessToken) => {
   }
 };
 
-export const setJWT = (req, res) => {
+export const setJWT = (req, res, { nickname, oauth_id }) => {
   const jwtSignature = jwt.sign(
-    { expiresIn: '10h' }, // 임의 값 넣어놓음
+    { expiresIn: '10h', nickname, oauth_id }, // 임의 값 넣어놓음
     process.env.JWT_SECRET_KEY
   );
   res.cookie('user', jwtSignature, {

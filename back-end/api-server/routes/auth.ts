@@ -20,12 +20,13 @@ const oauthDupCheck = async (id, req, res) => {
     const userList = await isOauthIdInDB(id);
     /* 만약 oauth 로그인에 성공하면 jwt 토큰 발급 */
     if (userList && userList.length) {
-      setJWT(req, res);
-      return true;
+      const [user] = userList;
+      setJWT(req, res, user);
+      return [true, user];
     } else {
       /* 회원 가입 페이지로 redirect */
       console.log('fail');
-      return false;
+      return [false];
     }
   } catch (e) {
     console.log(e);
@@ -52,9 +53,9 @@ AuthRouter.post('/github/code', async (req, res) => {
 
     const { access_token } = data;
     const user = await getGithubUser(access_token);
-    const isOurUser = await oauthDupCheck(user['id'], req, res); // 일단 중복 안되는 login 으로 해놓음
+    const [isOurUser, target] = await oauthDupCheck(user['id'], req, res); // 일단 중복 안되는 login 으로 해놓음
     const id = user.id;
-    res.status(200).json({ id, isOurUser });
+    res.status(200).json({ id, isOurUser, nickname: target?.nickname });
   } catch (error) {
     console.error(error);
     res.sendStatus(400);
@@ -65,22 +66,24 @@ AuthRouter.post('/naver/token', async (req, res) => {
   const { accessToken } = req.body;
   const userInfoFromNaver = await getUserInfoFromNaver(accessToken);
   const id = userInfoFromNaver['response']['id'];
-  const isOurUser = await oauthDupCheck(id, req, res);
-  res.json({ id, isOurUser });
+  const [isOurUser, target] = await oauthDupCheck(id, req, res);
+  res.json({ id, isOurUser, nickname: target?.nickname });
 });
 
 AuthRouter.post('/google/user', async (req, res) => {
   const { email, name } = req.body;
-  const isOurUser = await oauthDupCheck(email, req, res);
-  res.json({ id: email, isOurUser });
+  const [isOurUser, target] = await oauthDupCheck(email, req, res);
+  res.json({ id: email, isOurUser, nickname: target?.nickname });
 });
 
 AuthRouter.get('/jwt', async (req, res) => {
   try {
     if (req.cookies.user) {
-      var decoded = jwt.verify(req.cookies.user, process.env.JWT_SECRET_KEY);
-      console.log(decoded);
-      res.json({ authenticated: true });
+      const { nickname, oauth_id } = jwt.verify(
+        req.cookies.user,
+        process.env.JWT_SECRET_KEY
+      ) as any;
+      res.json({ authenticated: true, nickname, oauth_id });
     } else {
       throw new Error('no-cookie');
     }

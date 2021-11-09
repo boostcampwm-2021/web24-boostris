@@ -14,7 +14,12 @@ import { RootState } from '../../app/store';
 type loadingState = 'idle' | 'loading' | 'failed';
 
 export interface UserState {
-  profile: { id: string | number | null; isOurUser: boolean; status: loadingState };
+  profile: {
+    id: string | number | null;
+    isOurUser: boolean;
+    status: loadingState;
+    nickname: null | string;
+  };
   register: { status: loadingState; dupCheck: boolean | null };
   auth: {
     status: loadingState;
@@ -23,7 +28,7 @@ export interface UserState {
 }
 
 const initialState: UserState = {
-  profile: { id: null, isOurUser: false, status: 'idle' },
+  profile: { id: null, isOurUser: false, status: 'idle', nickname: null },
   register: { status: 'idle', dupCheck: null },
   auth: {
     status: 'loading',
@@ -84,6 +89,7 @@ export const userSlice = createSlice({
         id: null,
         isOurUser: false,
         status: 'idle',
+        nickname: null,
       };
     },
   },
@@ -97,27 +103,31 @@ export const userSlice = createSlice({
       .addCase(checkAuth.fulfilled, (state, action) => {
         state.auth.status = 'idle';
         state.auth.authenticated = action.payload.authenticated;
+
+        state.profile.id = action.payload.oauth_id;
+        state.profile.nickname = action.payload.nickname;
+        state.profile.isOurUser = true;
       })
       .addCase(logOut.fulfilled, (state, action) => {
         state.auth.status = 'idle';
         state.auth.authenticated = action.payload.authenticated;
       })
       .addCase(fetchGithubUser.pending, (state) => {
-        state.profile = { id: null, isOurUser: false, status: 'loading' };
+        state.profile = { id: null, isOurUser: false, status: 'loading', nickname: null };
       })
       .addCase(fetchGithubUser.fulfilled, (state, action) => {
         state.profile = { ...action.payload, status: 'idle' };
         state.auth.authenticated = true;
       })
       .addCase(fetchNaverUser.pending, (state) => {
-        state.profile = { id: null, isOurUser: false, status: 'loading' };
+        state.profile = { id: null, isOurUser: false, status: 'loading', nickname: null };
       })
       .addCase(fetchNaverUser.fulfilled, (state, action) => {
         state.profile = { ...action.payload, status: 'idle' };
         state.auth.authenticated = true;
       })
       .addCase(fetchGoogleUser.pending, (state) => {
-        state.profile = { id: null, isOurUser: false, status: 'loading' };
+        state.profile = { id: null, isOurUser: false, status: 'loading', nickname: null };
       })
       .addCase(fetchGoogleUser.fulfilled, (state, action) => {
         state.profile = { ...action.payload, status: 'idle' };
