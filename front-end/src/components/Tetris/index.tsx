@@ -24,7 +24,8 @@ const Tetris = (): JSX.Element => {
   const [gameStart, setgameStart] = useState(false);
   const [holdBlock, setHoldBlock] = useState<blockInterface | null>(null);
   const [previewBlock, setPreviewBlock] = useState<Array<blockInterface> | null>(null);
-  const [socket, setSocket] = useState<Socket>();
+  const socketRef = useRef<any>(null);
+  const [socketState, setSocketState] = useState(false);
 
   const clickStartButton = () => {
     if (!gameStart) {
@@ -47,21 +48,25 @@ const Tetris = (): JSX.Element => {
   };
 
   useEffect(() => {
-    setSocket(io('http://localhost:5001', { 
+    socketRef.current = io('/tetris', {
       transports: ['websocket'],
-      upgrade: false,
-      forceNew: true,
-    }));
+      path: '/socket.io',
+    });
+
+    socketRef.current.on('connect', () => {
+      setSocketState(true);
+    });
+
   }, []);
 
   return (
     <AppbarLayout>
-      { socket ? (
+      { socketState ? (
         <div style={{ width: '100%', display: 'flex', padding: '50px' }}>
           <HoldBlock holdBlock={holdBlock} />
           <div style={{ margin: '0px 40px' }}>
             <Board
-              socket={socket}
+              socket={socketRef.current}
               gameStart={gameStart}
               endGame={endGame}
               getHoldBlockState={getHoldBlock}
@@ -78,7 +83,7 @@ const Tetris = (): JSX.Element => {
             />
           </div>
           <div>
-            <OtherBoard socket={socket}/>
+            <OtherBoard socket={socketRef.current}/>
           </div>
         </div>
       ) : null}
