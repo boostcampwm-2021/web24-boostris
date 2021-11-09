@@ -9,23 +9,14 @@ import OauthCallbackRouter from './routes/OauthCallbackRouter';
 import RequireAuth from './routes/RequireAuth';
 import RankPage from './pages/RankPage';
 
-import { useEffect, useRef } from 'react';
-import { io } from 'socket.io-client';
+import { useEffect } from 'react';
 import { useAppDispatch } from './app/hooks';
 import { checkAuth } from './features/user/userSlice';
 import useAuth from './hooks/use-auth';
 
 function App() {
-  const socketRef = useRef<any>(null);
   let { auth } = useAuth();
   const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    socketRef.current = io('/ad', {
-      transports: ['websocket'],
-      path: '/socket.io',
-    });
-  }, []);
 
   useEffect(() => {
     dispatch(checkAuth());

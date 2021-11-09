@@ -1,3 +1,4 @@
+@import 'common/styles/base';
 .modal {
   position: fixed;
   top: 50%;
@@ -6,6 +7,128 @@
   z-index: 3;
   background: #fff;
   padding: 24px 30px 30px;
+  border-radius: 20px;
+  &.modal--sm {
+    min-width: 305px;
+  }
+  &.modal--md {
+    min-width: 382px;
+  }
+  &.modal--lg {
+    min-width: 418px;
+  }
+
+  .modal-content {
+    margin-top: 40px;
+    .modal__title {
+      font-size: 20px;
+      line-height: 23px;
+      color: $navy;
+      text-align: center;
+      padding-bottom: 4px;
+    }
+
+    .modal__content__row {
+      margin-top: 24px;
+      &.modal__content__row--horizontal {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+      .modal__label {
+        font-size: 18px;
+        line-height: 21px;
+        color: $navy;
+        padding-bottom: 4px;
+        margin-right: 16px;
+      }
+      .modal__input--container {
+        padding: 0 20px;
+        display: flex;
+        justify-content: flex-start;
+        column-gap: 15px;
+
+        &.toggle__btn__container {
+          padding: 10px 0 8px 20px;
+        }
+        input {
+          width: 100%;
+          border: none;
+          border-bottom: 1px solid $new-color;
+          font-size: 16px;
+          line-height: 19px;
+          padding: 8px 0;
+        }
+        .toggle__btn {
+          border: 1px solid $new-color;
+          font-size: 20px;
+          line-height: 23px;
+          color: $new-color;
+          cursor: pointer;
+
+          &.selected {
+            background-color: $new-color;
+            color: $white;
+          }
+        }
+      }
+      .checkbox__container {
+        display: block;
+        position: relative;
+        padding-left: 35px;
+        cursor: pointer;
+        font-size: 22px;
+        height: 25px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        & input:checked ~ .checkmark {
+          background-color: $new-color;
+          background-image: url('../../common/assets/checkbox.png');
+          background-repeat: no-repeat;
+          background-position: center center;
+          &:after {
+            display: block;
+          }
+        }
+
+        & input {
+          position: absolute;
+          opacity: 0;
+          cursor: pointer;
+          height: 0;
+          width: 0;
+        }
+        .checkmark {
+          position: absolute;
+          top: 0;
+          left: 0;
+          height: 25px;
+          width: 25px;
+          background-color: #ddd;
+          border: 1px solid $new-color;
+        }
+      }
+    }
+
+    .modal__action__container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      button {
+        padding: 5px 15px;
+        margin: 0 10px;
+        cursor: pointer;
+        position: relative;
+
+        &:hover {
+          background-color: $new-color;
+          color: $white;
+        }
+      }
+    }
+  }
 }
 
 .overlay {
@@ -15,9 +138,5 @@
   right: 0;
   bottom: 0;
   z-index: 2;
-  background-color: rgba(0, 0, 0, 0.7);
-}
-
-.modal-content {
-  margin-top: 40px;
+  background-color: rgba(0, 0, 0, 0.44);
 }
