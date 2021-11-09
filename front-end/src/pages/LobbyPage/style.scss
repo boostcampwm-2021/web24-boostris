@@ -100,6 +100,10 @@
           display: inline-block;
           margin-right: 12px;
         }
+
+        &.activated {
+          background-color: $new-color;
+        }
       }
     }
     .button__group {

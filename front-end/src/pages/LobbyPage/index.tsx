@@ -1,19 +1,24 @@
-import { useEffect, useRef, useState } from 'react';
+import { MouseEventHandler, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import Modal from '../../components/Modal';
+import Popper from '../../components/Popper';
 
 import SectionTitle from '../../components/SectionTitle';
 import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
 import './style.scss';
 
+type rightClickEventType = MouseEventHandler | ((e: any, id: string) => void);
+
 function LobbyPage() {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const socketRef = useRef<any>(null);
   const modalRef = useRef<any>();
-
+  const userListContainerRef = useRef<any>();
+  const popperRef = useRef<any>();
+  const [activatedUser, setActivatedUser] = useState<string>('');
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
@@ -46,6 +51,27 @@ function LobbyPage() {
     setModalChecked(false);
     modalRef.current.close();
   };
+
+  const rightClickListener: rightClickEventType = (e, id) => {
+    e.preventDefault();
+    const { target } = e;
+    if ((target as HTMLElement).closest('.user__list--item')) {
+      popperRef.current.setPosition(e.clientX, e.clientY);
+      popperRef.current.open();
+    }
+    setActivatedUser(id);
+  };
+
+  const resetActivatedPopper = () => {
+    const targetRef = popperRef.current;
+    targetRef.close();
+    setActivatedUser('');
+  };
+  useEffect(() => {
+    window.addEventListener('click', resetActivatedPopper);
+    return () => window.removeEventListener('click', resetActivatedPopper);
+  }, []);
+
   return (
     <AppbarLayout>
       <div className="lobby__page--root">
@@ -63,10 +89,14 @@ function LobbyPage() {
               </button>
             ))}
           </div>
-          <div className="user__list__container">
+          <div ref={userListContainerRef} className="user__list__container">
             <div className="user__list__scroll__root">
               {users.map(({ nickname, id }) => (
-                <div className="user__list--item" key={id}>
+                <div
+                  className={`user__list--item ${activatedUser === id && 'activated'}`}
+                  key={id}
+                  onContextMenu={(e) => rightClickListener(e, id)}
+                >
                   <span className="dot"></span>
                   {nickname}
                 </div>
@@ -141,6 +171,10 @@ function LobbyPage() {
             [<button onClick={handleCreatRoomClose}>아니오</button>/<button>예</button>]
           </div>
         </Modal>
+        <Popper ref={popperRef}>
+          <div className="popper__item">프로필</div>
+          <div className="popper__item">친구 추가</div>
+        </Popper>
       </div>
     </AppbarLayout>
   );

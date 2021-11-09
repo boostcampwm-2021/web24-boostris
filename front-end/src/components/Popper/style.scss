@@ -1,0 +1,24 @@
+@import 'common/styles/base';
+.popper {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  background: $transparent-light-navy;
+  border: 1px solid $dark-navy;
+  border-bottom: none;
+  .popper__item {
+    padding: 7px 18px;
+    font-size: 12px;
+    line-height: 14px;
+    color: $white;
+    min-width: 90px;
+    text-align: center;
+    border-bottom: 1px solid $dark-navy;
+
+    &:hover {
+      background-color: $transparent-azure-blue;
+    }
+  }
+}
