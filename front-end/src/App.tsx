@@ -50,11 +50,8 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/oauth/*" element={<OauthCallbackRouter />} />
-<<<<<<< HEAD
           <Route path="rank" element={<RankPage />} />
-=======
           <Route path="/profile" element={<ProfilePage />} />
->>>>>>> 💄 : 프로필 디자인 변경 및 적용
         </Routes>
       </BrowserRouter>
     </div>

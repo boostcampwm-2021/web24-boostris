@@ -19,7 +19,8 @@
 
     .profile-section__image {
       width: 92px;
-      margin: 30px auto 15px;
+      height: 92px;
+      margin: 30px auto 27px;
     }
 
     .profile-section__player {
@@ -29,6 +30,7 @@
 
     .profile-section__status {
       width: 200px;
+      background-color: rgba(255, 255, 255, 0.14);
       border: 1px rgba(255, 255, 255, 0.637) solid;
       height: 120px;
       border-radius: 5px;
@@ -36,6 +38,12 @@
       margin: 25px auto 30px;
       box-sizing: border-box;
       padding: 10px;
+      color: white;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
 
     .profile-section__button {
@@ -48,6 +56,11 @@
       margin: 0px auto;
       width: 200px;
       height: 30px;
+      cursor: pointer;
+
+      &:hover {
+        border: 1px solid $white;
+      }
     }
   }
 
