@@ -4,8 +4,9 @@ import { selectTable, innerJoinTable } from '../database/query';
 const ProfileRouter = express.Router();
 
 ProfileRouter.post('/', async (req, res, next) => {
-  const stateMessageList = await getStateMessage(req.body.nickname);
+  const stateMessageList = await getStateMessageInDB(req.body.nickname);
   const totalList = await getTotalInDB(req.body.nickname);
+  const recentList = await getRecentInDB(req.body.nickname);
 
   if (stateMessageList.length === 0) {
     //잘못된 경우 에러처리
@@ -13,11 +14,11 @@ ProfileRouter.post('/', async (req, res, next) => {
   } else {
     const { state_message } = stateMessageList[0];
     const [total, win] = totalList;
-    res.status(200).json({ state_message, total, win });
+    res.status(200).json({ state_message, total, win, recentList });
   }
 });
 
-const getStateMessage = (nickname) => {
+const getStateMessageInDB = (nickname) => {
   return selectTable('state_message', 'USER_INFO', `nickname='${nickname}'`);
 };
 
@@ -38,17 +39,7 @@ const getTotalInDB = async (nickname) => {
   ]);
 };
 
-const getRecentRecordInDB = (nickname) => {
-  return innerJoinTable(
-    'date, mode, ranking, play_time, attack_cnt, attacked_cnt',
-    'PLAY',
-    'GAME_INFO',
-    'PLAY.game_id = GAME_INFO.game_id',
-    `nickname='${nickname}'`
-  );
-};
-
-const getTotalWinInDB = (nickname) => {
+const getRecentInDB = (nickname) => {
   return innerJoinTable(
     'date, mode, ranking, play_time, attack_cnt, attacked_cnt',
     'PLAY',
