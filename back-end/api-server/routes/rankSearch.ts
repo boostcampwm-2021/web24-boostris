@@ -59,8 +59,9 @@ RankRouter.post('/', async (req, res) => {
       PLAY as p 
       left join user_info as u on p.nickname = u.nickname 
       inner join game_info as g on p.game_id = g.game_id and g.\`mode\` = '${mode}' 
-      group by p.nickname) a`,
-      `ranking >= ${Number(offsetRank)} and ranking < ${Number(offsetRank) + 20}`
+      group by p.nickname) a`
+      //`ranking >= ${Number(offsetRank)} and ranking < ${Number(offsetRank) + 20}`
+      //바로 위 코드는 무한 스크롤 구현 시 고려해 볼 것
     );
     // 클라이언트로 부터 받은 닉네임이 있으면, 그 닉네임 부터의 배열을 보내면 됨
     if (nickName) {
