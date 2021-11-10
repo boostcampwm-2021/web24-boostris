@@ -5,6 +5,8 @@ import { useAppDispatch } from '../app/hooks';
 import {
   roomInfo,
   updateRoomID,
+  updateRoomMembers,
+  updateRoomMessages,
   updateRooms,
   updateUsers,
   userInfo,
@@ -51,6 +53,16 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
         dispatch(updateRoomID(null));
         navigate(`/`);
       });
+      socketRef.current.on('room member list', (list: string[]) => {
+        dispatch(updateRoomMembers(list));
+      });
+
+      socketRef.current.on(
+        'receive message',
+        ({ from, message, id }: { from: string; message: string; id: string }) => {
+          dispatch(updateRoomMessages({ from, message, id }));
+        }
+      );
     }
     return () => {
       if (socketRef.current && !auth.authenticated) {

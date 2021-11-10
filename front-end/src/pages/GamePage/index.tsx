@@ -1,24 +1,30 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAppSelector } from '../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { useSocket, useSocketReady } from '../../context/SocketContext';
-import { selectSocket } from '../../features/socket/socketSlice';
+import { resetRoomMessages, selectSocket } from '../../features/socket/socketSlice';
+import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
+import './style.scss';
 
 function GamePage() {
   const { gameID } = useParams();
-  const { roomID } = useAppSelector(selectSocket);
+  const { roomID, roomMembers, roomMessages } = useAppSelector(selectSocket);
+  const dispatch = useAppDispatch();
   const socketClient = useSocket();
+  const { profile } = useAuth();
   const isReady = useSocketReady();
+  const chatInputRef = useRef<any>();
 
   useEffect(() => {
     const ref = socketClient.current;
     return () => {
       if (ref) {
         ref.emit('leave room', roomID);
+        dispatch(resetRoomMessages());
       }
     };
-  }, [roomID, socketClient]);
+  }, [dispatch, roomID, socketClient]);
 
   useEffect(() => {
     if (isReady && socketClient.current) {
@@ -28,9 +34,45 @@ function GamePage() {
     }
   }, [isReady, gameID, socketClient, roomID]);
 
+  const handleSubmit: React.KeyboardEventHandler = (e) => {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  };
+  const sendMessage = () => {
+    socketClient.current.emit('send message', {
+      roomID,
+      from: profile.nickname,
+      message: chatInputRef.current.value,
+    });
+    chatInputRef.current.value = '';
+  };
   return (
     <AppbarLayout>
-      <div>Game# {gameID}</div>
+      <div className="game__page--root">
+        <div>Game# {gameID}</div>
+        Members :
+        {roomMembers.map((m) => (
+          <div key={m.id}>{m.nickname}</div>
+        ))}
+        <div className="chats__container">
+          <div className="chat__history__container">
+            <div className="chat__history__scroll__root">
+              {roomMessages.map(({ id, from, message }) => (
+                <div key={id} className="chat__history__item">
+                  {from} : {message}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="chat__input__container">
+            <input type="text" className="chat__input" onKeyUp={handleSubmit} ref={chatInputRef} />
+            <button className="chat__send__btn" onClick={sendMessage}>
+              전송
+            </button>
+          </div>
+        </div>
+      </div>
     </AppbarLayout>
   );
 }

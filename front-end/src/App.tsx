@@ -4,7 +4,6 @@ import './App.scss';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import OauthCallbackRouter from './routes/OauthCallbackRouter';
-import RankPage from './pages/RankPage';
 
 import { useEffect } from 'react';
 import { useAppDispatch } from './app/hooks';
@@ -29,7 +28,6 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/rank" element={<RankPage />} />
         <Route path="/oauth/*" element={<OauthCallbackRouter />} />
         <Route path="/*" element={<WithSocketPage />} />
       </Routes>
