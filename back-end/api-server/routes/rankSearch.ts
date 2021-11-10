@@ -15,30 +15,63 @@ interface Query {
   mode?: String;
   nickName?: String;
   offsetRank?: any;
+  lastNickName?: String; // 클라이언트에서 마지막으로 뜬 닉네임
 }
 
 const rankResponse = {
   data: [],
+  categoryKey: '',
   message: '',
 };
 
-RankRouter.get('/', async (req, res) => {
+const profileResponse = {
+  data: [],
+  message: '',
+};
+
+RankRouter.post('/myInfo', async (req, res) => {
   try {
-    const { category, mode, nickName, offsetRank }: Query = req.query;
-    const queryResult = await selectTable(
+    const { nickname } = req.body.myInfoTemplate;
+    console.log(nickname);
+    let queryResult = await selectTable(
+      `sum(player_win), sum(attack_cnt)`,
+      `PLAY group by nickname having nickname = '${nickname}'`
+    ); // 지금은 nickname이 아니라 oauth id이므로 추후 스토어에 추가되면 바꿀 예정.
+    profileResponse.data = queryResult?.[0];
+    profileResponse.message = 'success';
+    console.log(queryResult);
+    res.status(200).json(profileResponse);
+  } catch (error) {
+    console.log(error);
+    profileResponse.message = 'fail';
+    res.status(400).json(profileResponse);
+  }
+});
+
+RankRouter.post('/', async (req, res) => {
+  try {
+    const { category, mode, nickName, offsetRank, lastNickName }: Query = req.body.rankApiTemplate;
+    let queryResult = await selectTable(
       '*',
       `(SELECT 
       p.nickname, 
       sum(p.${categoryBox[category]}), 
       ANY_VALUE(u.state_message), 
-      rank() over (order by ANY_VALUE(p.${categoryBox[category]}) desc) as ranking
+      rank() over (order by sum(p.${categoryBox[category]}) desc) as ranking
       FROM
       PLAY as p 
       left join user_info as u on p.nickname = u.nickname 
-      inner join game_info as g on p.game_id = g.game_id and g.\`mode\` = ${mode} 
+      inner join game_info as g on p.game_id = g.game_id and g.\`mode\` = '${mode}' 
       group by p.nickname) a`,
       `ranking >= ${Number(offsetRank)} and ranking < ${Number(offsetRank) + 20}`
     );
+    // 클라이언트로 부터 받은 닉네임이 있으면, 그 닉네임 부터의 배열을 보내면 됨
+    if (nickName) {
+      let nickNameIndex = queryResult.findIndex(function (item) {
+        return item.nickname === nickName;
+      });
+      queryResult = nickNameIndex < 0 ? queryResult : queryResult.slice(nickNameIndex); // 정해지는 정책에 따라 다를 것으로 보임
+    }
     rankResponse.data = queryResult;
     rankResponse.message = 'success';
     res.status(200).json(rankResponse);

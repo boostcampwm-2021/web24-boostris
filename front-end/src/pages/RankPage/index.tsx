@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { MouseEventHandler, useEffect, useRef, useState } from 'react';
+import { useAppSelector } from '../../app/hooks';
+import { selectUser } from '../../features/user/userSlice';
 import AppbarLayout from '../../layout/AppbarLayout';
 import './style.scss';
 
@@ -11,6 +13,18 @@ const fetchGetRank: any = async (rankApiTemplate: any) => {
     },
     credentials: 'include',
     body: JSON.stringify({ rankApiTemplate }),
+  }).then((res) => res.json());
+};
+
+const fetchGetMyCntInfo: any = async (myInfoTemplate: any) => {
+  return fetch(`/api/rank/myInfo`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({ myInfoTemplate }),
   }).then((res) => res.json());
 };
 
@@ -41,32 +55,47 @@ function RankItemBox({ obj }: any) {
 }
 
 function RankPage() {
-  const rankApiTemplate = {
+  const rankApiTemplate: any = {
     category: 'totalWin',
     mode: '1 vs 1',
     nickName: '',
     offsetRank: '',
+    lastNickName: '',
   };
 
   const [categoryButtonState, categoryButtonChange] = useState(1);
   const [modeButtonState, modeButtonChange] = useState(1);
   const [players, changePlayerLists] = useState([]);
+  const [myInfo, changeMyInfo] = useState([]);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const user = useAppSelector(selectUser);
 
-  async function categoryButton(e: any) {
+  const categoryButton: MouseEventHandler<HTMLButtonElement> = (e: any) => {
     const value = e.target.id === 'attackCnt' ? 0 : 1;
     categoryButtonChange(value);
-  }
+  };
 
-  async function modeButton(e: any) {
+  const modeButton: MouseEventHandler<HTMLButtonElement> = (e: any) => {
     const value = e.target.id === 'normal' ? 0 : 1;
     modeButtonChange(value);
-  }
+  };
 
-  async function searchButton(e: any) {
+  const searchButton: MouseEventHandler<HTMLButtonElement> = async (e: any) => {
+    rankApiTemplate.nickName = inputRef?.current?.value;
     syncKeyWithServer(rankApiTemplate, categoryButtonState, modeButtonState);
     const res = await fetchGetRank(rankApiTemplate);
     changePlayerLists(res.data);
-  }
+  };
+
+  useEffect(() => {
+    (async function effect() {
+      let value: any = await fetchGetMyCntInfo({ nickname: user.profile.nickname });
+      const playerWin = value.data?.['sum(player_win)'];
+      const attackCnt = value.data?.['sum(attack_cnt)'];
+      const tmp: any = [playerWin, attackCnt];
+      changeMyInfo(tmp);
+    })();
+  }, []);
 
   useEffect(() => {
     (async function effect() {
@@ -86,9 +115,9 @@ function RankPage() {
               <img src="assets/profile.png" alt="" height="98" width="86" />
             </div>
             <div className="rank__player__rank">
-              <div className="rank__player__rank__row">플레이어</div>
-              <div className="rank__player__rank__row">승리횟수 : 1번</div>
-              <div className="rank__player__rank__row">공격횟수 : 1번</div>
+              <div className="rank__player__rank__row">{user.profile.nickname}</div>
+              <div className="rank__player__rank__row">승리횟수 : {myInfo[0]}번</div>
+              <div className="rank__player__rank__row">공격횟수 : {myInfo[1]}번</div>
             </div>
           </div>
           <div className="rank__input__box">
@@ -130,6 +159,7 @@ function RankPage() {
               <input
                 className="rank__input__box__nickname"
                 placeholder="플레이어 닉네임을 입력해주세요."
+                ref={inputRef}
               ></input>
               <button
                 className="rank__input__box__button rank__nickname__search"
