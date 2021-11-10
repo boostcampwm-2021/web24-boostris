@@ -29,15 +29,29 @@ export default function Profile() {
     );
   };
 
-  const drawRecent = (recentList: string[][]) => {
-    return <>{recentList.map((row, i) => row.map((value, j) => <div key={j}>{value}</div>))}</>;
+  const drawRecent = (recentList: Array<any>) => {
+    if (recentList.length === 0) return;
+    return (
+      <>
+        {recentList.map((value, i) => (
+          <>
+            <div>{value.date.slice(0, 10)}</div>
+            <div>{value.mode}</div>
+            <div>{value.ranking}</div>
+            <div>{value.play_time}</div>
+            <div>{value.attack_cnt}</div>
+            <div>{value.attacked_cnt}</div>
+          </>
+        ))}
+      </>
+    );
   };
 
   const recentHeader = ['날짜', '인원', '등수', '플레이 타임', '공격 횟수', '받은 횟수'];
   const [recentList, setRecentList] = useState<string[][]>([]);
   const [statsticsState, setStatsticsState] = useState({});
   const [editMode, setEditMode] = useState(false);
-
+  const [nickname, setNickname] = useState(useAuth().profile.nickname);
   const [userState, setUserState] = useState({
     nickname: useAuth().profile.nickname,
     stateMessage: '',
@@ -57,7 +71,7 @@ export default function Profile() {
       })
       .catch((error) => console.log('error:', error));
     return () => {};
-  }, [userState.nickname]);
+  }, [nickname]);
 
   return (
     <div className="profile">
@@ -103,7 +117,7 @@ export default function Profile() {
             ))}
           </div>
           <div className="recent-list__scroll">
-            {/* <div className="recent-list">{drawRecent(recentList)}</div> */}
+            <div className="recent-list">{drawRecent(recentList)}</div>
           </div>
         </div>
       </div>
