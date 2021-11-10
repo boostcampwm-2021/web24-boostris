@@ -31,16 +31,18 @@ export interface TetrisState {
   QUEUE: TetrisBlock[];
   CAN_HOLD: boolean;
   SOLID_GARBAGES: number;
-  KEYDOWN_TURN_RIGHT: boolean,
-  KEYDOWN_TURN_LEFT: boolean,
-  KEYDOWN_HARD_DROP: boolean
+  ATTACKED_GARBAGES: number;
+  KEYDOWN_TURN_RIGHT: boolean;
+  KEYDOWN_TURN_LEFT: boolean;
+  KEYDOWN_HARD_DROP: boolean;
 }
 
 export interface TetrisTimer {
   PLAY_TIME: number;
   DROP: NodeJS.Timeout;
   CONFLICT: NodeJS.Timeout;
-  SOLID_GARBAGE: NodeJS.Timeout;
+  SOLID_GARBAGE_TIMEOUT: NodeJS.Timeout,
+  SOLID_GARBAGE_INTERVAL: NodeJS.Timeout;
 }
 
 export interface TetrisBackground {
