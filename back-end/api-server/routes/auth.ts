@@ -20,6 +20,7 @@ const oauthDupCheck = async (id, req, res) => {
     const userList = await isOauthIdInDB(id);
     /* 만약 oauth 로그인에 성공하면 jwt 토큰 발급 */
     if (userList && userList.length) {
+      console.log(userList);
       const [user] = userList;
       setJWT(req, res, user);
       return [true, user];

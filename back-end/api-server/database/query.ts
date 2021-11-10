@@ -17,3 +17,9 @@ export const insertIntoTable = async (table, into, values) => {
   let queryLine = `INSERT INTO ${table} ${into} VALUES (${values})`;
   return connectionQuery(queryLine);
 };
+
+export const innerJoinTable = async (column, tableA, tableB, on = null, condition = null) => {
+  let queryLine = `SELECT ${column} FROM ${tableA} INNER JOIN ${tableB} ON ${on} `;
+  queryLine += condition ? `WHERE ${condition}` : ``;
+  return connectionQuery(queryLine);
+};

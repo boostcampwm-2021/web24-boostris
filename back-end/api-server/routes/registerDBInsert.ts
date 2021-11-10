@@ -12,8 +12,8 @@ RegisterRouter.post('/insert', (req, res, next) => {
   if (
     insertIntoTable(
       'USER_INFO',
-      '(nickname, state_message, oauth_id, total_game_number, total_win, total_play_time)',
-      `'${nickName}', '${message}', '${authId}', 0, 0, '00:00:00'`
+      '(nickname, state_message, oauth_id)',
+      `'${nickName}', '${message}', '${authId}'`
     )
   ) {
     // DB에 넣는 것이 실패한 경우

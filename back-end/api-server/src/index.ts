@@ -8,6 +8,7 @@ import 'dotenv/config';
 import AuthRouter from '../routes/auth';
 import InsertDbRegister from '../routes/registerDBInsert';
 import checkDupNickRegister from '../routes/registerDupCheck';
+import ProfileRouter from '../routes/profile';
 class App {
   public application: express.Application;
   constructor() {
@@ -28,6 +29,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', AuthRouter);
 app.use('/api/register', checkDupNickRegister, InsertDbRegister);
+app.use('/api/profile', ProfileRouter);
+
 app.get('/api', (req: express.Request, res: express.Response) => {
   res.send('start');
 });
