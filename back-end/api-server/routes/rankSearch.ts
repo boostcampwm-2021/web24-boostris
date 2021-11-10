@@ -32,17 +32,14 @@ const profileResponse = {
 RankRouter.post('/myInfo', async (req, res) => {
   try {
     const { nickname } = req.body.myInfoTemplate;
-    console.log(nickname);
     let queryResult = await selectTable(
       `sum(player_win), sum(attack_cnt)`,
       `PLAY group by nickname having nickname = '${nickname}'`
     ); // 지금은 nickname이 아니라 oauth id이므로 추후 스토어에 추가되면 바꿀 예정.
     profileResponse.data = queryResult?.[0];
     profileResponse.message = 'success';
-    console.log(queryResult);
     res.status(200).json(profileResponse);
   } catch (error) {
-    console.log(error);
     profileResponse.message = 'fail';
     res.status(400).json(profileResponse);
   }

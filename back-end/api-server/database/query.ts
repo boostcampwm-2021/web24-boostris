@@ -11,6 +11,7 @@ export const selectTable = (column, table, condition = null, ...rest) => {
   let queryLine = `SELECT ${column} FROM ${table} `;
   queryLine += condition ? `WHERE ${condition}` : ``;
   queryLine += rest;
+  console.log(queryLine);
   return connectionQuery(queryLine);
 };
 

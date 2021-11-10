@@ -4,7 +4,7 @@ import { selectUser } from '../../features/user/userSlice';
 import AppbarLayout from '../../layout/AppbarLayout';
 import './style.scss';
 
-const fetchGetRank: any = async (rankApiTemplate: any) => {
+const fetchGetRank: Function = async (rankApiTemplate: Object) => {
   return fetch(`/api/rank`, {
     method: 'POST',
     headers: {
@@ -16,7 +16,7 @@ const fetchGetRank: any = async (rankApiTemplate: any) => {
   }).then((res) => res.json());
 };
 
-const fetchGetMyCntInfo: any = async (myInfoTemplate: any) => {
+const fetchGetMyCntInfo: Function = async (myInfoTemplate: Object) => {
   return fetch(`/api/rank/myInfo`, {
     method: 'POST',
     headers: {
@@ -35,7 +35,7 @@ const syncKeyWithServer = (
 ) => {
   const valueChanger = {
     category: ['attackCnt', 'totalWin'],
-    mode: ['1 vs 1', 'normal'],
+    mode: ['normal', '1 vs 1'],
   };
   rankApiTemplate.category = valueChanger.category[categoryButtonState];
   rankApiTemplate.mode = valueChanger.mode[modeButtonState];
@@ -62,6 +62,8 @@ function RankPage() {
     offsetRank: '',
     lastNickName: '',
   };
+
+  const categoryChange = ['공격 횟수', '승리 횟수'];
 
   const [categoryButtonState, categoryButtonChange] = useState(1);
   const [modeButtonState, modeButtonChange] = useState(1);
@@ -175,11 +177,17 @@ function RankPage() {
             <div className="rank__display__item display__rank">등수</div>
             <div className="rank__display__item display__nickname">닉네임</div>
             <div className="rank__display__item display__message">상태 메세지</div>
-            <div className="rank__display__item display__win">승리 횟수</div>
+            <div className="rank__display__item display__win">
+              {categoryChange[categoryButtonState]}
+            </div>
           </div>
-          {players.map((obj) => (
-            <RankItemBox key={obj['nickname']} obj={obj} />
-          ))}
+          <div className="rank__display__scroll__root">
+            <div className="rank__display__itembox display__body">
+              {players.map((obj) => (
+                <RankItemBox key={obj['nickname']} obj={obj} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </AppbarLayout>
