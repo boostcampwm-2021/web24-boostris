@@ -351,7 +351,7 @@ const initTetris = (
   TIMER.PLAY_TIME = 0;
 
   BACKGROUND.CANVAS = document.querySelector('.board') as HTMLCanvasElement;
-  BACKGROUND.CTX = BACKGROUND.CANVAS?.getContext('2d') as CanvasRenderingContext2D;
+  BACKGROUND.CTX = BACKGROUND.CANVAS.getContext('2d') as CanvasRenderingContext2D;
   BACKGROUND.CTX.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
   BACKGROUND.IMAGE = new Image();
   BACKGROUND.IMAGE.src = 'assets/block.png';
@@ -543,7 +543,8 @@ const Board = ({
       TIMER.SOLID_GARBAGE_TIMEOUT = setTimeout(() => TIMER.SOLID_GARBAGE_INTERVAL = setInterval(() => STATE.SOLID_GARBAGES++, 5000), 120000); // 솔리드 가비지 타이머
     };
 
-    const keyDownEventHandler = (event: KeyboardEvent) => {  
+    const keyDownEventHandler = (event: KeyboardEvent) => {
+      event.preventDefault();
       if (!moves[event.key]) return;
       BLOCK.NEXT = moves[event.key](BLOCK.NOW);
 
@@ -618,20 +619,22 @@ const Board = ({
 
   useEffect(() => {
     socket.on('attacked', garbage => {
+
       STATE.ATTACKED_GARBAGES += garbage;
     });
   }, []);
 
   return (
+    <>
     <canvas
       style={{
         position: 'relative',
-        background: `url(assets/player_board.png)`,
       }}
       className="board"
-      width={TETRIS.BOARD_WIDTH}
+      width={TETRIS.BOARD_WIDTH + TETRIS.ATTACK_BAR}
       height={TETRIS.BOARD_HEIGHT}
     ></canvas>
+    </>
   );
 };
 

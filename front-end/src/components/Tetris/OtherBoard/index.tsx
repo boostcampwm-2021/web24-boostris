@@ -17,6 +17,7 @@ import {
   TetrisPropsFunc,
 } from '../types';
 import { drawOtherCell } from '../utils/block';
+import { drawBoardBackground } from '../utils/tetrisDrawUtil';
 
 interface PlayerInterface {
   PLAYER: string,
@@ -127,46 +128,66 @@ const initSocketEvent = (socket: Socket, canvasContainer: React.RefObject<HTMLCa
   });
 }
 
+const drawOtherBoardBackground = () => {
+  for(let i = 0; i < 3; i++) {
+    const canvas = document.querySelector(`[data-player="other-board-background${i}"]`) as HTMLCanvasElement;
+    drawBoardBackground(canvas, TETRIS.OTHER_BOARD_WIDTH, TETRIS.OTHER_BOARD_HEIGHT, TETRIS.OTHER_BLOCK_SIZE);
+  }
+}
+
 const OtherBoard = ({ socket }: { socket: Socket; }): JSX.Element => {
   const canvasContainer = [useRef<HTMLCanvasElement>(null), useRef<HTMLCanvasElement>(null), useRef<HTMLCanvasElement>(null)];
   // const user = useAppSelector(selectUser);
 
   useEffect(() => {
+    drawOtherBoardBackground();
     initSocketEvent(socket, canvasContainer);
   }, []);
 
   return (
     <>
+    <div className="slot">
+      <canvas
+        className="other-board"
+        data-player={0}
+        width={TETRIS.OTHER_BOARD_WIDTH}
+        height={TETRIS.OTHER_BOARD_HEIGHT}
+      ></canvas>
+      <canvas
+        className="other-board-background"
+        data-player={`other-board-background0`}
+        width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.ATTACK_BAR}
+        height={TETRIS.OTHER_BOARD_HEIGHT}
+      ></canvas>
+    </div>
+    <div className="slot">
     <canvas
-      style={{
-        background: `url(assets/player_board.png)`,
-        backgroundSize: '100% 100%',
-      }}
-      className="other-board"
-      data-player={0}
-      width={TETRIS.OTHER_BOARD_WIDTH}
-      height={TETRIS.OTHER_BOARD_HEIGHT}
-    ></canvas>
-    <canvas
-      style={{
-        background: `url(assets/player_board.png)`,
-        backgroundSize: '100% 100%',
-      }}
       className="other-board"
       data-player={1}
-      width={TETRIS.OTHER_BOARD_WIDTH}
+      width={TETRIS.OTHER_BOARD_WIDTH }
       height={TETRIS.OTHER_BOARD_HEIGHT}
     ></canvas>
     <canvas
-      style={{
-        background: `url(assets/player_board.png)`,
-        backgroundSize: '100% 100%',
-      }}
+        className="other-board-background"
+        data-player={`other-board-background1`}
+        width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.ATTACK_BAR}
+        height={TETRIS.OTHER_BOARD_HEIGHT}
+      ></canvas>
+    </div>
+    <div className="slot">
+    <canvas
       className="other-board"
       data-player={2}
       width={TETRIS.OTHER_BOARD_WIDTH}
       height={TETRIS.OTHER_BOARD_HEIGHT}
     ></canvas>
+    <canvas
+        className="other-board-background"
+        data-player={`other-board-background2`}
+        width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.ATTACK_BAR}
+        height={TETRIS.OTHER_BOARD_HEIGHT}
+      ></canvas>
+    </div>
     </>
   );
 };

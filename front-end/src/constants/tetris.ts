@@ -52,6 +52,8 @@ export const BOARD_HEIGHT: number = 481;
 export const OTHER_BOARD_WIDTH: number = 121;
 export const OTHER_BOARD_HEIGHT: number = 241;
 
+export const ATTACK_BAR = 8;
+
 // 블록 시작 좌표
 export const START_X: number = 3;
 export const START_Y: number = 4;
