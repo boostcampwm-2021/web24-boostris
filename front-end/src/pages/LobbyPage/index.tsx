@@ -1,10 +1,12 @@
-import { MouseEventHandler, useEffect, useRef, useState } from 'react';
+import { MouseEventHandler, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { io } from 'socket.io-client';
+import { useAppSelector } from '../../app/hooks';
 import Modal from '../../components/Modal';
 import Popper from '../../components/Popper';
 
 import SectionTitle from '../../components/SectionTitle';
+import { useSocket } from '../../context/SocketContext';
+import { selectSocket } from '../../features/socket/socketSlice';
 import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
 import './style.scss';
@@ -13,43 +15,39 @@ type rightClickEventType = MouseEventHandler | ((e: any, id: string) => void);
 
 function LobbyPage() {
   const navigate = useNavigate();
+
   const { profile } = useAuth();
-  const socketRef = useRef<any>(null);
+  const { rooms, users } = useAppSelector(selectSocket);
+  const socketClient = useSocket();
+
   const modalRef = useRef<any>();
-  const userListContainerRef = useRef<any>();
   const popperRef = useRef<any>();
+  const userListContainerRef = useRef<any>();
+  const roomNameInputRef = useRef<any>();
+
   const [activatedUser, setActivatedUser] = useState<string>('');
-  const [users, setUsers] = useState([]);
-
-  useEffect(() => {
-    socketRef.current = io('/lobby/users', {
-      transports: ['websocket'],
-      path: '/socket.io',
-    });
-    socketRef.current.on('connect', () => {
-      socketRef.current.emit('set userName', profile.nickname);
-    });
-
-    socketRef.current.on('user list update', (list: any) => {
-      setUsers(list);
-    });
-  }, [profile.nickname]);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [modalToggleIdx, setModalToggleIdx] = useState(0);
+  const [modalChecked, setModalChecked] = useState(false);
 
   const handleClick = () => {
     navigate('/tetris');
   };
-
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [modalToggleIdx, setModalToggleIdx] = useState(0);
-  const [modalChecked, setModalChecked] = useState(false);
   const handleCreateRooomOpen = () => {
     modalRef.current.open();
   };
-
   const handleCreatRoomClose = () => {
     setModalToggleIdx(0);
     setModalChecked(false);
     modalRef.current.close();
+  };
+  const handleCreatRoomSubmit = () => {
+    socketClient.current.emit('create room', {
+      owner: profile.nickname,
+      name: roomNameInputRef.current.value,
+      limit: modalToggleIdx + 2,
+      isSecret: modalChecked,
+    });
   };
 
   const rightClickListener: rightClickEventType = (e, id) => {
@@ -67,14 +65,14 @@ function LobbyPage() {
     targetRef.close();
     setActivatedUser('');
   };
-  useEffect(() => {
-    window.addEventListener('click', resetActivatedPopper);
-    return () => window.removeEventListener('click', resetActivatedPopper);
-  }, []);
+
+  const joinRoom = (id: string) => {
+    socketClient.current.emit('join room', id);
+  };
 
   return (
     <AppbarLayout>
-      <div className="lobby__page--root">
+      <div className="lobby__page--root" onClick={resetActivatedPopper}>
         <div className="lobby__section lobby__sidebar">
           <SectionTitle>내 정보</SectionTitle>
           <p className="absolute_border_bottom my__nickname">{profile.nickname}</p>
@@ -117,16 +115,26 @@ function LobbyPage() {
           <SectionTitle>로비</SectionTitle>
           <div className="lobby__container">
             <div className="room__list__scroll__root">
-              <div className="room__container room__type--secret">
-                <p className="room__title">플레이어1님의 방</p>
-                <p className="room__desc">방 설명 글자가 들어가는 부분입니다.</p>
-                <p className="room__desc"> * 인원 : 3 / 4</p>
-              </div>
-              <div className="room__container">
-                <p className="room__title">플레이어1님의 방</p>
-                <p className="room__desc">방 설명 글자가 들어가는 부분입니다.</p>
-                <p className="room__desc"> - 인원 : 3 / 4 - 비밀방 : O</p>
-              </div>
+              {rooms.map(({ id, owner, name, limit, isSecret, current }) => (
+                <div
+                  key={id}
+                  className={`room__container ${isSecret ? 'room__type--secret' : ''}`}
+                  onClick={() => {
+                    if (limit > current) {
+                      joinRoom(id);
+                    } else {
+                      alert('정원 초과');
+                    }
+                  }}
+                >
+                  <p className="room__title">{name}</p>
+                  <p className="room__desc">{owner}</p>
+                  <p className="room__desc">
+                    {' '}
+                    * 인원 : {current} / {limit}
+                  </p>
+                </div>
+              ))}
 
               <div className="empty__item"></div>
             </div>
@@ -136,7 +144,7 @@ function LobbyPage() {
           <div className="modal__content__row">
             <div className="modal__label">* 방 이름</div>
             <div className="modal__input--container">
-              <input type="text" placeholder="플레이어1님의 방" />
+              <input type="text" placeholder="플레이어1님의 방" ref={roomNameInputRef} />
             </div>
           </div>
           <div className="modal__content__row">
@@ -168,7 +176,8 @@ function LobbyPage() {
           </div>
           <div className="mb--40"></div>
           <div className="modal__action__container">
-            [<button onClick={handleCreatRoomClose}>아니오</button>/<button>예</button>]
+            [<button onClick={handleCreatRoomClose}>아니오</button>/
+            <button onClick={handleCreatRoomSubmit}>예</button>]
           </div>
         </Modal>
         <Popper ref={popperRef}>

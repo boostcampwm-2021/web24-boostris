@@ -1,18 +1,16 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 
 import './App.scss';
-import LobbyPage from './pages/LobbyPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import Tetris from './components/Tetris';
 import OauthCallbackRouter from './routes/OauthCallbackRouter';
-import RequireAuth from './routes/RequireAuth';
 import RankPage from './pages/RankPage';
 
 import { useEffect } from 'react';
 import { useAppDispatch } from './app/hooks';
 import { checkAuth } from './features/user/userSlice';
 import useAuth from './hooks/use-auth';
+import WithSocketPage from './pages/WithSocketPage';
 
 function App() {
   let { auth } = useAuth();
@@ -28,30 +26,13 @@ function App() {
 
   return (
     <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <RequireAuth>
-                <LobbyPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/tetris"
-            element={
-              <RequireAuth>
-                <Tetris />
-              </RequireAuth>
-            }
-          />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/oauth/*" element={<OauthCallbackRouter />} />
-          <Route path="rank" element={<RankPage />} />
-        </Routes>
-      </BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/rank" element={<RankPage />} />
+        <Route path="/oauth/*" element={<OauthCallbackRouter />} />
+        <Route path="/*" element={<WithSocketPage />} />
+      </Routes>
     </div>
   );
 }

@@ -12,7 +12,7 @@ function AppbarLayout({ children }: { children: React.ReactNode }) {
     <div className="layout__root">
       <div className="appbar__container">
         <div className="appbar__container--logo">
-          <img src="assets/logo_appbar.png" alt="" />
+          <img src="/assets/logo_appbar.png" alt="" />
         </div>
         <div className="appbar__conatiner--link">
           <Link className="appbar__link" to="/">
