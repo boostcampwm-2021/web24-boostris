@@ -23,3 +23,9 @@ export const innerJoinTable = async (column, tableA, tableB, on = null, conditio
   queryLine += condition ? `WHERE ${condition}` : ``;
   return connectionQuery(queryLine);
 };
+
+export const updateTable = async (table, set, condition = null) => {
+  let queryLine = `UPDATE ${table} SET ${set} `;
+  queryLine += condition ? `WHERE ${condition}` : ``;
+  return connectionQuery(queryLine);
+};
