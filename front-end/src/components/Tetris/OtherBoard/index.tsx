@@ -21,6 +21,7 @@ import { drawBoardBackground } from '../utils/tetrisDrawUtil';
 
 interface PlayerInterface {
   PLAYER: string,
+  GARBAGES: number,
   CANVAS: HTMLCanvasElement,
   CTX: CanvasRenderingContext2D,
   IMAGE: HTMLImageElement
@@ -70,6 +71,7 @@ const initSocketEvent = (socket: Socket, canvasContainer: React.RefObject<HTMLCa
   socket.on('enter new player', id => { // 새로운 플레이어 입장 시 해당 플레이어의 CANVAS 초기화
     PLAYERS.push({
       PLAYER: id,
+      GARBAGES: 0,
       CANVAS: null as unknown as HTMLCanvasElement,
       CTX: null as unknown as CanvasRenderingContext2D,
       IMAGE: null as unknown as HTMLImageElement
@@ -88,6 +90,7 @@ const initSocketEvent = (socket: Socket, canvasContainer: React.RefObject<HTMLCa
     res.forEach(id => {
       PLAYERS.push({
         PLAYER: id,
+        GARBAGES: 0,
         CANVAS: null as unknown as HTMLCanvasElement,
         CTX: null as unknown as CanvasRenderingContext2D,
         IMAGE: null as unknown as HTMLImageElement
@@ -123,6 +126,28 @@ const initSocketEvent = (socket: Socket, canvasContainer: React.RefObject<HTMLCa
     });
   });
 
+  socket.on('someone attacked', (garbage, id) => {
+    PLAYERS.forEach(player => {
+      if(player.PLAYER === id) {
+        player.GARBAGES += garbage;
+
+        if(player.GARBAGES === 0) return;
+        player.CTX.fillStyle = '#0055FB';
+        player.CTX.clearRect(TETRIS.OTHER_BOARD_WIDTH, 0, TETRIS.OTHER_ATTACK_BAR, TETRIS.OTHER_BOARD_HEIGHT);
+        player.CTX.fillRect(TETRIS.OTHER_BOARD_WIDTH, TETRIS.OTHER_BOARD_HEIGHT - (player.GARBAGES * TETRIS.OTHER_BLOCK_SIZE) - 1, TETRIS.OTHER_ATTACK_BAR, player.GARBAGES * TETRIS.OTHER_BLOCK_ONE_SIZE);
+      }
+    });
+  });
+
+  socket.on('someone attacked finish', id => {
+    PLAYERS.forEach(player => {
+      if(player.PLAYER === id) {
+        player.CTX.clearRect(TETRIS.OTHER_BOARD_WIDTH, 0, TETRIS.OTHER_ATTACK_BAR, TETRIS.OTHER_BOARD_HEIGHT);
+        player.GARBAGES = 0;
+      }
+    });
+  })
+
   socket.on('disconnect player', id => {
     PLAYERS = PLAYERS.filter(PLAYER => PLAYER.PLAYER !== id);
   });
@@ -150,13 +175,13 @@ const OtherBoard = ({ socket }: { socket: Socket; }): JSX.Element => {
       <canvas
         className="other-board"
         data-player={0}
-        width={TETRIS.OTHER_BOARD_WIDTH}
+        width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.OTHER_ATTACK_BAR}
         height={TETRIS.OTHER_BOARD_HEIGHT}
       ></canvas>
       <canvas
         className="other-board-background"
         data-player={`other-board-background0`}
-        width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.ATTACK_BAR}
+        width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.OTHER_ATTACK_BAR}
         height={TETRIS.OTHER_BOARD_HEIGHT}
       ></canvas>
     </div>
@@ -164,13 +189,13 @@ const OtherBoard = ({ socket }: { socket: Socket; }): JSX.Element => {
     <canvas
       className="other-board"
       data-player={1}
-      width={TETRIS.OTHER_BOARD_WIDTH }
+      width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.OTHER_ATTACK_BAR}
       height={TETRIS.OTHER_BOARD_HEIGHT}
     ></canvas>
     <canvas
         className="other-board-background"
         data-player={`other-board-background1`}
-        width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.ATTACK_BAR}
+        width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.OTHER_ATTACK_BAR}
         height={TETRIS.OTHER_BOARD_HEIGHT}
       ></canvas>
     </div>
@@ -178,13 +203,13 @@ const OtherBoard = ({ socket }: { socket: Socket; }): JSX.Element => {
     <canvas
       className="other-board"
       data-player={2}
-      width={TETRIS.OTHER_BOARD_WIDTH}
+      width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.OTHER_ATTACK_BAR}
       height={TETRIS.OTHER_BOARD_HEIGHT}
     ></canvas>
     <canvas
         className="other-board-background"
         data-player={`other-board-background2`}
-        width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.ATTACK_BAR}
+        width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.OTHER_ATTACK_BAR}
         height={TETRIS.OTHER_BOARD_HEIGHT}
       ></canvas>
     </div>

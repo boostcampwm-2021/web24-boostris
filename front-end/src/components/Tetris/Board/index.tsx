@@ -101,11 +101,12 @@ const clearLine = (board: number[][], socket:Socket) => {
 
   const key = clearLineCnt.toString();
 
+  if(TETRIS.GARBAGE_RULES[key] === 0) return;
   socket.emit('attack other player', TETRIS.GARBAGE_RULES[key]);
 };
 
 // BOARD에 SOLID GARBAGE를 만드는 함수
-const setSolidBlock = (board: number[][], STATE: TetrisState) => {
+const setSolidBlock = (board: number[][], STATE: TetrisState, socket: Socket) => {
   const attackedBlock = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2];
 
   attackedBlock[Math.floor(Math.random() * 10)] = 0; // 한칸은 비워두기
@@ -126,6 +127,10 @@ const setSolidBlock = (board: number[][], STATE: TetrisState) => {
       break;
     }
   }
+
+  // 공격 블록이 올라온 후 AttackBar 비워주는 처리
+  BACKGROUND.CTX.clearRect(TETRIS.BOARD_WIDTH, 0, 8, TETRIS.BOARD_HEIGHT);
+  socket.emit('attacked finish');
 
   for (let i = 0; i < STATE.SOLID_GARBAGES; i++) {
     board.shift();
@@ -415,7 +420,7 @@ const initNewBlockCycle = (
     STATE.QUEUE.push(...getPreviewBlocks());
   }
   
-  setSolidBlock(BOARD, STATE);
+  setSolidBlock(BOARD, STATE, socket);
 
   BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
 
@@ -446,7 +451,7 @@ const dropBlockCycle = (
   socket: Socket
 ) => {
   freezeBlock(BOARD, BLOCK, STATE, TIMER, option, PROPS_FUNC, socket);
-  //setSolidBlock(BOARD, STATE);
+
   // 게임 오버 검사
   if (isGameOver(BOARD, BLOCK.NEXT)) {
     finishGame(BOARD, TIMER, BACKGROUND, PROPS_FUNC, socket);
@@ -619,8 +624,12 @@ const Board = ({
 
   useEffect(() => {
     socket.on('attacked', garbage => {
-
       STATE.ATTACKED_GARBAGES += garbage;
+      
+      if(STATE.ATTACKED_GARBAGES === 0) return;
+      BACKGROUND.CTX.fillStyle = '#0055FB';
+      BACKGROUND.CTX.clearRect(TETRIS.BOARD_WIDTH, 0, TETRIS.ATTACK_BAR, TETRIS.BOARD_HEIGHT);
+      BACKGROUND.CTX.fillRect(TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT - (STATE.ATTACKED_GARBAGES * TETRIS.BLOCK_SIZE) - 1, TETRIS.ATTACK_BAR, STATE.ATTACKED_GARBAGES * TETRIS.BLOCK_ONE_SIZE);
     });
   }, []);
 

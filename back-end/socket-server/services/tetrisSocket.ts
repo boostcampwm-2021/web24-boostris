@@ -60,8 +60,20 @@ export const initTetrisSocket = (io) => {
       idx++;
     }
 
-    io.to(garbageBlockCnt[idx].id).emit('attacked', garbage);
+    for(let i = 0; i < garbageBlockCnt.length; i++) {
+      if(i === idx) { // 공격 받는 플레이어
+        io.to(garbageBlockCnt[i].id).emit('attacked', garbage);
+      }
+      else { // 공격 받지 않는 플레이어
+        io.to(garbageBlockCnt[i].id).emit('someone attacked', garbage, garbageBlockCnt[idx].id);
+      }
+    }
+    
     garbageBlockCnt[idx].garbageCnt += garbage;
+  });
+
+  socket.on('attacked finish', () => {
+    socket.broadcast.to(room).emit('someone attacked finish', socket.id);
   });
 
   socket.on('game over', () => { // 누군가 게임 오버 시
