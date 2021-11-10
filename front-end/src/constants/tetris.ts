@@ -332,6 +332,14 @@ export const SRS_I = [
   },
 ];
 
+export const GARBAGE_RULES: {[key: string]: number} = {
+  '0': 0,
+  '1': 0,
+  '2': 1,
+  '3': 2,
+  '4': 4
+};
+
 // 보드의 크기만큼 배열을 만들어주는 함수
 export const getEmptyArray = (ROWS: number, COLS: number) => {
   return Array.from({ length: ROWS }, () => Array(COLS).fill(0));

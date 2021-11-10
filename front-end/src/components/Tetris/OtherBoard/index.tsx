@@ -16,7 +16,7 @@ import {
   TetrisOptions,
   TetrisPropsFunc,
 } from '../types';
-import { drawCell } from '../utils/block';
+import { drawOtherCell } from '../utils/block';
 
 interface PlayerInterface {
   PLAYER: string,
@@ -32,49 +32,41 @@ const PLAYER = {
   IMAGE: null as unknown as HTMLImageElement
 };
 
-const PLAYERS: PlayerInterface[] = [];
+let PLAYERS: PlayerInterface[] = [];
 
-const drawBlock = (BLOCK: TetrisBlock, BACKGROUND: TetrisBackground) => {
-  // drawCell(
-  //   BLOCK.shape,
-  //   BLOCK.posX,
-  //   BLOCK.posY - TETRIS.START_Y,
-  //   1,
-  //   BACKGROUND.CTX,
-  //   BACKGROUND.IMAGE
-  // );
-  // drawCell(
-  //   BLOCK.GHOST.shape,
-  //   BLOCK.GHOST.posX,
-  //   BLOCK.GHOST.posY - TETRIS.START_Y,
-  //   0.6,
-  //   BACKGROUND.CTX,
-  //   BACKGROUND.IMAGE
-  // );
-  BACKGROUND.CTX.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
+// BOARD와 BLOCK을 그리는 함수
+const draw = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground) => {
+  drawBoard(BOARD, BACKGROUND);
+  drawBlock(BLOCK, BACKGROUND);
+};
 
-  BACKGROUND.CTX.globalAlpha = 1;
-  BLOCK.shape.forEach((row, dy) => {
-    row.forEach((value, dx) => {
-      if (value > 0)
-      BACKGROUND.CTX.drawImage(
-          BACKGROUND.IMAGE,
-          TETRIS.OTHER_BLOCK_ONE_SIZE * (value - 1),
-          0,
-          TETRIS.OTHER_BLOCK_ONE_SIZE,
-          TETRIS.OTHER_BLOCK_ONE_SIZE,
-          (BLOCK.posX + dx) * TETRIS.OTHER_BOARD_ONE_SIZE,
-          (BLOCK.posY - TETRIS.START_Y + dy) * TETRIS.OTHER_BOARD_ONE_SIZE,
-          TETRIS.OTHER_BLOCK_ONE_SIZE,
-          TETRIS.OTHER_BLOCK_ONE_SIZE
-        );
-    });
-  });
+//BOARD를 그리는 함수
+const drawBoard = (BOARD: number[][], BACKGROUND: TetrisBackground) => {
+  BACKGROUND.CTX.clearRect(0, 0, TETRIS.OTHER_BOARD_WIDTH, TETRIS.OTHER_BOARD_HEIGHT);
+  drawOtherCell(BOARD, 0, -TETRIS.START_Y, 1, BACKGROUND.CTX, BACKGROUND.IMAGE);
+};
+
+const drawBlock = (BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground) => {
+  drawOtherCell(
+    BLOCK.NOW.shape,
+    BLOCK.NOW.posX,
+    BLOCK.NOW.posY - TETRIS.START_Y,
+    1,
+    BACKGROUND.CTX,
+    BACKGROUND.IMAGE
+  );
+  drawOtherCell(
+    BLOCK.GHOST.shape,
+    BLOCK.GHOST.posX,
+    BLOCK.GHOST.posY - TETRIS.START_Y,
+    0.6,
+    BACKGROUND.CTX,
+    BACKGROUND.IMAGE
+  );
 };
 
 const initSocketEvent = (socket: Socket, canvasContainer: React.RefObject<HTMLCanvasElement>[]) => {
   socket.on('enter new player', id => { // 새로운 플레이어 입장 시 해당 플레이어의 CANVAS 초기화
-    console.log(`새 친구 ${id}`);
     PLAYERS.push({
       PLAYER: id,
       CANVAS: null as unknown as HTMLCanvasElement,
@@ -90,9 +82,6 @@ const initSocketEvent = (socket: Socket, canvasContainer: React.RefObject<HTMLCa
     PLAYERS[idx].IMAGE = new Image();
     PLAYERS[idx].IMAGE.src = 'assets/other_block.png';
     PLAYERS[idx].IMAGE.onload = () => {};
-
-    console.log('새 Player');
-    console.log(PLAYERS);
   });
   socket.emit('get other players info', (res: []) => { // 초기 접속 시 다른 플레이어 정보 요청
     res.forEach(id => {
@@ -112,12 +101,9 @@ const initSocketEvent = (socket: Socket, canvasContainer: React.RefObject<HTMLCa
       PLAYERS[idx].IMAGE.src = 'assets/other_block.png';
       PLAYERS[idx].IMAGE.onload = () => {};
     });
-
-    console.log('이미 있던 사람들');
-    console.log(PLAYERS);
   });
 
-  socket.on(`other player's drop block`, (id, block) => {
+  socket.on(`other player's drop block`, (id, board, block) => {
     PLAYERS.forEach(player => {
       if(player.PLAYER === id) {
         const BACKGROUND = {
@@ -126,12 +112,18 @@ const initSocketEvent = (socket: Socket, canvasContainer: React.RefObject<HTMLCa
           IMAGE: player.IMAGE
         }
 
-        drawBlock(block, BACKGROUND);
+        if(block !== 'finish') {
+          draw(board, block, BACKGROUND);
+        }
+        else {
+          drawBoard(board, BACKGROUND);
+        }
       }
     });
-    console.log(PLAYERS);
-    console.log(id);
-    console.log(block);
+  });
+
+  socket.on('disconnect player', id => {
+    PLAYERS = PLAYERS.filter(PLAYER => PLAYER.PLAYER !== id);
   });
 }
 
@@ -141,9 +133,6 @@ const OtherBoard = ({ socket }: { socket: Socket; }): JSX.Element => {
 
   useEffect(() => {
     initSocketEvent(socket, canvasContainer);
-
-
-
   }, []);
 
   return (
