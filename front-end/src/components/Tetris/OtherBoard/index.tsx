@@ -139,7 +139,8 @@ const OtherBoard = ({ socket }: { socket: Socket; }): JSX.Element => {
     <>
     <canvas
       style={{
-        background: `url(assets/other_player_board.png)`,
+        background: `url(assets/player_board.png)`,
+        backgroundSize: '100% 100%',
       }}
       className="other-board"
       data-player={0}
@@ -148,7 +149,8 @@ const OtherBoard = ({ socket }: { socket: Socket; }): JSX.Element => {
     ></canvas>
     <canvas
       style={{
-        background: `url(assets/other_player_board.png)`,
+        background: `url(assets/player_board.png)`,
+        backgroundSize: '100% 100%',
       }}
       className="other-board"
       data-player={1}
@@ -157,7 +159,8 @@ const OtherBoard = ({ socket }: { socket: Socket; }): JSX.Element => {
     ></canvas>
     <canvas
       style={{
-        background: `url(assets/other_player_board.png)`,
+        background: `url(assets/player_board.png)`,
+        backgroundSize: '100% 100%',
       }}
       className="other-board"
       data-player={2}
