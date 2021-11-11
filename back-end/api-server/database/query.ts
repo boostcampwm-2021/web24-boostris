@@ -7,13 +7,14 @@ const connectionQuery = async (queryLine) => {
   return rows;
 };
 
-export const selectTable = async (column, table, condition = null) => {
+export const selectTable = (column, table, condition = null, ...rest) => {
   let queryLine = `SELECT ${column} FROM ${table} `;
   queryLine += condition ? `WHERE ${condition}` : ``;
+  rest.map((value) => (queryLine += value));
   return connectionQuery(queryLine);
 };
 
-export const insertIntoTable = async (table, into, values) => {
+export const insertIntoTable = (table, into, values) => {
   let queryLine = `INSERT INTO ${table} ${into} VALUES (${values})`;
   return connectionQuery(queryLine);
 };
