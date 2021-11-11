@@ -8,6 +8,8 @@ import 'dotenv/config';
 import AuthRouter from '../routes/auth';
 import InsertDbRegister from '../routes/registerDBInsert';
 import checkDupNickRegister from '../routes/registerDupCheck';
+import ProfileRouter from '../routes/profile';
+import RankRouter from '../routes/rankSearch';
 
 class App {
   public application: express.Application;
@@ -28,7 +30,9 @@ app.use(logger('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', AuthRouter);
+app.use('/api/rank', RankRouter);
 app.use('/api/register', checkDupNickRegister, InsertDbRegister);
+app.use('/api/profile', ProfileRouter);
 
 app.get('/api', (req: express.Request, res: express.Response) => {
   res.send('start');

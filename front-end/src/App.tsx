@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ProfilePage from './pages/ProfilePage';
 import OauthCallbackRouter from './routes/OauthCallbackRouter';
 
 import { useEffect } from 'react';
@@ -60,6 +61,7 @@ function App() {
             }
           />
           <Route path="rank" element={<RankPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Routes>
     </div>
