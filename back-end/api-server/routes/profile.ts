@@ -45,7 +45,7 @@ const getTotalInDB = async (nickname) => {
       `nickname='${nickname}'`
     ),
     innerJoinTable(
-      'SUM(case when mode=2 then player_win else 0 end) as single_player_win, SUM(case when mode>2 then player_win else 0 end) as multi_player_win',
+      `SUM(case when mode='1 vs 1' then player_win else 0 end) as single_player_win, SUM(case when mode='normal' then player_win else 0 end) as multi_player_win`,
       'PLAY',
       'GAME_INFO',
       'PLAY.game_id = GAME_INFO.game_id',
