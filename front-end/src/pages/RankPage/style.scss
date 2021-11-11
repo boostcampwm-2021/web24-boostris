@@ -99,28 +99,6 @@
     height: 380px;
     min-height: 100%;
     margin-left: 20px;
-    /* width */
-    &::-webkit-scrollbar {
-      width: 6px;
-      border-radius: 10px;
-    }
-
-    /* Track */
-    &::-webkit-scrollbar-track {
-      background: $new-color;
-      border-radius: 10px;
-    }
-
-    /* Handle */
-    &::-webkit-scrollbar-thumb {
-      background: $white;
-      border-radius: 10px;
-    }
-
-    /* Handle on hover */
-    &::-webkit-scrollbar-thumb:hover {
-      background: $azure-blue;
-    }
   }
   .rank__display__itembox {
     display: flex;

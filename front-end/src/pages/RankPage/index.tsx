@@ -179,7 +179,7 @@ function RankPage() {
               {categoryChange[categoryButtonState]}
             </div>
           </div>
-          <div className="rank__display__scroll__root">
+          <div className="rank__display__scroll__root fancy__scroll">
             <div className="rank__display__itembox display__body">
               {players.map((obj) => (
                 <RankItemBox key={obj['nickname']} obj={obj} />

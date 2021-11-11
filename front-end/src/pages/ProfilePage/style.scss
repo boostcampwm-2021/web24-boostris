@@ -108,6 +108,7 @@
         box-sizing: border-box;
       }
 
+
       .recent-list__scroll {
         height: 250px;
         overflow: auto;
@@ -122,30 +123,6 @@
           .recent-list__item {
           }
         }
-
-        /* width */
-        &::-webkit-scrollbar {
-          width: 6px;
-          border-radius: 10px;
-        }
-
-        /* Track */
-        &::-webkit-scrollbar-track {
-          background: $new-color;
-          border-radius: 10px;
-        }
-
-        /* Handle */
-        &::-webkit-scrollbar-thumb {
-          background: $white;
-          border-radius: 10px;
-        }
-
-        /* Handle on hover */
-        &::-webkit-scrollbar-thumb:hover {
-          background: $azure-blue;
-        }
-      }
     }
   }
 }

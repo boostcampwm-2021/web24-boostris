@@ -1,6 +1,7 @@
 import { MouseEventHandler, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  checkAuth,
   clearRegister,
   registerNewUser,
   selectUser,
@@ -58,11 +59,12 @@ function RegisterPage() {
     if (user.register.status === 'idle' && user.register.dupCheck !== null) {
       if (user.register.dupCheck) {
         navigate('/');
+        dispatch(checkAuth());
       } else {
         alert('이미 존재하는 닉네임 입니다 !');
       }
     }
-  }, [navigate, user.register.dupCheck, user.register.status]);
+  }, [dispatch, navigate, user.register.dupCheck, user.register.status]);
 
   return (
     <div className="register__root full__page--root">
@@ -85,16 +87,8 @@ function RegisterPage() {
         />
         <div className="mb--40"></div>
         <div className="register__card--footer">
-          <BasicButton
-            variant="contained"
-            label={'제출'}
-            handleClick={onSubmitClick}
-          />
-          <BasicButton
-            variant="outlined"
-            label={'취소'}
-            handleClick={onCancelClick}
-          />
+          <BasicButton variant="contained" label={'제출'} handleClick={onSubmitClick} />
+          <BasicButton variant="outlined" label={'취소'} handleClick={onCancelClick} />
         </div>
       </div>
     </div>
