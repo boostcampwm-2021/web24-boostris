@@ -58,7 +58,7 @@ RankRouter.post('/', async (req, res) => {
       FROM
       PLAY as p 
       left join user_info as u on p.nickname = u.nickname 
-      inner join game_info as g on p.game_id = g.game_id and g.\`mode\` = '${mode}' 
+      inner join game_info as g on p.game_id = g.game_id and g.\`game_mode\` = '${mode}' 
       group by p.nickname) a`
       //`ranking >= ${Number(offsetRank)} and ranking < ${Number(offsetRank) + 20}`
       //바로 위 코드는 무한 스크롤 구현 시 고려해 볼 것
