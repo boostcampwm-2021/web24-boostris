@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import './style.scss';
 import SectionTitle from '../../components/SectionTitle';
-import Line from '../../components/Line';
 import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
 
 export default function Profile() {
-  const recentHeader = ['날짜', '인원', '등수', '플레이 타임', '공격 횟수', '받은 횟수'];
+  const recentHeader = ['날짜', '모드', '등수', '플레이 타임', '공격 횟수', '받은 횟수'];
   const translations = [
     ['total_game_cnt', '총 게임 수'],
     ['total_play_time', '총 플레이 시간'],
     ['single_player_win', '1vs1 승리 횟수'],
-    ['multi_player_win', '단체전 승리 횟수'],
+    ['multi_player_win', '일반전 승리 횟수'],
     ['total_attack_cnt', '총 공격 횟수'],
   ];
   const [recentList, setRecentList] = useState<string[][]>([]);
@@ -25,9 +24,9 @@ export default function Profile() {
   const drawStatistics = (statsticsState: any) => {
     return (
       <>
-        {translations.map(([key, value], i) => {
+        {translations.map(([key, value]) => {
           return (
-            <div className="stastics-list__item" key={i}>
+            <div className="statistics-list__item" key={key}>
               <div>{value}</div>
               <div>:</div>
               <div>{statsticsState[key]}</div>
@@ -42,15 +41,15 @@ export default function Profile() {
     if (recentList.length === 0) return;
     return (
       <>
-        {recentList.map((value, i) => (
-          <>
-            <div key={i}>{value.date.slice(0, 10)}</div>
-            <div>{value.mode}</div>
+        {recentList.map((value) => (
+          <div className="recent-list" key={value.date}>
+            <div>{value.date.slice(0, 10)}</div>
+            <div>{value.mode === 'normal' ? '일반전' : '1 vs 1'}</div>
             <div>{value.ranking}</div>
             <div>{value.play_time}</div>
             <div>{value.attack_cnt}</div>
             <div>{value.attacked_cnt}</div>
-          </>
+          </div>
         ))}
       </>
     );
@@ -118,23 +117,23 @@ export default function Profile() {
           </button>
         </div>
         <div className="total-section">
-          <div className="stastics-section ">
-            <div className="absolute_border_bottom stastics-section__header">
+          <div className="statistics-section ">
+            <div className="absolute_border_bottom statistics-section__header">
               <SectionTitle>통계</SectionTitle>
             </div>
-            <div className="stastics-list">{drawStatistics(statsticsState)}</div>
+            <div className="statistics-list">{drawStatistics(statsticsState)}</div>
           </div>
           <div className="recent-section">
-            <SectionTitle>최근 기록</SectionTitle>
-            <Line marginTop="13" marginBottom="18" marginRight="0" marginLeft="0" />
+            <div className="absolute_border_bottom recent-section__header">
+              <SectionTitle>최근 기록</SectionTitle>
+            </div>
             <div className="recent-list__header">
-              {recentHeader.map((value, i) => (
-                <div key={i}>{value}</div>
+              {recentHeader.map((value) => (
+                <div key={value}>{value}</div>
               ))}
             </div>
-            <div className="recent-list__scroll fancy__scroll">
-              <div className="recent-list">{drawRecent(recentList)}</div>
-            </div>
+
+            <div className="recent-list__scroll fancy__scroll">{drawRecent(recentList)}</div>
           </div>
         </div>
       </div>
