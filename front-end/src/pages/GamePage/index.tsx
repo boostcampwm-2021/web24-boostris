@@ -1,5 +1,5 @@
 import { nanoid } from '@reduxjs/toolkit';
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { useSocket, useSocketReady } from '../../context/SocketContext';
@@ -16,6 +16,11 @@ function GamePage() {
   const { profile } = useAuth();
   const isReady = useSocketReady();
   const chatInputRef = useRef<any>();
+  const containerRef = useRef<any>();
+
+  useLayoutEffect(() => {
+    containerRef.current.scrollTop = containerRef.current.scrollHeight;
+  });
 
   useEffect(() => {
     const ref = socketClient.current;
@@ -41,13 +46,15 @@ function GamePage() {
     }
   };
   const sendMessage = () => {
-    socketClient.current.emit('send message', {
-      roomID,
-      from: profile.nickname,
-      message: chatInputRef.current.value,
-      id: nanoid(),
-    });
-    chatInputRef.current.value = '';
+    if (chatInputRef.current.value.length) {
+      socketClient.current.emit('send message', {
+        roomID,
+        from: profile.nickname,
+        message: chatInputRef.current.value,
+        id: nanoid(),
+      });
+      chatInputRef.current.value = '';
+    }
   };
   return (
     <AppbarLayout>
@@ -59,7 +66,7 @@ function GamePage() {
         ))}
         <div className="chats__container">
           <div className="chat__history__container">
-            <div className="chat__history__scroll__root">
+            <div className="chat__history__scroll__root" ref={containerRef}>
               {roomMessages.map(({ id, from, message }) => (
                 <div key={id} className="chat__history__item">
                   {from} : {message}
