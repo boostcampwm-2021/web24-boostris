@@ -15,7 +15,7 @@ function HoldBlock({ holdBlock }: { holdBlock: TetrisBlock | null }) {
     if (!holdBlock) return;
 
     const img: HTMLImageElement = new Image();
-    img.src = 'assets/block.png';
+    img.src = '/assets/block.png';
 
     img.onload = () => {
       drawCell(holdBlock.shape, 0, 0, 1, ctx, img);

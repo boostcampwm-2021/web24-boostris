@@ -30,8 +30,9 @@ function LobbyPage() {
   const [modalToggleIdx, setModalToggleIdx] = useState(0);
   const [modalChecked, setModalChecked] = useState(false);
 
-  const handleClick = () => {
-    navigate('/tetris');
+  const handleFastJoinClick = () => {
+    // navigate('/tetris');
+    alert('🔥🔥추가 예정입니다 ^^7 방 생성으로 통해 입장해주세요 🔥🔥');
   };
   const handleCreateRooomOpen = () => {
     modalRef.current.open();
@@ -105,7 +106,7 @@ function LobbyPage() {
             <button className="lobby__btn lobby__btn--dark" onClick={handleCreateRooomOpen}>
               방 생성
             </button>
-            <button className="lobby__btn" onClick={handleClick}>
+            <button className="lobby__btn" onClick={handleFastJoinClick}>
               빠른 입장
             </button>
           </div>

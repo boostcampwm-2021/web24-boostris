@@ -16,7 +16,7 @@ function PreviewBlocks({ previewBlock }: { previewBlock: Array<TetrisBlock> | nu
     if (!previewBlock) return;
 
     const img: HTMLImageElement = new Image();
-    img.src = 'assets/block.png';
+    img.src = '/assets/block.png';
 
     img.onload = () => {
       previewBlock.forEach((block, i) => {
@@ -28,13 +28,13 @@ function PreviewBlocks({ previewBlock }: { previewBlock: Array<TetrisBlock> | nu
 
   return (
     <>
-    <div className="header__mini">{'> Preview'}</div>
-    <canvas
-      style={{ display: 'block' }}
-      width={PREVIEW_BOARD_WIDTH}
-      height={PREVIEW_BOARD_HEIGHT}
-      ref={canvasContainer}
-    />
+      <div className="header__mini">{'> Preview'}</div>
+      <canvas
+        style={{ display: 'block' }}
+        width={PREVIEW_BOARD_WIDTH}
+        height={PREVIEW_BOARD_HEIGHT}
+        ref={canvasContainer}
+      />
     </>
   );
 }
