@@ -1,3 +1,4 @@
+import { nanoid } from '@reduxjs/toolkit';
 import { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
@@ -44,6 +45,7 @@ function GamePage() {
       roomID,
       from: profile.nickname,
       message: chatInputRef.current.value,
+      id: nanoid(),
     });
     chatInputRef.current.value = '';
   };

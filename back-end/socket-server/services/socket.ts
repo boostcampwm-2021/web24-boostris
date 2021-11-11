@@ -25,22 +25,44 @@ export const initSocket = (httpServer) => {
 
   const lobbyUsers = io.of('/lobby/users');
   const tetris = io.of('/tetris');
+
   const braodCastRoomList = () => {
     roomList = roomList.filter((r) => r.current !== 0);
     lobbyUsers.emit('room list update', roomList);
   };
+  const broadCastUserList = async () => {
+    const sockets = (await lobbyUsers.fetchSockets()) as userRemote[];
+    lobbyUsers.emit(
+      'user list update',
+      sockets.filter((s) => s.userName).map((s) => ({ nickname: s.userName, id: s.id }))
+    );
+  };
 
+  const updateRoomCurrent = (room) => {
+    let target = roomList.find((r) => r.id === room);
+    if (target) target.current = lobbyUsers.adapter.rooms.get(room).size;
+  };
+
+  const broadCastRoomMemberUpdate = async (room, id) => {
+    const sockets = (await lobbyUsers.fetchSockets()) as userRemote[];
+    if (room !== id && lobbyUsers.adapter.rooms.get(room)) {
+      lobbyUsers.to(room).emit(
+        'room member list',
+        sockets
+          .filter((s) => [...lobbyUsers.adapter.rooms.get(room)].includes(s.id))
+          .map((s) => ({ nickname: s.userName, id: s.id }))
+      );
+    }
+  };
+
+  lobbyUsers.setMaxListeners(0);
   lobbyUsers.adapter.setMaxListeners(0);
 
   lobbyUsers.on('connection', (socket: userSocket) => {
     socket.setMaxListeners(0);
-    socket.on('set userName', async (userName) => {
+    socket.on('set userName', (userName) => {
       socket.userName = userName;
-      const sockets = (await lobbyUsers.fetchSockets()) as userRemote[];
-      lobbyUsers.emit(
-        'user list update',
-        sockets.filter((s) => s.userName).map((s) => ({ nickname: s.userName, id: s.id }))
-      );
+      broadCastUserList();
       braodCastRoomList();
     });
 
@@ -75,7 +97,7 @@ export const initSocket = (httpServer) => {
         !lobbyUsers.adapter.rooms.get(roomID).has(id)
       ) {
         socket.join(roomID);
-        roomList.find((r) => r.id === roomID).current = lobbyUsers.adapter.rooms.get(roomID).size;
+        updateRoomCurrent(roomID);
         lobbyUsers.to(socket.id).emit('join room:success', roomID);
       } else {
         lobbyUsers.to(socket.id).emit('redirect to lobby');
@@ -88,45 +110,25 @@ export const initSocket = (httpServer) => {
     socket.on('join room', (roomID: string) => {
       try {
         socket.join(roomID);
-        roomList.find((r) => r.id === roomID).current = lobbyUsers.adapter.rooms.get(roomID).size;
+        updateRoomCurrent(roomID);
         lobbyUsers.to(socket.id).emit('join room:success', roomID);
       } catch (error) {
         lobbyUsers.to(socket.id).emit('join room:fail', roomID);
       }
     });
 
-    socket.on('send message', ({ roomID, from, message }) => {
-      let id = randomUUID();
+    socket.on('send message', ({ roomID, from, message, id }) => {
       lobbyUsers.to(roomID).emit('receive message', { id, from, message });
     });
 
-    lobbyUsers.adapter.on('join-room', async (room, id) => {
-      let target = roomList.find((r) => r.id === room);
-      if (target) target.current = lobbyUsers.adapter.rooms.get(room).size;
-      const sockets = (await lobbyUsers.fetchSockets()) as userRemote[];
-
-      if (room !== id && lobbyUsers.adapter.rooms.get(room)) {
-        lobbyUsers.to(room).emit(
-          'room member list',
-          sockets
-            .filter((s) => [...lobbyUsers.adapter.rooms.get(room)].includes(s.id))
-            .map((s) => ({ nickname: s.userName, id: s.id }))
-        );
-      }
+    lobbyUsers.adapter.on('join-room', (room, id) => {
+      updateRoomCurrent(room);
+      broadCastRoomMemberUpdate(room, id);
       braodCastRoomList();
     });
-    lobbyUsers.adapter.on('leave-room', async (room, id) => {
-      let target = roomList.find((r) => r.id === room);
-      if (target) target.current = lobbyUsers.adapter.rooms.get(room).size;
-      const sockets = (await lobbyUsers.fetchSockets()) as userRemote[];
-      if (room !== id && lobbyUsers.adapter.rooms.get(room)) {
-        lobbyUsers.to(room).emit(
-          'room member list',
-          sockets
-            .filter((s) => [...lobbyUsers.adapter.rooms.get(room)].includes(s.id))
-            .map((s) => ({ nickname: s.userName, id: s.id }))
-        );
-      }
+    lobbyUsers.adapter.on('leave-room', (room, id) => {
+      updateRoomCurrent(room);
+      broadCastRoomMemberUpdate(room, id);
       braodCastRoomList();
     });
 
@@ -140,11 +142,7 @@ export const initSocket = (httpServer) => {
     });
 
     socket.on('disconnect', async () => {
-      const sockets = (await lobbyUsers.fetchSockets()) as userRemote[];
-      lobbyUsers.emit(
-        'user list update',
-        sockets.map((s) => ({ nickname: s.userName, id: s.id }))
-      );
+      broadCastUserList();
     });
   });
 
