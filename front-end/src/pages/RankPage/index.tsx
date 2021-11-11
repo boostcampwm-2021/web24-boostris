@@ -46,10 +46,8 @@ function RankItemBox({ obj }: any) {
     <div className="rank__display__itembox">
       <div className="rank__display__item display__rank">{obj['ranking']}등</div>
       <div className="rank__display__item display__nickname">{obj['nickname']}</div>
-      <div className="rank__display__item display__message">
-        {obj['ANY_VALUE(u.state_message)']}
-      </div>
-      <div className="rank__display__item display__win">{obj[Object.keys(obj)[1]]}</div>
+      <div className="rank__display__item display__message">{obj['state_message']}</div>
+      <div className="rank__display__item display__win">{obj['category']}</div>
     </div>
   );
 }

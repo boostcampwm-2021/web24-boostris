@@ -51,9 +51,9 @@ RankRouter.post('/', async (req, res) => {
     let queryResult = await selectTable(
       '*',
       `(SELECT 
-      p.nickname, 
-      sum(p.${categoryBox[category]}), 
-      ANY_VALUE(u.state_message), 
+      p.nickname as nickname, 
+      sum(p.${categoryBox[category]}) as category, 
+      ANY_VALUE(u.state_message) as state_message, 
       rank() over (order by sum(p.${categoryBox[category]}) desc) as ranking
       FROM
       PLAY as p 
