@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './style.scss';
 import SectionTitle from '../../components/SectionTitle';
-import Line from '../../components/Line';
 import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
 
@@ -27,7 +26,7 @@ export default function Profile() {
       <>
         {translations.map(([key, value], i) => {
           return (
-            <div className="stastics-list__item" key={i}>
+            <div className="statistics-list__item" key={i}>
               <div>{value}</div>
               <div>:</div>
               <div>{statsticsState[key]}</div>
@@ -118,15 +117,16 @@ export default function Profile() {
           </button>
         </div>
         <div className="total-section">
-          <div className="stastics-section ">
-            <div className="absolute_border_bottom stastics-section__header">
+          <div className="statistics-section ">
+            <div className="absolute_border_bottom statistics-section__header">
               <SectionTitle>통계</SectionTitle>
             </div>
-            <div className="stastics-list">{drawStatistics(statsticsState)}</div>
+            <div className="statistics-list">{drawStatistics(statsticsState)}</div>
           </div>
           <div className="recent-section">
-            <SectionTitle>최근 기록</SectionTitle>
-            <Line marginTop="13" marginBottom="18" marginRight="0" marginLeft="0" />
+            <div className="absolute_border_bottom recent-section__header">
+              <SectionTitle>최근 기록</SectionTitle>
+            </div>
             <div className="recent-list__header">
               {recentHeader.map((value, i) => (
                 <div key={i}>{value}</div>
