@@ -14,6 +14,6 @@ function NaverCallback() {
     dispatch(fetchNaverUser(accessToken));
   }, [accessToken, dispatch]);
 
-  return <div>{user.status}</div>;
+  return <div>{user.profile.status}</div>;
 }
 export default NaverCallback;

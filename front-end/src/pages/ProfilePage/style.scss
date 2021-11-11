@@ -1,0 +1,128 @@
+@import 'common/styles/base';
+
+.profile__page--root {
+  display: flex;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background-color: $navy;
+  min-width: 814px;
+  flex: 1;
+
+  .profile-section {
+    background-color: rgba(255, 255, 255, 0.14);
+    padding: 20px 25px;
+    display: flex;
+    flex-direction: column;
+
+    .profile-section__image {
+      width: 92px;
+      height: 92px;
+      margin: 30px auto 27px;
+    }
+
+    .profile-section__player {
+      font-size: 18px;
+      margin: 0 auto;
+    }
+
+    .profile-section__status {
+      width: 100%;
+      background-color: rgba(255, 255, 255, 0.14);
+      border: 1px rgba(255, 255, 255, 0.637) solid;
+      height: 120px;
+      border-radius: 5px;
+      font-size: 16px;
+      margin: 25px auto 30px;
+      box-sizing: border-box;
+      padding: 10px;
+      color: white;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    .profile-section__button {
+      color: white;
+      background-color: $light-navy;
+      border: 1px solid $navy;
+      border-radius: 5px;
+      font-size: 16px;
+      padding: 0px;
+      margin: 0px auto;
+      width: 200px;
+      height: 30px;
+      cursor: pointer;
+
+      &:hover {
+        border: 1px solid $white;
+      }
+    }
+  }
+
+  .total-section {
+    padding: 20px 30px;
+    width: 100%;
+    min-width: 600px;
+
+    .statistics-section {
+      display: flex;
+      flex-direction: column;
+
+      .statistics-section__header {
+        padding-bottom: 10px;
+      }
+      .statistics-list {
+        margin: 20px 90px 40px;
+        font-size: 17px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        row-gap: 30px;
+
+        .statistics-list__item {
+          display: grid;
+          grid-template-columns: 2fr 1fr 1fr;
+        }
+      }
+    }
+
+    .recent-section {
+      .recent-section__header {
+        padding-bottom: 10px;
+      }
+
+      .recent-section__header {
+        padding-bottom: 10px;
+      }
+
+      .recent-list__header {
+        font-size: 18px;
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        text-align: center;
+        background-color: $new-color;
+        padding: 7px;
+        margin: 20px 30px 0px;
+        box-sizing: border-box;
+      }
+
+
+      .recent-list__scroll {
+        height: 250px;
+        overflow: auto;
+
+        .recent-list {
+          display: grid;
+          grid-template-columns: repeat(6, 1fr);
+          text-align: center;
+          font-size: 17px;
+          padding: 15px 40px;
+          box-sizing: border-box;
+          .recent-list__item {
+          }
+        }
+    }
+  }
+}

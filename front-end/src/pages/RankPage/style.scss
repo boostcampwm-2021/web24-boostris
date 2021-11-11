@@ -1,0 +1,136 @@
+@import 'common/styles/base';
+
+.rank__page--root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  .rank__header {
+    display: flex;
+    font-size: 20px;
+    margin: 30px 44px 0px 44px;
+    height: 40px;
+    border-bottom: 1px solid #ffffff;
+  }
+  .rank__body {
+    display: flex;
+    width: 1000px;
+    height: 300px;
+    margin-left: 180px;
+    justify-content: center;
+    align-items: center;
+  }
+  .rank__player__box {
+    display: flex;
+    background: #364171;
+    height: 140px;
+    width: 402px;
+    box-shadow: 0px 7px #272d4e;
+    .rank__player__image {
+      display: flex;
+      align-items: center;
+      margin: 0px 10px;
+      padding: 0px 20px;
+      border-right: 1px solid #ffffff;
+    }
+    .rank__player__rank {
+      display: flex;
+      width: 100%;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    .rank__player__rank__row {
+      display: flex;
+      margin: 10px;
+    }
+  }
+  .rank__input__box {
+    display: flex;
+    flex-direction: column;
+    margin-left: 70px;
+    width: 500px;
+    height: 116px;
+  }
+  .rank__input__box__row {
+    display: flex;
+    margin: 10px 0px;
+  }
+  .rank__input__box__button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0px 10px;
+    width: 80px;
+    height: 22px;
+    border: 1px solid #ffffff;
+    color: white;
+    cursor: pointer;
+  }
+  .rank__nickname {
+    display: flex;
+  }
+  .rank__input__box__nickname {
+    margin-top: 10px;
+    width: 300px;
+    line-height: 25px;
+    border: 1px solid #ffffff;
+    box-sizing: border-box;
+    border-radius: 50px;
+    background-color: #2b3150;
+    text-align: center;
+    color: #ffffff;
+  }
+  .rank__nickname__search {
+    width: 45px;
+    margin-top: 13px;
+    color: #ffffff;
+  }
+  .rank__display {
+    display: flex;
+    flex-direction: column;
+    margin-left: 230px;
+    width: 750px;
+    height: 240px;
+  }
+  .rank__display__scroll__root {
+    overflow: auto;
+    height: 380px;
+    min-height: 100%;
+    margin-left: 20px;
+  }
+  .rank__display__itembox {
+    display: flex;
+    flex-direction: row;
+    padding: 10px 0px;
+  }
+  .display__body {
+    display: flex;
+    flex-direction: column;
+  }
+  .rank__display__item {
+    display: flex;
+    justify-content: center;
+  }
+  .display__rank {
+    width: 70px;
+  }
+  .display__nickname {
+    width: 200px;
+  }
+  .display__message {
+    width: 500px;
+  }
+  .display__win {
+    width: 120px;
+  }
+  .display__header {
+    margin-left: 20px;
+    border-bottom: 1px solid #ffffff;
+  }
+  .selected {
+    background-color: $white;
+    color: $dark-navy;
+  }
+}

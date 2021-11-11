@@ -5,7 +5,7 @@
   height: 100%;
   flex: 1;
   .lobby__section {
-    padding: 22px 28px;
+    padding: 22px 26px;
   }
   .section__divider {
     position: relative;
@@ -43,18 +43,7 @@
         }
       }
     }
-    .absolute_border_bottom {
-      position: relative;
-      &::after {
-        content: '';
-        position: absolute;
-        background-color: $white;
-        width: 100%;
-        height: 1px;
-        top: 100%;
-        left: 0;
-      }
-    }
+
     .user__list__container {
       flex: 1;
       margin: 20px 24px 37px;
@@ -62,28 +51,6 @@
         overflow: auto;
         height: 380px;
         min-height: 100%;
-        /* width */
-        &::-webkit-scrollbar {
-          width: 6px;
-          border-radius: 10px;
-        }
-
-        /* Track */
-        &::-webkit-scrollbar-track {
-          background: $new-color;
-          border-radius: 10px;
-        }
-
-        /* Handle */
-        &::-webkit-scrollbar-thumb {
-          background: $white;
-          border-radius: 10px;
-        }
-
-        /* Handle on hover */
-        &::-webkit-scrollbar-thumb:hover {
-          background: $azure-blue;
-        }
       }
       .user__list--item {
         font-size: 15px;
@@ -100,6 +67,10 @@
           display: inline-block;
           margin-right: 12px;
         }
+
+        &.activated {
+          background-color: $new-color;
+        }
       }
     }
     .button__group {
@@ -107,7 +78,7 @@
       justify-content: space-evenly;
 
       .lobby__btn {
-        border-radius: 10px;
+        border-radius: 5px;
         color: $white;
         font-size: 16px;
         line-height: 19px;
@@ -125,9 +96,11 @@
     flex: 3;
     display: flex;
     flex-direction: column;
+    &.lobby__section {
+      padding-right: 42px;
+    }
     .lobby__container {
       padding-top: 25px;
-      padding-left: 52px;
       .room__list__scroll__root {
         display: flex;
         flex-wrap: wrap;
@@ -136,39 +109,18 @@
         height: 380px;
         min-height: 100%;
         align-content: flex-start;
-        /* width */
-        &::-webkit-scrollbar {
-          width: 6px;
-          border-radius: 10px;
-        }
-
-        /* Track */
-        &::-webkit-scrollbar-track {
-          background: $new-color;
-          border-radius: 10px;
-        }
-
-        /* Handle */
-        &::-webkit-scrollbar-thumb {
-          background: $white;
-          border-radius: 10px;
-        }
-
-        /* Handle on hover */
-        &::-webkit-scrollbar-thumb:hover {
-          background: $azure-blue;
-        }
+        padding: 0 56px 0 16px;
       }
       flex: 1;
       .empty__item,
       &::after {
         content: '';
         flex-grow: 1;
-        flex-basis: 355px;
+        flex-basis: 250px;
       }
 
       .room__container {
-        flex-basis: 355px;
+        flex-basis: 250px;
         flex-grow: 1;
         // margin-right: 46px;
         // margin-bottom: 34px;
@@ -182,6 +134,14 @@
         :not(:last-child) {
           margin-bottom: 21px;
         }
+
+        &.room__type--secret {
+          position: relative;
+          background-image: url('../../common/assets/lock.png');
+          background-repeat: no-repeat;
+          background-position: top 12px right 16px;
+        }
+
         .room__title {
           font-size: 18px;
           line-height: 21px;

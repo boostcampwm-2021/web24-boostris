@@ -2,9 +2,8 @@ import { useAppSelector } from '../../app/hooks';
 import { selectUser } from '../../features/user/userSlice';
 
 function useAuth() {
-  const { profile } = useAppSelector(selectUser);
-
-  return { profile };
+  const { auth, profile } = useAppSelector(selectUser);
+  return { auth, profile };
 }
 
 export default useAuth;
