@@ -61,7 +61,7 @@ function App() {
             }
           />
           <Route path="rank" element={<RankPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Routes>
     </div>

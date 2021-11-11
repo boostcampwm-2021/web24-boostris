@@ -1,4 +1,4 @@
-import { useRef, createContext, useEffect, MutableRefObject, useContext, useState } from 'react';
+import { useRef, createContext, useEffect, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { useAppDispatch } from '../app/hooks';

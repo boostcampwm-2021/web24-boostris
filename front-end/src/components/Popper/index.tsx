@@ -1,4 +1,4 @@
-import { forwardRef, MouseEventHandler, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, MouseEventHandler, useImperativeHandle, useState } from 'react';
 import { createPortal } from 'react-dom';
 import './style.scss';
 
