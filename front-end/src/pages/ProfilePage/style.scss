@@ -1,21 +1,19 @@
 @import 'common/styles/base';
 
-.profile {
-  background-color: $navy;
-  max-width: 1100px;
-  max-height: 540px;
-  width: 100%;
+.profile__page--root {
   display: flex;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background-color: $navy;
+  min-width: 814px;
+  flex: 1;
 
   .profile-section {
     background-color: rgba(255, 255, 255, 0.14);
-    width: 250px;
-    padding: 20px 15px;
+    padding: 20px 25px;
     display: flex;
     flex-direction: column;
-    // flex-shrink: 0;
-    // flex-grow: 1;
-    // flex-basis: 250px;
 
     .profile-section__image {
       width: 92px;
@@ -29,7 +27,7 @@
     }
 
     .profile-section__status {
-      width: 200px;
+      width: 100%;
       background-color: rgba(255, 255, 255, 0.14);
       border: 1px rgba(255, 255, 255, 0.637) solid;
       height: 120px;
@@ -65,28 +63,33 @@
   }
 
   .total-section {
-    padding: 20px 15px;
-    margin: 0px auto;
+    padding: 20px 30px;
+    width: 100%;
+    min-width: 600px;
 
     .stastics-section {
-      width: 800px;
+      display: flex;
+      flex-direction: column;
 
       .stastics-section__header {
-        display: flex;
-        justify-content: space-between;
+        padding-bottom: 10px;
       }
       .stastics-list {
-        margin: 0px 90px 30px;
+        margin: 20px 90px 40px;
         font-size: 17px;
         display: grid;
         grid-template-columns: 1fr 1fr;
-        row-gap: 24px;
+        row-gap: 30px;
 
         .stastics-list__item {
           display: grid;
           grid-template-columns: 2fr 1fr 1fr;
         }
       }
+    }
+
+    .recent-section__header {
+      padding-bottom: 10px;
     }
 
     .recent-list__header {
@@ -96,7 +99,7 @@
       text-align: center;
       background-color: $new-color;
       padding: 7px;
-      margin: 0 30px 18px;
+      margin: 20px 30px 18px;
       box-sizing: border-box;
     }
 
@@ -108,10 +111,10 @@
         display: grid;
         grid-template-columns: repeat(6, 1fr);
         text-align: center;
-        font-size: 16px;
+        font-size: 17px;
         padding: 0px 30px;
         height: 100%;
-        row-gap: 22px;
+        row-gap: 14px;
         box-sizing: border-box;
       }
 

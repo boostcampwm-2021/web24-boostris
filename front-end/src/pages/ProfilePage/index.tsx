@@ -3,6 +3,7 @@ import './style.scss';
 import SectionTitle from '../../components/SectionTitle';
 import Line from '../../components/Line';
 import useAuth from '../../hooks/use-auth';
+import AppbarLayout from '../../layout/AppbarLayout';
 
 export default function Profile() {
   const recentHeader = ['날짜', '인원', '등수', '플레이 타임', '공격 횟수', '받은 횟수'];
@@ -94,49 +95,49 @@ export default function Profile() {
   }, [userState.nickname]);
 
   return (
-    <div className="profile">
-      <div className="profile-section">
-        <SectionTitle>프로필</SectionTitle>
-        <img
-          className="profile-section__image"
-          src="assets/profile.png"
-          alt="이미지 다운로드 실패"
-        ></img>
-        <span className="profile-section__player">{`[ ${userState.nickname} ]`}</span>
-        <textarea
-          maxLength={50}
-          minLength={1}
-          className="profile-section__status"
-          disabled={!editMode}
-          onChange={changeTextArea}
-          value={userState.stateMessage}
-        ></textarea>
-        <button className="profile-section__button" onClick={clickEditButton}>
-          {editMode ? `Save Profile` : `Edit Profile`}
-        </button>
-      </div>
-      <div className="total-section">
-        <div className="stastics-section">
-          <div className="stastics-section__header">
-            <SectionTitle>통계</SectionTitle>
-            <div>X</div>
-          </div>
-          <Line marginTop="13" marginBottom="18" marginRight="0" marginLeft="0" />
-          <div className="stastics-list">{drawStatistics(statsticsState)}</div>
+    <AppbarLayout>
+      <div className="profile__page--root">
+        <div className="profile-section">
+          <SectionTitle>프로필</SectionTitle>
+          <img
+            className="profile-section__image"
+            src="assets/profile.png"
+            alt="이미지 다운로드 실패"
+          ></img>
+          <span className="profile-section__player">{`[ ${userState.nickname} ]`}</span>
+          <textarea
+            maxLength={50}
+            minLength={1}
+            className="profile-section__status"
+            disabled={!editMode}
+            onChange={changeTextArea}
+            value={userState.stateMessage}
+          ></textarea>
+          <button className="profile-section__button" onClick={clickEditButton}>
+            {editMode ? `Save Profile` : `Edit Profile`}
+          </button>
         </div>
-        <div className="recent-section">
-          <SectionTitle>최근 기록</SectionTitle>
-          <Line marginTop="13" marginBottom="18" marginRight="0" marginLeft="0" />
-          <div className="recent-list__header">
-            {recentHeader.map((value, i) => (
-              <div key={i}>{value}</div>
-            ))}
+        <div className="total-section">
+          <div className="stastics-section ">
+            <div className="absolute_border_bottom stastics-section__header">
+              <SectionTitle>통계</SectionTitle>
+            </div>
+            <div className="stastics-list">{drawStatistics(statsticsState)}</div>
           </div>
-          <div className="recent-list__scroll">
-            <div className="recent-list">{drawRecent(recentList)}</div>
+          <div className="recent-section">
+            <SectionTitle>최근 기록</SectionTitle>
+            <Line marginTop="13" marginBottom="18" marginRight="0" marginLeft="0" />
+            <div className="recent-list__header">
+              {recentHeader.map((value, i) => (
+                <div key={i}>{value}</div>
+              ))}
+            </div>
+            <div className="recent-list__scroll">
+              <div className="recent-list">{drawRecent(recentList)}</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </AppbarLayout>
   );
 }
