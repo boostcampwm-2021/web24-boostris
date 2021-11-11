@@ -87,8 +87,6 @@ const setFreeze = (BOARD: number[][], BLOCK: TetrisBlock) => {
       }
     });
   });
-
-  console.table(BOARD);
 };
 
 // 한 줄을 지우고 그 위 줄들을 내리는 함수
@@ -516,7 +514,6 @@ const Board = ({
   getHoldBlockState: (newBlock: TetrisBlock) => void;
   getPreviewBlocksList: (newBlocks: null | Array<TetrisBlock>) => void;
 }): JSX.Element => {
-  console.log(gameStart);
   useEffect(() => {
     if (!gameStart) return;
 
@@ -747,6 +744,16 @@ const Board = ({
       clearInterval(TIMER.CONFLICT);
       clearInterval(TIMER.SOLID_GARBAGE_INTERVAL);
       clearTimeout(TIMER.SOLID_GARBAGE_TIMEOUT);
+
+      clearInterval(leftInterval);
+      clearInterval(leftContInterval);
+      clearInterval(leftTimeOut);
+
+      clearInterval(rightInterval);
+      clearInterval(rightContInterval);
+      clearInterval(rightTimeOut);
+
+      clearInterval(downInterval);
 
       window.removeEventListener('keydown', keyDownEventHandler);
       window.removeEventListener('keyup', keyUpEventHandler);

@@ -54,8 +54,10 @@ export const initTetrisSocket = (io: Namespace) => {
       // 다른 누군가 게임 시작을 눌렀다면 다른 사용자들에게 알림
       io.to(socket.roomId).emit('game started');
 
+      rooms[socket.roomId].garbageBlockCnt = []; // 공격 전달을 위한 배열 초기화
+
       [...io.adapter.rooms.get(socket.roomId)].forEach((player) =>
-        rooms[socket.roomId].garbageBlockCnt.push({ id: player, live: true, garbageCnt: 0 })
+        rooms[socket.roomId].garbageBlockCnt.push({ id: player, garbageCnt: 0 })
       );
     });
 
@@ -65,38 +67,28 @@ export const initTetrisSocket = (io: Namespace) => {
     });
 
     socket.on('attack other player', (garbage) => {
+      if(rooms[socket.roomId].garbageBlockCnt.length === 1) return; // 한 명 남은 경우 예외 처리
+
       rooms[socket.roomId].garbageBlockCnt.sort((a, b) => a.garbageCnt - b.garbageCnt);
 
       let idx = 0;
-
-      if (rooms[socket.roomId].gameOverPlayer === io.adapter.rooms.get(socket.roomId).size - 1)
-        return;
-
-      while (true) {
-        if (rooms[socket.roomId].garbageBlockCnt[idx].live) {
-          break;
-        }
-        idx = (idx + 1) % rooms[socket.roomId].garbageBlockCnt.length;
-      }
 
       if (rooms[socket.roomId].garbageBlockCnt[idx].id === socket.id) {
         // 블록 수가 가장 작은 사람이 자기 자신이라면 다음 사람에게
         idx++;
       }
 
-      for (let i = 0; i < rooms[socket.roomId].garbageBlockCnt.length; i++) {
-        if (i === idx) {
-          // 공격 받는 플레이어
-          io.to(rooms[socket.roomId].garbageBlockCnt[i].id).emit('attacked', garbage);
-        } else {
-          // 공격 받지 않는 플레이어
-          io.to(rooms[socket.roomId].garbageBlockCnt[i].id).emit(
-            'someone attacked',
-            garbage,
-            rooms[socket.roomId].garbageBlockCnt[idx].id
-          );
-        }
-      }
+      io.to(rooms[socket.roomId].garbageBlockCnt[idx].id).emit('attacked', garbage);
+
+      // 누가 공격 받았는지 전파
+      [...io.adapter.rooms.get(socket.roomId)].forEach(player => {
+        if(player === rooms[socket.roomId].garbageBlockCnt[idx].id) return;
+        io.to(player).emit(
+          'someone attacked',
+          garbage,
+          rooms[socket.roomId].garbageBlockCnt[idx].id
+        );
+      });
 
       rooms[socket.roomId].garbageBlockCnt[idx].garbageCnt += garbage;
     });
@@ -107,9 +99,7 @@ export const initTetrisSocket = (io: Namespace) => {
 
     socket.on('game over', () => {
       // 누군가 게임 오버 시
-      rooms[socket.roomId].garbageBlockCnt[
-        rooms[socket.roomId].garbageBlockCnt.findIndex((player) => player.id === socket.id)
-      ].live = false;
+      rooms[socket.roomId].garbageBlockCnt = rooms[socket.roomId].garbageBlockCnt.filter(player => player.id !== socket.id);
 
       rooms[socket.roomId].gameOverPlayer++;
 
