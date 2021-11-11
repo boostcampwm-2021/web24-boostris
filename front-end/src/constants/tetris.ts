@@ -52,6 +52,9 @@ export const BOARD_HEIGHT: number = 481;
 export const OTHER_BOARD_WIDTH: number = 121;
 export const OTHER_BOARD_HEIGHT: number = 241;
 
+export const ATTACK_BAR = 8;
+export const OTHER_ATTACK_BAR = 6;
+
 // 블록 시작 좌표
 export const START_X: number = 3;
 export const START_Y: number = 4;
@@ -331,6 +334,14 @@ export const SRS_I = [
     ],
   },
 ];
+
+export const GARBAGE_RULES: {[key: string]: number} = {
+  '0': 0,
+  '1': 0,
+  '2': 1,
+  '3': 2,
+  '4': 4
+};
 
 // 보드의 크기만큼 배열을 만들어주는 함수
 export const getEmptyArray = (ROWS: number, COLS: number) => {

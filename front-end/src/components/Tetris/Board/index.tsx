@@ -1,3 +1,4 @@
+import { KeyObject } from 'crypto';
 import React, { useEffect, useRef } from 'react';
 import { Socket } from 'socket.io-client';
 import * as TETRIS from '../../../constants/tetris';
@@ -26,6 +27,10 @@ const STATE: TetrisState = {
   QUEUE: null as unknown as TetrisBlock[],
   CAN_HOLD: null as unknown as boolean,
   SOLID_GARBAGES: null as unknown as number,
+  ATTACKED_GARBAGES: null as unknown as number,
+  KEYDOWN_RIGHT: null as unknown as boolean,
+  KEYDOWN_LEFT: null as unknown as boolean,
+  KEYDOWN_DOWN: null as unknown as boolean,
   KEYDOWN_TURN_RIGHT: null as unknown as boolean,
   KEYDOWN_TURN_LEFT: null as unknown as boolean,
   KEYDOWN_HARD_DROP: null as unknown as boolean
@@ -35,7 +40,8 @@ const TIMER: TetrisTimer = {
   PLAY_TIME: null as unknown as number,
   DROP: null as unknown as NodeJS.Timeout,
   CONFLICT: null as unknown as NodeJS.Timeout,
-  SOLID_GARBAGE: null as unknown as NodeJS.Timeout,
+  SOLID_GARBAGE_TIMEOUT: null as unknown as NodeJS.Timeout,
+  SOLID_GARBAGE_INTERVAL: null as unknown as NodeJS.Timeout,
 };
 
 const BACKGROUND: TetrisBackground = {
@@ -85,21 +91,57 @@ const setFreeze = (BOARD: number[][], BLOCK: TetrisBlock) => {
 };
 
 // 한 줄을 지우고 그 위 줄들을 내리는 함수
-const clearLine = (board: number[][]) => {
+const clearLine = (board: number[][], socket:Socket) => {
+  let clearLineCnt = 0;
+
   board.forEach((row, y) => {
     if (row.every((value) => value > 1)) {
+      clearLineCnt++;
       board.splice(y, 1);
       board.unshift(Array(TETRIS.COLS).fill(0));
     }
   });
+
+  const key = clearLineCnt.toString();
+
+  if(TETRIS.GARBAGE_RULES[key] === 0) return;
+  socket.emit('attack other player', TETRIS.GARBAGE_RULES[key]);
 };
 
 // BOARD에 SOLID GARBAGE를 만드는 함수
-const setSolidBlock = (board: number[][], solidBlocks: number) => {
-  for (let i = 0; i < solidBlocks; i++) {
+const setSolidBlock = (board: number[][], STATE: TetrisState, socket: Socket) => {
+  const attackedBlock = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2];
+
+  attackedBlock[Math.floor(Math.random() * 10)] = 0; // 한칸은 비워두기
+
+  for(let i = 4; i < TETRIS.ROWS; i++) {
+    if(board[i][0] === 1) { // 다음 칸이 solid garbage이거나 아예 없는 경우
+      for(let j = 0; j < STATE.ATTACKED_GARBAGES; j++) {
+        board.splice(i, 0, attackedBlock.slice());
+        board.shift();
+      }
+      break;
+    }
+    else if(i === TETRIS.ROWS - 1) {
+      for(let j = 0; j < STATE.ATTACKED_GARBAGES; j++) {
+        board.shift();
+        board.push(attackedBlock.slice());
+      }
+      break;
+    }
+  }
+
+  // 공격 블록이 올라온 후 AttackBar 비워주는 처리
+  BACKGROUND.CTX.clearRect(TETRIS.BOARD_WIDTH, 0, 8, TETRIS.BOARD_HEIGHT);
+  socket.emit('attacked finish');
+
+  for (let i = 0; i < STATE.SOLID_GARBAGES; i++) {
     board.shift();
     board.push(Array(TETRIS.COLS).fill(1));
   }
+
+  STATE.SOLID_GARBAGES = 0;
+  STATE.ATTACKED_GARBAGES = 0;
 };
 
 // 블록이 한칸 다음으로 더 나아갈 수 있는지 아닌지 확인하는 함수 (블록이 바닥으로 내려오거나, 다른 블록 위에 떠 있는 경우 확인)
@@ -303,6 +345,10 @@ const initTetris = (
   STATE.QUEUE = getPreviewBlocks();
   STATE.CAN_HOLD = true;
   STATE.SOLID_GARBAGES = 0;
+  STATE.ATTACKED_GARBAGES = 0;
+  STATE.KEYDOWN_RIGHT = false;
+  STATE.KEYDOWN_LEFT = false;
+  STATE.KEYDOWN_DOWN = false;
   STATE.KEYDOWN_TURN_RIGHT = false;
   STATE.KEYDOWN_TURN_LEFT = false;
   STATE.KEYDOWN_HARD_DROP = false;
@@ -310,23 +356,26 @@ const initTetris = (
   BLOCK.NOW = popBlockQueue(STATE, PROPS_FUNC);
   BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
   BLOCK.HOLD = null as unknown as TetrisBlock;
+  BLOCK.NEXT = null as unknown as TetrisBlock;
+  BLOCK.BEFORE = null as unknown as TetrisBlock;
 
   TIMER.PLAY_TIME = 0;
 
   BACKGROUND.CANVAS = document.querySelector('.board') as HTMLCanvasElement;
-  BACKGROUND.CTX = BACKGROUND.CANVAS?.getContext('2d') as CanvasRenderingContext2D;
+  BACKGROUND.CTX = BACKGROUND.CANVAS.getContext('2d') as CanvasRenderingContext2D;
   BACKGROUND.CTX.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
   BACKGROUND.IMAGE = new Image();
   BACKGROUND.IMAGE.src = 'assets/block.png';
 };
 
 // 블록이 움직이면 BLOCK의 상태를 업데이트하고 이를 그려줌.
-const moveBlock = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground) => {
+const moveBlock = (BOARD: number[][], BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground, socket: Socket) => {
   BLOCK.BEFORE = BLOCK.NOW;
   if (isNotConflict(BLOCK.NEXT, BOARD)) {
     BLOCK.NOW = BLOCK.NEXT;
     BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
     draw(BOARD, BLOCK, BACKGROUND);
+    socket.emit('drop block', BOARD, ({NOW: BLOCK.NOW, GHOST: BLOCK.GHOST}));
   }
 };
 
@@ -337,13 +386,14 @@ const freezeBlock = (
   STATE: TetrisState,
   TIMER: TetrisTimer,
   option: string,
-  PROPS_FUNC: TetrisPropsFunc
+  PROPS_FUNC: TetrisPropsFunc,
+  socket: Socket
 ) => {
   if (option === 'TIME_OUT' || option === 'HARD_DROP') {
     BLOCK.NOW = hardDropBlock(BOARD, BLOCK.NOW);
   }
   setFreeze(BOARD, BLOCK.NOW);
-  clearLine(BOARD);
+  clearLine(BOARD, socket);
   BLOCK.NEXT = popBlockQueue(STATE, PROPS_FUNC);
 };
 
@@ -352,12 +402,11 @@ const finishGame = (
   BOARD: number[][],
   TIMER: TetrisTimer,
   BACKGROUND: TetrisBackground,
-  PROPS_FUNC: TetrisPropsFunc
+  PROPS_FUNC: TetrisPropsFunc,
+  socket: Socket
 ) => {
-  clearInterval(TIMER.DROP);
-  clearInterval(TIMER.CONFLICT);
-  clearInterval(TIMER.SOLID_GARBAGE);
   gameoverBlocks(BOARD);
+  socket.emit('drop block', BOARD, 'finish');
   drawBoard(BOARD, BACKGROUND);
   PROPS_FUNC.GAMEOVER_FUNC();
 };
@@ -376,22 +425,23 @@ const initNewBlockCycle = (
   if (STATE.QUEUE.length === 5) {
     STATE.QUEUE.push(...getPreviewBlocks());
   }
-
-  setSolidBlock(BOARD, STATE.SOLID_GARBAGES);
+  
+  setSolidBlock(BOARD, STATE, socket);
 
   BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
 
-  STATE.SOLID_GARBAGES = 0;
+  // STATE.SOLID_GARBAGES = 0;
+  // STATE.ATTACKED_GARBAGES = 0;
   STATE.CAN_HOLD = true;
 
   clearInterval(TIMER.DROP);
   TIMER.PLAY_TIME = 0;
   TIMER.DROP = setInterval(() => {
     BLOCK.NEXT = moves[TETRIS.KEY.DOWN](BLOCK.NOW);
-    moveBlock(BOARD, BLOCK, BACKGROUND);
-    socket.emit('drop block', BLOCK.NOW);
+    moveBlock(BOARD, BLOCK, BACKGROUND, socket);
   }, 900);
 
+  socket.emit('drop block', BOARD, ({NOW: BLOCK.NOW, GHOST: BLOCK.GHOST}));
   draw(BOARD, BLOCK, BACKGROUND);
 };
 
@@ -406,10 +456,11 @@ const dropBlockCycle = (
   BACKGROUND: TetrisBackground,
   socket: Socket
 ) => {
-  freezeBlock(BOARD, BLOCK, STATE, TIMER, option, PROPS_FUNC);
+  freezeBlock(BOARD, BLOCK, STATE, TIMER, option, PROPS_FUNC, socket);
+
   // 게임 오버 검사
   if (isGameOver(BOARD, BLOCK.NEXT)) {
-    finishGame(BOARD, TIMER, BACKGROUND, PROPS_FUNC);
+    finishGame(BOARD, TIMER, BACKGROUND, PROPS_FUNC, socket);
     return;
   }
   initNewBlockCycle(BOARD, BLOCK, STATE, TIMER, BACKGROUND, socket);
@@ -421,7 +472,8 @@ const holdBlock = (
   BLOCK: TetrisBlocks,
   STATE: TetrisState,
   PROPS_FUNC: TetrisPropsFunc,
-  BACKGROUND: TetrisBackground
+  BACKGROUND: TetrisBackground,
+  socket: Socket
 ) => {
   const tmpBlock = {
     posX: TETRIS.START_X,
@@ -437,6 +489,7 @@ const holdBlock = (
     [BLOCK.NOW, BLOCK.HOLD] = [BLOCK.HOLD, tmpBlock];
   }
   BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
+  socket.emit('drop block', BOARD, ({NOW: BLOCK.NOW, GHOST: BLOCK.GHOST}));
   draw(BOARD, BLOCK, BACKGROUND);
   PROPS_FUNC.HOLD_FUNC(BLOCK.HOLD);
 };
@@ -444,12 +497,14 @@ const holdBlock = (
 const Board = ({
   socket,
   gameStart,
+  gameOver,
   endGame,
   getHoldBlockState,
   getPreviewBlocksList,
 }: {
   socket: Socket;
   gameStart: boolean;
+  gameOver: boolean;
   endGame: () => void;
   getHoldBlockState: (newBlock: TetrisBlock) => void;
   getPreviewBlocksList: (newBlocks: null | Array<TetrisBlock>) => void;
@@ -469,12 +524,12 @@ const Board = ({
     ); // 테트리스 초기화
 
     BACKGROUND.IMAGE.onload = () => {
+      socket.emit('drop block', BOARD, ({NOW: BLOCK.NOW, GHOST: BLOCK.GHOST}));
       draw(BOARD, BLOCK, BACKGROUND); // 초기 화면을 그린다
 
       TIMER.DROP = setInterval(() => {
         BLOCK.NEXT = moves[TETRIS.KEY.DOWN](BLOCK.NOW);
-        moveBlock(BOARD, BLOCK, BACKGROUND);
-        socket.emit('drop block', BLOCK.NOW);
+        moveBlock(BOARD, BLOCK, BACKGROUND, socket);
       }, 900); // 블록을 0.9초마다 한칸씩 떨어뜨리는 타이머 등록
 
       TIMER.CONFLICT = setInterval(() => {
@@ -496,38 +551,88 @@ const Board = ({
         TIMER.PLAY_TIME += 0.5;
       }, 500);
       
-      setTimeout(() => TIMER.SOLID_GARBAGE = setInterval(() => STATE.SOLID_GARBAGES++, 5000), 120000); // 솔리드 가비지 타이머
+      TIMER.SOLID_GARBAGE_TIMEOUT = setTimeout(() => TIMER.SOLID_GARBAGE_INTERVAL = setInterval(() => STATE.SOLID_GARBAGES++, 5000), 120000); // 솔리드 가비지 타이머
     };
 
-    const keyDownEventHandler = (event: KeyboardEvent) => {  
+  //   window.onkeydown = function(e){ //키를 눌렀을때
+  //     var that = this;//키 누르기 반영할 개체 가리킴
+  //     this.keytime = setTimeout(function(){
+  //         //여기에 키를 누를때마다 수행할 부분 구현
+  //         that.isFirstPressed = true; //처음 눌렀다는 속성 반영
+  //         that.onkeydown.call(that, e);//연속 수행
+  //     }, this.isFirstPressed ? 100 : 1000);
+  // };
+  // window.onkeyup = function(){ //키를 뗐을때
+  //     clearTimeout(this.keytime); //키 누르기 중단
+  //     this.isFirstPressed = false; //처음 누르기 초기화
+  // }
+    //let keydown = false;
+    //let keydownInterval: NodeJS.Timeout;
+    let leftInterval: NodeJS.Timeout;
+    let leftContInterval: NodeJS.Timeout;
+    let leftTimeOut: NodeJS.Timeout;
+    let rightInterval: NodeJS.Timeout;
+    let rightContInterval: NodeJS.Timeout;
+    let rightTimeOut: NodeJS.Timeout;
+    let downInterval: NodeJS.Timeout;
+
+    const keyDownEventHandler = (event: KeyboardEvent) => {
+      event.preventDefault();
       if (!moves[event.key]) return;
       BLOCK.NEXT = moves[event.key](BLOCK.NOW);
 
       switch (event.key) {
         // 방향 키 이벤트(왼쪽, 오른쪽, 아래)
         case TETRIS.KEY.LEFT:
+          if(!STATE.KEYDOWN_LEFT) {
+            if(STATE.KEYDOWN_RIGHT) { // 오른쪽이 계속 눌리고 있다면
+              clearInterval(rightInterval);
+              clearInterval(rightContInterval);
+              clearInterval(rightTimeOut);
+            }
+
+            STATE.KEYDOWN_LEFT = true;
+            leftTimeOut = setTimeout(() => leftInterval = setInterval(() => {window.dispatchEvent(new KeyboardEvent('keydown', {key: event.key}));}, 20), 200);
+          }
+          moveBlock(BOARD, BLOCK, BACKGROUND, socket);
+          break;
         case TETRIS.KEY.RIGHT:
+          if(!STATE.KEYDOWN_RIGHT) {
+            if(STATE.KEYDOWN_LEFT) { // 왼쪽이 계속 눌리고 있다면
+              clearInterval(leftInterval);
+              clearInterval(leftContInterval);
+              clearInterval(leftTimeOut);
+            }
+            STATE.KEYDOWN_RIGHT = true;
+            rightTimeOut = setTimeout(() => rightInterval = setInterval(() => {window.dispatchEvent(new KeyboardEvent('keydown', {key: event.key}));}, 20), 200);
+          }
+          moveBlock(BOARD, BLOCK, BACKGROUND, socket);
+          break;
         case TETRIS.KEY.DOWN:
-          moveBlock(BOARD, BLOCK, BACKGROUND);
+          if(!STATE.KEYDOWN_DOWN) {
+            STATE.KEYDOWN_DOWN = true;
+            downInterval = setInterval(() => {window.dispatchEvent(new KeyboardEvent('keydown', {key: event.key}));}, 5);
+          }
+          moveBlock(BOARD, BLOCK, BACKGROUND, socket);
           break;
         // 회전 키 이벤트(위, z)
         case TETRIS.KEY.TURN_RIGHT:
           if(STATE.KEYDOWN_TURN_RIGHT) return;
           STATE.KEYDOWN_TURN_RIGHT = true;
           BLOCK.NEXT = SRSAlgorithm(BOARD, BLOCK, event.key);
-          moveBlock(BOARD, BLOCK, BACKGROUND);
+          moveBlock(BOARD, BLOCK, BACKGROUND, socket);
           break;
         case TETRIS.KEY.TURN_LEFT:
           if (STATE.KEYDOWN_TURN_LEFT) return;
           STATE.KEYDOWN_TURN_LEFT = true;
           BLOCK.NEXT = SRSAlgorithm(BOARD, BLOCK, event.key);
-          moveBlock(BOARD, BLOCK, BACKGROUND);
+          moveBlock(BOARD, BLOCK, BACKGROUND, socket);
           break;
         // 홀드 키(c)
         case TETRIS.KEY.HOLD:
           if (STATE.CAN_HOLD) {
             STATE.CAN_HOLD = false;
-            holdBlock(BOARD, BLOCK, STATE, PROPS_FUNC, BACKGROUND);
+            holdBlock(BOARD, BLOCK, STATE, PROPS_FUNC, BACKGROUND, socket);
           }
           break;
         // 하드 드롭(스페이스 키)
@@ -543,6 +648,28 @@ const Board = ({
 
     const keyUpEventHandler = (event: KeyboardEvent) => {
       switch (event.key) {
+        case TETRIS.KEY.LEFT:
+          STATE.KEYDOWN_LEFT = false;
+          clearInterval(leftInterval);
+          clearInterval(leftContInterval);
+          clearInterval(leftTimeOut);
+          if(STATE.KEYDOWN_RIGHT) { // 오른쪽이 계속 눌리고 있다면
+            rightTimeOut = setTimeout(() =>rightContInterval = setInterval(() => {window.dispatchEvent(new KeyboardEvent('keydown', {key: TETRIS.KEY.RIGHT}));}, 20), 200);
+          }
+          break;
+        case TETRIS.KEY.RIGHT:
+          STATE.KEYDOWN_RIGHT = false;
+          clearInterval(rightInterval);
+          clearInterval(rightContInterval);
+          clearInterval(rightTimeOut);
+          if(STATE.KEYDOWN_LEFT) { // 왼쪽이 계속 눌리고 있다면
+            leftTimeOut = setTimeout(() =>leftContInterval = setInterval(() => {window.dispatchEvent(new KeyboardEvent('keydown', {key: TETRIS.KEY.LEFT}));}, 20), 200);
+          }
+          break;
+        case TETRIS.KEY.DOWN:
+          STATE.KEYDOWN_DOWN = false;
+          clearInterval(downInterval);
+          break;
         case TETRIS.KEY.TURN_RIGHT:
           STATE.KEYDOWN_TURN_RIGHT = false;
           break;
@@ -559,22 +686,41 @@ const Board = ({
   
     window.addEventListener('keydown', keyDownEventHandler);
     window.addEventListener('keyup', keyUpEventHandler);
+
     return () => {
+      TIMER.PLAY_TIME = 0;
+      clearInterval(TIMER.DROP);
+      clearInterval(TIMER.CONFLICT);
+      clearInterval(TIMER.SOLID_GARBAGE_INTERVAL);
+      clearTimeout(TIMER.SOLID_GARBAGE_TIMEOUT);
+
       window.removeEventListener('keydown', keyDownEventHandler);
       window.removeEventListener('keyup', keyUpEventHandler);
     };
   }, [gameStart]);
 
+  useEffect(() => {
+    socket.on('attacked', garbage => {
+      STATE.ATTACKED_GARBAGES += garbage;
+      
+      if(STATE.ATTACKED_GARBAGES === 0) return;
+      BACKGROUND.CTX.fillStyle = '#0055FB';
+      BACKGROUND.CTX.clearRect(TETRIS.BOARD_WIDTH, 0, TETRIS.ATTACK_BAR, TETRIS.BOARD_HEIGHT);
+      BACKGROUND.CTX.fillRect(TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT - (STATE.ATTACKED_GARBAGES * TETRIS.BLOCK_SIZE) - 1, TETRIS.ATTACK_BAR, STATE.ATTACKED_GARBAGES * TETRIS.BLOCK_ONE_SIZE);
+    });
+  }, []);
+
   return (
+    <>
     <canvas
       style={{
         position: 'relative',
-        background: `url(assets/player_board.png)`,
       }}
       className="board"
-      width={TETRIS.BOARD_WIDTH}
+      width={TETRIS.BOARD_WIDTH + TETRIS.ATTACK_BAR}
       height={TETRIS.BOARD_HEIGHT}
     ></canvas>
+    </>
   );
 };
 
