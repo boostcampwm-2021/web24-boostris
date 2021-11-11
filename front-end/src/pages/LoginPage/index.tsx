@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 import GoogleLogin from 'react-google-login';
 import { NavigateOptions, useNavigate } from 'react-router-dom';
-import Modal from '../../components/Modal';
 import OauthLoginButton from '../../components/OauthLoginButton';
 import { OAUTH_LIST } from '../../constants';
+import useAuth from '../../hooks/use-auth';
 import './style.scss';
 
 declare const window: any;
@@ -13,6 +13,7 @@ function LoginPage() {
   const googleLog: any = useRef();
   const googleCLientID: string = process.env.REACT_APP_GOOGLE_CLIENTID || '';
   const navigate = useNavigate();
+  const { profile } = useAuth();
 
   const handleClick = (e: MouseEvent, name: string) => {
     if (name === 'github') {
@@ -41,6 +42,13 @@ function LoginPage() {
     });
     naverLogin.init();
   }, []);
+
+  useEffect(() => {
+    if (profile.isOurUser) {
+      console.log(profile);
+      navigate('/');
+    }
+  }, [navigate, profile]);
   return (
     <div className="login__root full__page--root">
       <div>
