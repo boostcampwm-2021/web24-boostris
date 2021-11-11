@@ -13,7 +13,13 @@ function LoginPage() {
   const googleLog: any = useRef();
   const googleCLientID: string = process.env.REACT_APP_GOOGLE_CLIENTID || '';
   const navigate = useNavigate();
-  const { profile } = useAuth();
+
+  const { auth } = useAuth();
+  useEffect(() => {
+    if (auth.authenticated) {
+      navigate('/');
+    }
+  }, [auth.authenticated, navigate]);
 
   const handleClick = (e: MouseEvent, name: string) => {
     if (name === 'github') {
@@ -43,12 +49,6 @@ function LoginPage() {
     naverLogin.init();
   }, []);
 
-  useEffect(() => {
-    if (profile.isOurUser) {
-      console.log(profile);
-      navigate('/');
-    }
-  }, [navigate, profile]);
   return (
     <div className="login__root full__page--root">
       <div>
