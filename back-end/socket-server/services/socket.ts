@@ -26,11 +26,11 @@ export const initSocket = (httpServer) => {
   const lobbyUsers = io.of('/lobby/users');
   const tetris = io.of('/tetris');
 
-  const braodCastRoomList = () => {
+  const broadcastRoomList = () => {
     roomList = roomList.filter((r) => r.current !== 0);
     lobbyUsers.emit('room list update', roomList);
   };
-  const broadCastUserList = async () => {
+  const broadcastUserList = async () => {
     const sockets = (await lobbyUsers.fetchSockets()) as userRemote[];
     lobbyUsers.emit(
       'user list update',
@@ -43,7 +43,7 @@ export const initSocket = (httpServer) => {
     if (target) target.current = lobbyUsers.adapter.rooms.get(room).size;
   };
 
-  const broadCastRoomMemberUpdate = async (room, id) => {
+  const broadcastRoomMemberUpdate = async (room, id) => {
     const sockets = (await lobbyUsers.fetchSockets()) as userRemote[];
     if (room !== id && lobbyUsers.adapter.rooms.get(room)) {
       lobbyUsers.to(room).emit(
@@ -62,8 +62,8 @@ export const initSocket = (httpServer) => {
     socket.setMaxListeners(0);
     socket.on('set userName', (userName) => {
       socket.userName = userName;
-      broadCastUserList();
-      braodCastRoomList();
+      broadcastUserList();
+      broadcastRoomList();
     });
 
     socket.on('create room', ({ owner, name, limit, isSecret }) => {
@@ -82,7 +82,7 @@ export const initSocket = (httpServer) => {
           },
         ];
         lobbyUsers.to(socket.id).emit('create room:success', newRoomID);
-        braodCastRoomList();
+        broadcastRoomList();
       } catch (error) {
         lobbyUsers.to(socket.id).emit('create room:fail');
       }
@@ -123,13 +123,13 @@ export const initSocket = (httpServer) => {
 
     lobbyUsers.adapter.on('join-room', (room, id) => {
       updateRoomCurrent(room);
-      broadCastRoomMemberUpdate(room, id);
-      braodCastRoomList();
+      broadcastRoomMemberUpdate(room, id);
+      broadcastRoomList();
     });
     lobbyUsers.adapter.on('leave-room', (room, id) => {
       updateRoomCurrent(room);
-      broadCastRoomMemberUpdate(room, id);
-      braodCastRoomList();
+      broadcastRoomMemberUpdate(room, id);
+      broadcastRoomList();
     });
 
     socket.on('disconnecting', () => {
@@ -138,11 +138,11 @@ export const initSocket = (httpServer) => {
         if (socket.rooms.has(key) && value.size === 1) roomsWillDelete.push(key);
       });
       roomList = roomList.filter(({ id }) => !roomsWillDelete.includes(id));
-      braodCastRoomList();
+      broadcastRoomList();
     });
 
     socket.on('disconnect', async () => {
-      broadCastUserList();
+      broadcastUserList();
     });
   });
 
