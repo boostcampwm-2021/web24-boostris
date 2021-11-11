@@ -21,6 +21,7 @@ export const initSocket = (httpServer) => {
     },
   });
   io.sockets.setMaxListeners(0);
+
   let roomList = [];
 
   const lobbyUsers = io.of('/lobby/users');
@@ -60,7 +61,10 @@ export const initSocket = (httpServer) => {
 
   lobbyUsers.on('connection', (socket: userSocket) => {
     socket.setMaxListeners(0);
+
+    console.log(socket.id);
     socket.on('set userName', (userName) => {
+      console.log(userName);
       socket.userName = userName;
       broadcastUserList();
       broadcastRoomList();
