@@ -87,8 +87,6 @@ const setFreeze = (BOARD: number[][], BLOCK: TetrisBlock) => {
       }
     });
   });
-
-  console.table(BOARD);
 };
 
 // 한 줄을 지우고 그 위 줄들을 내리는 함수
@@ -516,7 +514,6 @@ const Board = ({
   getHoldBlockState: (newBlock: TetrisBlock) => void;
   getPreviewBlocksList: (newBlocks: null | Array<TetrisBlock>) => void;
 }): JSX.Element => {
-  console.log(gameStart);
   useEffect(() => {
     if (!gameStart) return;
 
@@ -604,6 +601,7 @@ const Board = ({
             }
 
             STATE.KEYDOWN_LEFT = true;
+            clearInterval(leftTimeOut);
             leftTimeOut = setTimeout(
               () =>
                 (leftInterval = setInterval(() => {
@@ -623,6 +621,7 @@ const Board = ({
               clearInterval(leftTimeOut);
             }
             STATE.KEYDOWN_RIGHT = true;
+            clearInterval(rightTimeOut);
             rightTimeOut = setTimeout(
               () =>
                 (rightInterval = setInterval(() => {
@@ -691,6 +690,7 @@ const Board = ({
           clearInterval(leftTimeOut);
           if (STATE.KEYDOWN_RIGHT) {
             // 오른쪽이 계속 눌리고 있다면
+            clearInterval(rightTimeOut);
             rightTimeOut = setTimeout(
               () =>
                 (rightContInterval = setInterval(() => {
@@ -707,6 +707,7 @@ const Board = ({
           clearInterval(rightTimeOut);
           if (STATE.KEYDOWN_LEFT) {
             // 왼쪽이 계속 눌리고 있다면
+            clearInterval(leftTimeOut);
             leftTimeOut = setTimeout(
               () =>
                 (leftContInterval = setInterval(() => {
@@ -743,6 +744,16 @@ const Board = ({
       clearInterval(TIMER.CONFLICT);
       clearInterval(TIMER.SOLID_GARBAGE_INTERVAL);
       clearTimeout(TIMER.SOLID_GARBAGE_TIMEOUT);
+
+      clearInterval(leftInterval);
+      clearInterval(leftContInterval);
+      clearInterval(leftTimeOut);
+
+      clearInterval(rightInterval);
+      clearInterval(rightContInterval);
+      clearInterval(rightTimeOut);
+
+      clearInterval(downInterval);
 
       window.removeEventListener('keydown', keyDownEventHandler);
       window.removeEventListener('keyup', keyUpEventHandler);
