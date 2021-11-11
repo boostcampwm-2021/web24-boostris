@@ -4,6 +4,7 @@ import './App.scss';
 import LobbyPage from './pages/LobbyPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ProfilePage from './pages/ProfilePage';
 import Tetris from './components/Tetris';
 import OauthCallbackRouter from './routes/OauthCallbackRouter';
 import RequireAuth from './routes/RequireAuth';
@@ -49,7 +50,9 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/oauth/*" element={<OauthCallbackRouter />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/rank" element={<RankPage />} />
+
         </Routes>
       </BrowserRouter>
     </div>
