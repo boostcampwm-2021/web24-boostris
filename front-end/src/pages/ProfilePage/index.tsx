@@ -5,12 +5,12 @@ import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
 
 export default function Profile() {
-  const recentHeader = ['날짜', '인원', '등수', '플레이 타임', '공격 횟수', '받은 횟수'];
+  const recentHeader = ['날짜', '모드', '등수', '플레이 타임', '공격 횟수', '받은 횟수'];
   const translations = [
     ['total_game_cnt', '총 게임 수'],
     ['total_play_time', '총 플레이 시간'],
     ['single_player_win', '1vs1 승리 횟수'],
-    ['multi_player_win', '단체전 승리 횟수'],
+    ['multi_player_win', '일반전 승리 횟수'],
     ['total_attack_cnt', '총 공격 횟수'],
   ];
   const [recentList, setRecentList] = useState<string[][]>([]);
@@ -44,7 +44,7 @@ export default function Profile() {
         {recentList.map((value, i) => (
           <>
             <div key={i}>{value.date.slice(0, 10)}</div>
-            <div>{value.mode}</div>
+            <div>{value.mode === 'normal' ? '일반전' : '1 vs 1'}</div>
             <div>{value.ranking}</div>
             <div>{value.play_time}</div>
             <div>{value.attack_cnt}</div>
