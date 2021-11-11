@@ -12,6 +12,7 @@ export const initTetrisSocket = (io: Namespace) => {
   const initialState = {
     gameOverPlayer: 0,
     garbageBlockCnt: [],
+    game: false
   };
 
   const rooms = {};
@@ -21,6 +22,24 @@ export const initTetrisSocket = (io: Namespace) => {
       if (!rooms.hasOwnProperty(roomId)) {
         rooms[roomId] = JSON.parse(JSON.stringify({ ...initialState }));
       }
+      console.log(rooms);
+      // else {
+      //   // if(!rooms[roomId].game) {
+      //   //   socket.join(roomId);
+      //   //   socket.roomId = roomId;
+      //   //   socket.broadcast.to(roomId).emit('enter new player', socket.id);
+      //   // }
+      //   // else {
+      //   //   io.to(socket.id).emit('already started');
+      //   // }
+      // }
+
+      if(rooms[roomId].game) {
+        io.to(socket.id).emit('already started');
+        socket.disconnect();
+        return;
+      }
+
       socket.join(roomId);
       socket.roomId = roomId;
       socket.broadcast.to(roomId).emit('enter new player', socket.id);
@@ -33,6 +52,7 @@ export const initTetrisSocket = (io: Namespace) => {
 
     socket.on('game start', () => {
       // 다른 누군가 게임 시작을 눌렀다면 다른 사용자들에게 알림
+      rooms[socket.roomId].game = true;
       io.to(socket.roomId).emit('game started');
       rooms[socket.roomId].garbageBlockCnt = []; // 공격 전달을 위한 배열 초기화
       [...io.adapter.rooms.get(socket.roomId)].forEach((player) =>
@@ -82,7 +102,8 @@ export const initTetrisSocket = (io: Namespace) => {
 
       rooms[socket.roomId].gameOverPlayer++;
 
-      if (rooms[socket.roomId].gameOverPlayer === io.adapter.rooms.get(socket.roomId).size - 1) {
+      if (io.adapter.rooms.get(socket.roomId).size === 1 || rooms[socket.roomId].gameOverPlayer === io.adapter.rooms.get(socket.roomId).size - 1) {
+        rooms[socket.roomId].game = false;
         // 게임 오버 메시지를 전체 전송(전체 전송은 io로)
         io.to(socket.roomId).emit('every player game over');
         rooms[socket.roomId].gameOverPlayer = 0;

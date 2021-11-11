@@ -1,6 +1,6 @@
 import { nanoid } from '@reduxjs/toolkit';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { drawBoardBackground } from '../../components/Tetris/utils/tetrisDrawUtil';
@@ -42,6 +42,7 @@ function GamePage() {
   const socketRef = useRef<any>(null);
   const [socketState, setSocketState] = useState(false);
   const canvas = useRef<HTMLCanvasElement>(null);
+  const navigate = useNavigate();
 
   useLayoutEffect(() => {
     if (containerRef.current) {
@@ -111,6 +112,11 @@ function GamePage() {
     socketRef.current.on('connect', () => {
       setSocketState(true);
       socketRef.current.emit('join room', roomID);
+
+      socketRef.current.on('already started', () => {
+        alert('게임이 진행중이라 입장하실 수 없습니다.');
+        navigate(`/`);
+      });
 
       socketRef.current.on('game started', () => {
         // 다른 플레이어가 게임 시작 누르는 것 감지
