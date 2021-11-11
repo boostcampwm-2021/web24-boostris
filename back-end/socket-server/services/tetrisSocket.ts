@@ -118,7 +118,6 @@ export const initTetrisSocket = (io: Namespace) => {
 
     socket.on('disconnect', () => {
       socket.broadcast.to(socket.roomId).emit('disconnect player', socket.id); // 게임 종료 시 다른 사람들한테 전달
-
       // if (rooms[online[socket.id].room].players != undefined)
       //   rooms[online[socket.id].room].players = rooms[online[socket.id].room].players.filter(
       //     (player) => player != socket.id
@@ -129,6 +128,12 @@ export const initTetrisSocket = (io: Namespace) => {
       // }
 
       // delete online[socket.id]; // 일단 온라인에서 유저도 삭제
+    });
+  });
+
+  io.on('delete room', (deleteRoomList) => {
+    deleteRoomList.forEach((id) => {
+      delete rooms[id];
     });
   });
 };

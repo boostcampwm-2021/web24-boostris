@@ -138,6 +138,7 @@ export const initSocket = (httpServer) => {
         if (socket.rooms.has(key) && value.size === 1) roomsWillDelete.push(key);
       });
       roomList = roomList.filter(({ id }) => !roomsWillDelete.includes(id));
+      tetris.emit('delete room', roomsWillDelete);
       broadcastRoomList();
     });
 
