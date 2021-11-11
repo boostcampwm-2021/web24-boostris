@@ -51,28 +51,6 @@
         overflow: auto;
         height: 380px;
         min-height: 100%;
-        /* width */
-        &::-webkit-scrollbar {
-          width: 6px;
-          border-radius: 10px;
-        }
-
-        /* Track */
-        &::-webkit-scrollbar-track {
-          background: $new-color;
-          border-radius: 10px;
-        }
-
-        /* Handle */
-        &::-webkit-scrollbar-thumb {
-          background: $white;
-          border-radius: 10px;
-        }
-
-        /* Handle on hover */
-        &::-webkit-scrollbar-thumb:hover {
-          background: $azure-blue;
-        }
       }
       .user__list--item {
         font-size: 15px;
@@ -132,28 +110,6 @@
         min-height: 100%;
         align-content: flex-start;
         padding: 0 56px 0 16px;
-        /* width */
-        &::-webkit-scrollbar {
-          width: 6px;
-          border-radius: 10px;
-        }
-
-        /* Track */
-        &::-webkit-scrollbar-track {
-          background: $new-color;
-          border-radius: 10px;
-        }
-
-        /* Handle */
-        &::-webkit-scrollbar-thumb {
-          background: $white;
-          border-radius: 10px;
-        }
-
-        /* Handle on hover */
-        &::-webkit-scrollbar-thumb:hover {
-          background: $azure-blue;
-        }
       }
       flex: 1;
       .empty__item,

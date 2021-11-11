@@ -89,7 +89,7 @@ function LobbyPage() {
             ))}
           </div>
           <div ref={userListContainerRef} className="user__list__container">
-            <div className="user__list__scroll__root">
+            <div className="user__list__scroll__root fancy__scroll">
               {users.map(({ nickname, id }) => (
                 <div
                   className={`user__list--item ${activatedUser === id && 'activated'}`}
@@ -115,7 +115,7 @@ function LobbyPage() {
         <div className="lobby__section lobby__main">
           <SectionTitle>로비</SectionTitle>
           <div className="lobby__container">
-            <div className="room__list__scroll__root">
+            <div className="room__list__scroll__root fancy__scroll">
               {rooms.map(({ id, owner, name, limit, isSecret, current }) => (
                 <div
                   key={id}

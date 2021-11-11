@@ -181,7 +181,7 @@ function GamePage() {
               ))}
               <div className="chats__container">
                 <div className="chat__history__container">
-                  <div className="chat__history__scroll__root" ref={containerRef}>
+                  <div className="chat__history__scroll__root fancy__scroll" ref={containerRef}>
                     {roomMessages.map(({ id, from, message }) => (
                       <div key={id} className="chat__history__item">
                         {from} : {message}

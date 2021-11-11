@@ -117,29 +117,6 @@
         row-gap: 14px;
         box-sizing: border-box;
       }
-
-      /* width */
-      &::-webkit-scrollbar {
-        width: 6px;
-        border-radius: 10px;
-      }
-
-      /* Track */
-      &::-webkit-scrollbar-track {
-        background: $new-color;
-        border-radius: 10px;
-      }
-
-      /* Handle */
-      &::-webkit-scrollbar-thumb {
-        background: $white;
-        border-radius: 10px;
-      }
-
-      /* Handle on hover */
-      &::-webkit-scrollbar-thumb:hover {
-        background: $azure-blue;
-      }
     }
   }
 }

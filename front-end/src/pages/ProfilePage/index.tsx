@@ -132,7 +132,7 @@ export default function Profile() {
                 <div key={i}>{value}</div>
               ))}
             </div>
-            <div className="recent-list__scroll">
+            <div className="recent-list__scroll fancy__scroll">
               <div className="recent-list">{drawRecent(recentList)}</div>
             </div>
           </div>
