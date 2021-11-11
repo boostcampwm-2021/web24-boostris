@@ -24,9 +24,9 @@ export default function Profile() {
   const drawStatistics = (statsticsState: any) => {
     return (
       <>
-        {translations.map(([key, value], i) => {
+        {translations.map(([key, value]) => {
           return (
-            <div className="statistics-list__item" key={i}>
+            <div className="statistics-list__item" key={key}>
               <div>{value}</div>
               <div>:</div>
               <div>{statsticsState[key]}</div>
@@ -41,15 +41,15 @@ export default function Profile() {
     if (recentList.length === 0) return;
     return (
       <>
-        {recentList.map((value, i) => (
-          <>
-            <div key={i}>{value.date.slice(0, 10)}</div>
+        {recentList.map((value) => (
+          <div className="recent-list" key={value.date}>
+            <div>{value.date.slice(0, 10)}</div>
             <div>{value.mode === 'normal' ? '일반전' : '1 vs 1'}</div>
             <div>{value.ranking}</div>
             <div>{value.play_time}</div>
             <div>{value.attack_cnt}</div>
             <div>{value.attacked_cnt}</div>
-          </>
+          </div>
         ))}
       </>
     );
@@ -128,13 +128,11 @@ export default function Profile() {
               <SectionTitle>최근 기록</SectionTitle>
             </div>
             <div className="recent-list__header">
-              {recentHeader.map((value, i) => (
-                <div key={i}>{value}</div>
+              {recentHeader.map((value) => (
+                <div key={value}>{value}</div>
               ))}
             </div>
-            <div className="recent-list__scroll">
-              <div className="recent-list">{drawRecent(recentList)}</div>
-            </div>
+            <div className="recent-list__scroll">{drawRecent(recentList)}</div>
           </div>
         </div>
       </div>
