@@ -28,6 +28,7 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
       socketRef.current = io('/lobby/users', {
         transports: ['websocket'],
         path: '/socket.io',
+        secure: true,
       });
       socketRef.current.on('connect', () => {
         setIsReady(true);

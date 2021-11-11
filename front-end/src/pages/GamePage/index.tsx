@@ -105,6 +105,7 @@ function GamePage() {
     socketRef.current = io('/tetris', {
       transports: ['websocket'],
       path: '/socket.io',
+      secure: true,
     });
 
     socketRef.current.on('connect', () => {
