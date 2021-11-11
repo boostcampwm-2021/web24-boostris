@@ -28,6 +28,9 @@ const STATE: TetrisState = {
   CAN_HOLD: null as unknown as boolean,
   SOLID_GARBAGES: null as unknown as number,
   ATTACKED_GARBAGES: null as unknown as number,
+  KEYDOWN_RIGHT: null as unknown as boolean,
+  KEYDOWN_LEFT: null as unknown as boolean,
+  KEYDOWN_DOWN: null as unknown as boolean,
   KEYDOWN_TURN_RIGHT: null as unknown as boolean,
   KEYDOWN_TURN_LEFT: null as unknown as boolean,
   KEYDOWN_HARD_DROP: null as unknown as boolean
@@ -343,6 +346,9 @@ const initTetris = (
   STATE.CAN_HOLD = true;
   STATE.SOLID_GARBAGES = 0;
   STATE.ATTACKED_GARBAGES = 0;
+  STATE.KEYDOWN_RIGHT = false;
+  STATE.KEYDOWN_LEFT = false;
+  STATE.KEYDOWN_DOWN = false;
   STATE.KEYDOWN_TURN_RIGHT = false;
   STATE.KEYDOWN_TURN_LEFT = false;
   STATE.KEYDOWN_HARD_DROP = false;
@@ -548,6 +554,28 @@ const Board = ({
       TIMER.SOLID_GARBAGE_TIMEOUT = setTimeout(() => TIMER.SOLID_GARBAGE_INTERVAL = setInterval(() => STATE.SOLID_GARBAGES++, 5000), 120000); // 솔리드 가비지 타이머
     };
 
+  //   window.onkeydown = function(e){ //키를 눌렀을때
+  //     var that = this;//키 누르기 반영할 개체 가리킴
+  //     this.keytime = setTimeout(function(){
+  //         //여기에 키를 누를때마다 수행할 부분 구현
+  //         that.isFirstPressed = true; //처음 눌렀다는 속성 반영
+  //         that.onkeydown.call(that, e);//연속 수행
+  //     }, this.isFirstPressed ? 100 : 1000);
+  // };
+  // window.onkeyup = function(){ //키를 뗐을때
+  //     clearTimeout(this.keytime); //키 누르기 중단
+  //     this.isFirstPressed = false; //처음 누르기 초기화
+  // }
+    //let keydown = false;
+    //let keydownInterval: NodeJS.Timeout;
+    let leftInterval: NodeJS.Timeout;
+    let leftContInterval: NodeJS.Timeout;
+    let leftTimeOut: NodeJS.Timeout;
+    let rightInterval: NodeJS.Timeout;
+    let rightContInterval: NodeJS.Timeout;
+    let rightTimeOut: NodeJS.Timeout;
+    let downInterval: NodeJS.Timeout;
+
     const keyDownEventHandler = (event: KeyboardEvent) => {
       event.preventDefault();
       if (!moves[event.key]) return;
@@ -556,8 +584,35 @@ const Board = ({
       switch (event.key) {
         // 방향 키 이벤트(왼쪽, 오른쪽, 아래)
         case TETRIS.KEY.LEFT:
+          if(!STATE.KEYDOWN_LEFT) {
+            if(STATE.KEYDOWN_RIGHT) { // 오른쪽이 계속 눌리고 있다면
+              clearInterval(rightInterval);
+              clearInterval(rightContInterval);
+              clearInterval(rightTimeOut);
+            }
+
+            STATE.KEYDOWN_LEFT = true;
+            leftTimeOut = setTimeout(() => leftInterval = setInterval(() => {window.dispatchEvent(new KeyboardEvent('keydown', {key: event.key}));}, 20), 200);
+          }
+          moveBlock(BOARD, BLOCK, BACKGROUND, socket);
+          break;
         case TETRIS.KEY.RIGHT:
+          if(!STATE.KEYDOWN_RIGHT) {
+            if(STATE.KEYDOWN_LEFT) { // 왼쪽이 계속 눌리고 있다면
+              clearInterval(leftInterval);
+              clearInterval(leftContInterval);
+              clearInterval(leftTimeOut);
+            }
+            STATE.KEYDOWN_RIGHT = true;
+            rightTimeOut = setTimeout(() => rightInterval = setInterval(() => {window.dispatchEvent(new KeyboardEvent('keydown', {key: event.key}));}, 20), 200);
+          }
+          moveBlock(BOARD, BLOCK, BACKGROUND, socket);
+          break;
         case TETRIS.KEY.DOWN:
+          if(!STATE.KEYDOWN_DOWN) {
+            STATE.KEYDOWN_DOWN = true;
+            downInterval = setInterval(() => {window.dispatchEvent(new KeyboardEvent('keydown', {key: event.key}));}, 5);
+          }
           moveBlock(BOARD, BLOCK, BACKGROUND, socket);
           break;
         // 회전 키 이벤트(위, z)
@@ -593,6 +648,28 @@ const Board = ({
 
     const keyUpEventHandler = (event: KeyboardEvent) => {
       switch (event.key) {
+        case TETRIS.KEY.LEFT:
+          STATE.KEYDOWN_LEFT = false;
+          clearInterval(leftInterval);
+          clearInterval(leftContInterval);
+          clearInterval(leftTimeOut);
+          if(STATE.KEYDOWN_RIGHT) { // 오른쪽이 계속 눌리고 있다면
+            rightTimeOut = setTimeout(() =>rightContInterval = setInterval(() => {window.dispatchEvent(new KeyboardEvent('keydown', {key: TETRIS.KEY.RIGHT}));}, 20), 200);
+          }
+          break;
+        case TETRIS.KEY.RIGHT:
+          STATE.KEYDOWN_RIGHT = false;
+          clearInterval(rightInterval);
+          clearInterval(rightContInterval);
+          clearInterval(rightTimeOut);
+          if(STATE.KEYDOWN_LEFT) { // 왼쪽이 계속 눌리고 있다면
+            leftTimeOut = setTimeout(() =>leftContInterval = setInterval(() => {window.dispatchEvent(new KeyboardEvent('keydown', {key: TETRIS.KEY.LEFT}));}, 20), 200);
+          }
+          break;
+        case TETRIS.KEY.DOWN:
+          STATE.KEYDOWN_DOWN = false;
+          clearInterval(downInterval);
+          break;
         case TETRIS.KEY.TURN_RIGHT:
           STATE.KEYDOWN_TURN_RIGHT = false;
           break;

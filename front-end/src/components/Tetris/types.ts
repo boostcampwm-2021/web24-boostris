@@ -32,6 +32,9 @@ export interface TetrisState {
   CAN_HOLD: boolean;
   SOLID_GARBAGES: number;
   ATTACKED_GARBAGES: number;
+  KEYDOWN_RIGHT: boolean;
+  KEYDOWN_LEFT: boolean;
+  KEYDOWN_DOWN: boolean;
   KEYDOWN_TURN_RIGHT: boolean;
   KEYDOWN_TURN_LEFT: boolean;
   KEYDOWN_HARD_DROP: boolean;
