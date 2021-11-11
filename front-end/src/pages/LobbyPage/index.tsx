@@ -32,7 +32,7 @@ function LobbyPage() {
 
   const handleFastJoinClick = () => {
     // navigate('/tetris');
-    alert('🔥🔥추가 예정입니다 ^^7 방 생성으로 통해 입장해주세요 🔥🔥');
+    alert('🔥🔥추가 예정입니다 ^^7 방 생성 > 입장을 통해 입장해주세요 🔥🔥');
   };
   const handleCreateRooomOpen = () => {
     modalRef.current.open();
