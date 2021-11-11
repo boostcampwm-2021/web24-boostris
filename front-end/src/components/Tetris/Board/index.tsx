@@ -604,6 +604,7 @@ const Board = ({
             }
 
             STATE.KEYDOWN_LEFT = true;
+            clearInterval(leftTimeOut);
             leftTimeOut = setTimeout(
               () =>
                 (leftInterval = setInterval(() => {
@@ -623,6 +624,7 @@ const Board = ({
               clearInterval(leftTimeOut);
             }
             STATE.KEYDOWN_RIGHT = true;
+            clearInterval(rightTimeOut);
             rightTimeOut = setTimeout(
               () =>
                 (rightInterval = setInterval(() => {
@@ -691,6 +693,7 @@ const Board = ({
           clearInterval(leftTimeOut);
           if (STATE.KEYDOWN_RIGHT) {
             // 오른쪽이 계속 눌리고 있다면
+            clearInterval(rightTimeOut);
             rightTimeOut = setTimeout(
               () =>
                 (rightContInterval = setInterval(() => {
@@ -707,6 +710,7 @@ const Board = ({
           clearInterval(rightTimeOut);
           if (STATE.KEYDOWN_LEFT) {
             // 왼쪽이 계속 눌리고 있다면
+            clearInterval(leftTimeOut);
             leftTimeOut = setTimeout(
               () =>
                 (leftContInterval = setInterval(() => {
