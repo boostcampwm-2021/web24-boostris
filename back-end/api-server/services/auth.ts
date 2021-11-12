@@ -2,17 +2,13 @@ import axios from 'axios';
 import * as jwt from 'jsonwebtoken';
 
 export const getGithubUser = async (token) => {
-  try {
-    const { data } = await axios.get('https://api.github.com/user', {
-      headers: {
-        Authorization: `token ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    return data;
-  } catch (err) {
-    throw err;
-  }
+  const { data } = await axios.get('https://api.github.com/user', {
+    headers: {
+      Authorization: `token ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+  return data;
 };
 
 export const getUserInfoFromNaver = async (accessToken) => {
@@ -21,14 +17,10 @@ export const getUserInfoFromNaver = async (accessToken) => {
   const headers = {
     Authorization: header,
   };
-  try {
-    const { data } = await axios.get(apiUrl, {
-      headers: headers,
-    });
-    return data;
-  } catch (err) {
-    /*error 처리 */
-  }
+  const { data } = await axios.get(apiUrl, {
+    headers: headers,
+  });
+  return data;
 };
 
 export const setJWT = (req, res, { nickname, oauth_id }) => {

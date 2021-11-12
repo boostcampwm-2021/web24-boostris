@@ -65,16 +65,26 @@ AuthRouter.post('/github/code', async (req, res) => {
 
 AuthRouter.post('/naver/token', async (req, res) => {
   const { accessToken } = req.body;
-  const userInfoFromNaver = await getUserInfoFromNaver(accessToken);
-  const id = userInfoFromNaver['response']['id'];
-  const [isOurUser, target] = await oauthDupCheck(id, req, res);
-  res.json({ id, isOurUser, nickname: target?.nickname });
+  try {
+    const userInfoFromNaver = await getUserInfoFromNaver(accessToken);
+    const id = userInfoFromNaver['response']['id'];
+    const [isOurUser, target] = await oauthDupCheck(id, req, res);
+    res.json({ id, isOurUser, nickname: target?.nickname });
+  } catch (error) {
+    console.error(error);
+    res.sendStatus(400);
+  }
 });
 
 AuthRouter.post('/google/user', async (req, res) => {
   const { email, name } = req.body;
-  const [isOurUser, target] = await oauthDupCheck(email, req, res);
-  res.json({ id: email, isOurUser, nickname: target?.nickname });
+  try {
+    const [isOurUser, target] = await oauthDupCheck(email, req, res);
+    res.json({ id: email, isOurUser, nickname: target?.nickname });
+  } catch (error) {
+    console.error(error);
+    res.sendStatus(400);
+  }
 });
 
 AuthRouter.get('/jwt', async (req, res) => {

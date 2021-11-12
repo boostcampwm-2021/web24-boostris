@@ -1,4 +1,6 @@
-import jwt from 'jsonwebtoken';
+import { setJWT } from './../services/auth';
+import { insertIntoTable, selectTable } from './../database/query';
+import * as jwt from 'jsonwebtoken';
 
 export function authenticateToken(req, res, next) {
   try {
@@ -15,5 +17,19 @@ export function authenticateToken(req, res, next) {
     }
   } catch (error) {
     return res.sendStatus(403);
+  }
+}
+
+export async function registerDupCheck(req, res, next) {
+  try {
+    const nickName = req.body['registerData']['nickname'];
+    const userDupCheckResult = await selectTable('*', 'USER_INFO', `nickname='${nickName}'`);
+    if (userDupCheckResult?.length) {
+      throw Error('already exists');
+    } else {
+      next();
+    }
+  } catch (error) {
+    res.json({ dupCheck: false });
   }
 }
