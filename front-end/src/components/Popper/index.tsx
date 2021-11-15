@@ -1,5 +1,6 @@
 import { forwardRef, MouseEventHandler, useImperativeHandle, useState } from 'react';
 import { createPortal } from 'react-dom';
+import ProfileModal from '../ProfileModal';
 import './style.scss';
 
 const Popper = forwardRef(({ children }: { children: React.ReactNode }, ref) => {
@@ -39,6 +40,7 @@ const Popper = forwardRef(({ children }: { children: React.ReactNode }, ref) => 
       >
         <div className="popper-content">{children}</div>
       </div>
+      <ProfileModal></ProfileModal>
     </div>,
     document.getElementById('popper-root') as HTMLElement
   );
