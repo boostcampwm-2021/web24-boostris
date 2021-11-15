@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { selectTable } from '../database/query';
 
-const RankRouter = express.Router();
+const RankingRouter = express.Router();
 
 const categoryBox: any = {
   totalWin: 'player_win',
@@ -29,11 +29,11 @@ const profileResponse = {
   message: '',
 };
 
-RankRouter.post('/myInfo', async (req, res) => {
+RankingRouter.post('/myInfo', async (req, res) => {
   try {
     const { nickname } = req.body.myInfoTemplate;
     let queryResult = await selectTable(
-      `sum(player_win), sum(attack_cnt)`,
+      `sum(player_win) as player_win, sum(attack_cnt) as attack_cnt`,
       `PLAY group by nickname having nickname = '${nickname}'`
     ); // 지금은 nickname이 아니라 oauth id이므로 추후 스토어에 추가되면 바꿀 예정.
     profileResponse.data = queryResult?.[0];
@@ -45,7 +45,7 @@ RankRouter.post('/myInfo', async (req, res) => {
   }
 });
 
-RankRouter.post('/', async (req, res) => {
+RankingRouter.post('/', async (req, res) => {
   try {
     const { category, mode, nickName, offsetRank, lastNickName }: Query = req.body.rankApiTemplate;
     let queryResult = await selectTable(
@@ -57,7 +57,7 @@ RankRouter.post('/', async (req, res) => {
       rank() over (order by sum(p.${categoryBox[category]}) desc) as ranking
       FROM
       PLAY as p 
-      left join user_info as u on p.nickname = u.nickname 
+      inner join user_info as u on p.nickname = u.nickname 
       inner join game_info as g on p.game_id = g.game_id and g.\`game_mode\` = '${mode}' 
       group by p.nickname) a`
       //`ranking >= ${Number(offsetRank)} and ranking < ${Number(offsetRank) + 20}`
@@ -74,9 +74,10 @@ RankRouter.post('/', async (req, res) => {
     rankResponse.message = 'success';
     res.status(200).json(rankResponse);
   } catch (error) {
+    console.log(error);
     rankResponse.message = 'error';
     res.status(400).json(rankResponse);
   }
 });
 
-export default RankRouter;
+export default RankingRouter;

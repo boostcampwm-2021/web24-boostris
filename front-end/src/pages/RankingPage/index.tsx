@@ -1,37 +1,22 @@
-import { MouseEventHandler, useEffect, useRef, useState } from 'react';
+import React, { MouseEvent, MouseEventHandler, useEffect, useRef, useState } from 'react';
 import { useAppSelector } from '../../app/hooks';
 import { selectUser } from '../../features/user/userSlice';
+import { fetchGetRank, fetchGetMyCntInfo } from './rankFetch';
 import AppbarLayout from '../../layout/AppbarLayout';
 import './style.scss';
 
-const fetchGetRank: Function = async (rankApiTemplate: Object) => {
-  return fetch(`/api/rank`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    credentials: 'include',
-    body: JSON.stringify({ rankApiTemplate }),
-  }).then((res) => res.json());
-};
-
-const fetchGetMyCntInfo: Function = async (myInfoTemplate: Object) => {
-  return fetch(`/api/rank/myInfo`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    credentials: 'include',
-    body: JSON.stringify({ myInfoTemplate }),
-  }).then((res) => res.json());
-};
+interface RankApiTemplateObject {
+  category: string;
+  mode: string;
+  nickName: string | undefined;
+  offsetRank: string;
+  lastNickName: string;
+}
 
 const syncKeyWithServer = (
-  rankApiTemplate: any,
-  categoryButtonState: any,
-  modeButtonState: any
+  rankApiTemplate: RankApiTemplateObject,
+  categoryButtonState: number,
+  modeButtonState: number
 ) => {
   const valueChanger = {
     category: ['attackCnt', 'totalWin'],
@@ -41,19 +26,45 @@ const syncKeyWithServer = (
   rankApiTemplate.mode = valueChanger.mode[modeButtonState];
 };
 
-function RankItemBox({ obj }: any) {
+function RankLeftProfile() {
+  const [myInfo, setMyInfo] = useState([]);
+  const user = useAppSelector(selectUser);
+  useEffect(() => {
+    (async function effect() {
+      const myInfo = await fetchGetMyCntInfo({ nickname: user.profile.nickname });
+      const playerWin = myInfo.data?.['player_win'];
+      const attackCnt = myInfo.data?.['attack_cnt'];
+      const tmp: any = [playerWin, attackCnt];
+      setMyInfo(tmp);
+    })();
+  }, []);
   return (
-    <div className="rank__display__itembox">
-      <div className="rank__display__item display__rank">{obj['ranking']}등</div>
-      <div className="rank__display__item display__nickname">{obj['nickname']}</div>
-      <div className="rank__display__item display__message">{obj['state_message']}</div>
-      <div className="rank__display__item display__win">{obj['category']}</div>
+    <div className="rank__player__box">
+      <div className="rank__player__image">
+        <img src="assets/profile.png" alt="" height="98" width="86" />
+      </div>
+      <div className="rank__player__rank">
+        <div className="rank__player__rank__row">{user.profile.nickname}</div>
+        <div className="rank__player__rank__row">승리횟수 : {myInfo[0]}번</div>
+        <div className="rank__player__rank__row">공격횟수 : {myInfo[1]}번</div>
+      </div>
     </div>
   );
 }
 
-function RankPage() {
-  const rankApiTemplate: any = {
+function RankItemBox({ obj }: any) {
+  return (
+    <div className="rank__display__itembox">
+      <div className="rank__display__item display__rank">{obj.ranking}등</div>
+      <div className="rank__display__item display__nickname">{obj.nickname}</div>
+      <div className="rank__display__item display__message">{obj.state_message}</div>
+      <div className="rank__display__item display__win">{obj.category}</div>
+    </div>
+  );
+}
+
+function RankingPage() {
+  const rankApiTemplate: RankApiTemplateObject = {
     category: 'totalWin',
     mode: '1 vs 1',
     nickName: '',
@@ -62,46 +73,38 @@ function RankPage() {
   };
 
   const categoryChange = ['공격 횟수', '승리 횟수'];
-
-  const [categoryButtonState, categoryButtonChange] = useState(1);
-  const [modeButtonState, modeButtonChange] = useState(1);
-  const [players, changePlayerLists] = useState([]);
-  const [myInfo, changeMyInfo] = useState([]);
+  const [categoryButtonState, setCategoryButtonState] = useState(1);
+  const [modeButtonState, setModeButtonState] = useState(1);
+  const [players, setPlayers] = useState([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const user = useAppSelector(selectUser);
 
-  const categoryButton: MouseEventHandler<HTMLButtonElement> = (e: any) => {
-    const value = e.target.id === 'attackCnt' ? 0 : 1;
-    categoryButtonChange(value);
+  const categoryButton: MouseEventHandler<HTMLButtonElement> = (
+    e: MouseEvent<HTMLButtonElement>
+  ) => {
+    const value = (e.target as Element).id === 'attackCnt' ? 0 : 1;
+    setCategoryButtonState(value);
   };
 
-  const modeButton: MouseEventHandler<HTMLButtonElement> = (e: any) => {
-    const value = e.target.id === 'normal' ? 0 : 1;
-    modeButtonChange(value);
+  const modeButton: MouseEventHandler<HTMLButtonElement> = (e: MouseEvent<HTMLButtonElement>) => {
+    const value = (e.target as Element).id === 'normal' ? 0 : 1;
+    setModeButtonState(value);
   };
 
-  const searchButton: MouseEventHandler<HTMLButtonElement> = async (e: any) => {
+  const searchButton: MouseEventHandler<HTMLButtonElement> = async (
+    e: MouseEvent<HTMLButtonElement>
+  ) => {
     rankApiTemplate.nickName = inputRef?.current?.value;
     syncKeyWithServer(rankApiTemplate, categoryButtonState, modeButtonState);
     const res = await fetchGetRank(rankApiTemplate);
-    changePlayerLists(res.data);
+    setPlayers(res.data);
   };
-
-  useEffect(() => {
-    (async function effect() {
-      let value: any = await fetchGetMyCntInfo({ nickname: user.profile.nickname });
-      const playerWin = value.data?.['sum(player_win)'];
-      const attackCnt = value.data?.['sum(attack_cnt)'];
-      const tmp: any = [playerWin, attackCnt];
-      changeMyInfo(tmp);
-    })();
-  }, []);
 
   useEffect(() => {
     (async function effect() {
       syncKeyWithServer(rankApiTemplate, categoryButtonState, modeButtonState);
       const res = await fetchGetRank(rankApiTemplate);
-      changePlayerLists(res.data);
+      setPlayers(res.data);
     })();
   }, [categoryButtonState, modeButtonState]);
 
@@ -110,16 +113,7 @@ function RankPage() {
       <div className="rank__page--root">
         <div className="rank__header">&gt; 랭킹</div>
         <div className="rank__body">
-          <div className="rank__player__box">
-            <div className="rank__player__image">
-              <img src="assets/profile.png" alt="" height="98" width="86" />
-            </div>
-            <div className="rank__player__rank">
-              <div className="rank__player__rank__row">{user.profile.nickname}</div>
-              <div className="rank__player__rank__row">승리횟수 : {myInfo[0]}번</div>
-              <div className="rank__player__rank__row">공격횟수 : {myInfo[1]}번</div>
-            </div>
-          </div>
+          <RankLeftProfile />
           <div className="rank__input__box">
             <div className="rank__input__box__row">
               분류 :{' '}
@@ -192,4 +186,4 @@ function RankPage() {
   );
 }
 
-export default RankPage;
+export default RankingPage;

@@ -14,7 +14,7 @@ import RequireAuth from './routes/RequireAuth';
 import LobbyPage from './pages/LobbyPage';
 import Tetris from './components/Tetris';
 import GamePage from './pages/GamePage';
-import RankPage from './pages/RankPage';
+import RankingPage from './pages/RankingPage';
 import './App.scss';
 
 function App() {
@@ -60,7 +60,7 @@ function App() {
               </RequireAuth>
             }
           />
-          <Route path="rank" element={<RankPage />} />
+          <Route path="rank" element={<RankingPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Routes>
