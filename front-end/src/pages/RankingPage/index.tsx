@@ -164,20 +164,22 @@ function RankingPage() {
             </div>
           </div>
         </div>
-        <div className="rank__display">
-          <div className="rank__display__itembox display__header">
-            <div className="rank__display__item display__rank">등수</div>
-            <div className="rank__display__item display__nickname">닉네임</div>
-            <div className="rank__display__item display__message">상태 메세지</div>
-            <div className="rank__display__item display__win">
-              {categoryChange[categoryButtonState]}
+        <div className="rank__body__down">
+          <div className="rank__display">
+            <div className="rank__display__itembox display__header">
+              <div className="rank__display__item display__rank">등수</div>
+              <div className="rank__display__item display__nickname">닉네임</div>
+              <div className="rank__display__item display__message">상태 메세지</div>
+              <div className="rank__display__item display__win">
+                {categoryChange[categoryButtonState]}
+              </div>
             </div>
-          </div>
-          <div className="rank__display__scroll__root fancy__scroll">
-            <div className="rank__display__itembox display__body">
-              {players.map((obj) => (
-                <RankItemBox key={obj['nickname']} obj={obj} />
-              ))}
+            <div className="rank__display__scroll__root fancy__scroll">
+              <div className="rank__display__itembox display__body">
+                {players.map((obj) => (
+                  <RankItemBox key={obj['nickname']} obj={obj} />
+                ))}
+              </div>
             </div>
           </div>
         </div>
