@@ -80,6 +80,7 @@ function LobbyPage() {
     const { target } = e;
     if ((target as HTMLElement).closest('.user__list--item')) {
       popperRef.current.setPosition(e.clientX, e.clientY);
+      popperRef.current.setUserNickname(target.innerText);
       popperRef.current.open();
     }
     setActivatedUser(id);
@@ -129,7 +130,7 @@ function LobbyPage() {
                   position: 'relative',
                 }}
               >
-                {rowVirtualizer.virtualItems.map((virtualRow) => {
+                {rowVirtualizer.virtualItems.map((virtualRow: any) => {
                   const { nickname, id } = users[virtualRow.index];
                   return (
                     <div

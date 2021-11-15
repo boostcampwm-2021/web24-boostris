@@ -6,11 +6,13 @@ import './style.scss';
 const Popper = forwardRef(({ children }: { children: React.ReactNode }, ref) => {
   const [display, setDisplay] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [nickname, setNickname] = useState('');
 
   useImperativeHandle(ref, () => ({
     open,
     close,
     setPosition,
+    setUserNickname,
   }));
   const open = () => {
     setDisplay(true);
@@ -19,9 +21,15 @@ const Popper = forwardRef(({ children }: { children: React.ReactNode }, ref) => 
   const close = () => {
     setDisplay(false);
   };
+
+  const setUserNickname = (name: string) => {
+    setNickname(name);
+  };
+
   const setPosition = (x: number, y: number) => {
     setPos({ x, y });
   };
+
   if (!display) {
     return null;
   }
@@ -40,7 +48,7 @@ const Popper = forwardRef(({ children }: { children: React.ReactNode }, ref) => 
       >
         <div className="popper-content">{children}</div>
       </div>
-      <ProfileModal></ProfileModal>
+      <ProfileModal nickname={nickname}></ProfileModal>
     </div>,
     document.getElementById('popper-root') as HTMLElement
   );

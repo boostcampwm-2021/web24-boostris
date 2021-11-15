@@ -3,31 +3,35 @@ import { selectTable, innerJoinTable, updateTable } from '../database/query';
 
 const ProfileRouter = express.Router();
 
-ProfileRouter.post('/', async (req, res, next) => {
-  console.log('시작');
-
+ProfileRouter.post('/stateMessage', async (req, res, next) => {
   try {
     const stateMessageList = await getStateMessageInDB(req.body.nickname);
-    const totalList = await getTotalInDB(req.body.nickname);
-    const recentList = await getRecentInDB(req.body.nickname);
-
-    console.log(totalList, recentList);
     if (stateMessageList.length === 0) {
       //잘못된 경우 에러처리
       res.status(401).json({ error: '잘못된 인증입니다.' });
     } else {
       const { state_message } = stateMessageList[0];
-      const [total, win] = totalList;
-      res.status(200).json({ state_message, total, win, recentList });
+      res.status(200).json({ state_message });
     }
   } catch (error) {
     console.log(error);
-
     res.status(401).json({ error: '잘못된 인증입니다.' });
   }
 });
 
-ProfileRouter.patch('/', async (req, res, next) => {
+ProfileRouter.post('/total', async (req, res, next) => {
+  try {
+    const totalList = await getTotalInDB(req.body.nickname);
+    const recentList = await getRecentInDB(req.body.nickname);
+    const [total, win] = totalList;
+    res.status(200).json({ total, win, recentList });
+  } catch (error) {
+    console.log(error);
+    res.status(401).json({ error: '잘못된 인증입니다.' });
+  }
+});
+
+ProfileRouter.patch('/stateMessage', async (req, res, next) => {
   try {
     const result = await updateStateMessageInDB(req.body);
     if (result.warningStatus !== 0) {

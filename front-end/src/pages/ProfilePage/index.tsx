@@ -65,20 +65,29 @@ export default function Profile() {
       setEditMode(!editMode);
       return;
     } else {
-      fetch('api/profile', {
+      fetch('api/profile/stateMessage', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...userState }),
       })
-        .then(() => {
-          setEditMode(!editMode);
-        })
+        .then(() => setEditMode(!editMode))
         .catch((error) => console.log('error:', error));
     }
   };
 
   useEffect(() => {
-    fetch('api/profile', {
+    fetch('api/profile/stateMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname: userState.nickname }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setUserState({ ...userState, stateMessage: data.state_message });
+      })
+      .catch((error) => console.log('error:', error));
+
+    fetch('api/profile/total', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nickname: userState.nickname }),
@@ -86,7 +95,6 @@ export default function Profile() {
       .then((res) => res.json())
       .then((data) => {
         setStatsticsState({ ...statsticsState, ...data.total[0], ...data.win[0] });
-        setUserState({ ...userState, stateMessage: data.state_message });
         setRecentList([...data.recentList]);
       })
       .catch((error) => console.log('error:', error));

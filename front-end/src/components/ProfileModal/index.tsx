@@ -1,7 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './style.scss';
 
-export default function ProfileModal() {
+export default function ProfileModal({ nickname }: { nickname: string }) {
+  const [stateMessage, setStateMessage] = useState('');
+
+  useEffect(() => {
+    fetch('api/profile/stateMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setStateMessage(data.state_message);
+      })
+      .catch((e) => console.error('에러 발생'));
+    return () => {};
+  }, [nickname]);
+
   return (
     <div className="profile-modal__root">
       <div className="profile-modal__overlay" />
@@ -16,8 +32,8 @@ export default function ProfileModal() {
           src="assets/profile.png"
           alt="이미지 다운로드 실패"
         ></img>
-        <div className="profile-modal__nickname">{`안녕`}</div>
-        <textarea className="profile-modal__status" disabled></textarea>
+        <div className="profile-modal__nickname">{nickname}</div>
+        <textarea className="profile-modal__status" value={stateMessage} disabled></textarea>
         <div className="profile-modal__more">{`상세 프로필 >`}</div>
       </div>
     </div>
