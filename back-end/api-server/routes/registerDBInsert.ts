@@ -1,3 +1,4 @@
+import { setJWT } from './../services/auth';
 import * as express from 'express';
 import { insertIntoTable } from '../database/query';
 
@@ -12,14 +13,15 @@ RegisterRouter.post('/insert', (req, res, next) => {
   if (
     insertIntoTable(
       'USER_INFO',
-      '(nickname, state_message, oauth_id, total_game_number, total_win, total_play_time)',
-      `'${nickName}', '${message}', '${authId}', 0, 0, '00:00:00'`
+      '(nickname, state_message, oauth_id)',
+      `'${nickName}', '${message}', '${authId}'`
     )
   ) {
+    setJWT(req, res, { nickname: nickName, oauth_id: authId });
+    res.json({ dupCheck: true, dbInsertError: false });
+  } else {
     // DB에 넣는 것이 실패한 경우
     res.json({ dupCheck: true, dbInsertError: true });
-  } else {
-    res.json({ dupCheck: true, dbInsertError: false });
   }
 });
 

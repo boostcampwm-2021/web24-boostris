@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import * as TETRIS from '../../../constants/tetris';
 import { drawCell } from '../utils/block';
-import { Block } from '../types';
+import { TetrisBlock } from '../types';
 
 const PREVIEW_BOARD_HEIGHT = 16 * TETRIS.BLOCK_ONE_SIZE;
 const PREVIEW_BOARD_WIDTH = 4 * TETRIS.BLOCK_ONE_SIZE;
 
-function PreviewBlocks({ previewBlock }: { previewBlock: Array<Block> | null }) {
+function PreviewBlocks({ previewBlock }: { previewBlock: Array<TetrisBlock> | null }) {
   const canvasContainer = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -16,7 +16,7 @@ function PreviewBlocks({ previewBlock }: { previewBlock: Array<Block> | null }) 
     if (!previewBlock) return;
 
     const img: HTMLImageElement = new Image();
-    img.src = 'assets/block.png';
+    img.src = '/assets/block.png';
 
     img.onload = () => {
       previewBlock.forEach((block, i) => {
@@ -27,12 +27,15 @@ function PreviewBlocks({ previewBlock }: { previewBlock: Array<Block> | null }) 
   }, [previewBlock]);
 
   return (
-    <canvas
-      style={{ display: 'block' }}
-      width={PREVIEW_BOARD_WIDTH}
-      height={PREVIEW_BOARD_HEIGHT}
-      ref={canvasContainer}
-    />
+    <>
+      <div className="header__mini">{'> Preview'}</div>
+      <canvas
+        style={{ display: 'block' }}
+        width={PREVIEW_BOARD_WIDTH}
+        height={PREVIEW_BOARD_HEIGHT}
+        ref={canvasContainer}
+      />
+    </>
   );
 }
 

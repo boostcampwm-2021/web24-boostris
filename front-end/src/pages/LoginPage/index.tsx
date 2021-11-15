@@ -1,19 +1,25 @@
 import { useEffect, useRef } from 'react';
 import GoogleLogin from 'react-google-login';
 import { NavigateOptions, useNavigate } from 'react-router-dom';
-import Modal from '../../components/Modal';
 import OauthLoginButton from '../../components/OauthLoginButton';
 import { OAUTH_LIST } from '../../constants';
+import useAuth from '../../hooks/use-auth';
 import './style.scss';
 
 declare const window: any;
 
 function LoginPage() {
-  const modalRef = useRef<any>();
   const naverLog: any = useRef(null);
   const googleLog: any = useRef();
   const googleCLientID: string = process.env.REACT_APP_GOOGLE_CLIENTID || '';
   const navigate = useNavigate();
+
+  const { auth } = useAuth();
+  useEffect(() => {
+    if (auth.authenticated) {
+      navigate('/');
+    }
+  }, [auth.authenticated, navigate]);
 
   const handleClick = (e: MouseEvent, name: string) => {
     if (name === 'github') {
@@ -42,6 +48,7 @@ function LoginPage() {
     });
     naverLogin.init();
   }, []);
+
   return (
     <div className="login__root full__page--root">
       <div>
@@ -68,10 +75,7 @@ function LoginPage() {
           )}
         </OauthLoginButton>
       ))}
-      <p className="login__title">
-        (C) Attendance starts from the first number
-      </p>
-      <Modal ref={modalRef}>hello</Modal>
+      <p className="login__title">(C) Attendance starts from the first number</p>
     </div>
   );
 }

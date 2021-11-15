@@ -1,4 +1,4 @@
-export interface Block {
+export interface TetrisBlock {
   posX: number;
   posY: number;
   dir: number;
@@ -20,27 +20,32 @@ export interface SRSInterface {
 }
 
 export interface TetrisBlocks {
-  NOW: Block;
-  BEFORE: Block;
-  NEXT: Block;
-  GHOST: Block;
-  HOLD: Block;
+  NOW: TetrisBlock;
+  BEFORE: TetrisBlock;
+  NEXT: TetrisBlock;
+  GHOST: TetrisBlock;
+  HOLD: TetrisBlock;
 }
 
 export interface TetrisState {
-  QUEUE: Block[];
+  QUEUE: TetrisBlock[];
   CAN_HOLD: boolean;
   SOLID_GARBAGES: number;
-  KEYDOWN_TURN_RIGHT: boolean,
-  KEYDOWN_TURN_LEFT: boolean,
-  KEYDOWN_HARD_DROP: boolean
+  ATTACKED_GARBAGES: number;
+  KEYDOWN_RIGHT: boolean;
+  KEYDOWN_LEFT: boolean;
+  KEYDOWN_DOWN: boolean;
+  KEYDOWN_TURN_RIGHT: boolean;
+  KEYDOWN_TURN_LEFT: boolean;
+  KEYDOWN_HARD_DROP: boolean;
 }
 
 export interface TetrisTimer {
   PLAY_TIME: number;
   DROP: NodeJS.Timeout;
   CONFLICT: NodeJS.Timeout;
-  SOLID_GARBAGE: NodeJS.Timeout;
+  SOLID_GARBAGE_TIMEOUT: NodeJS.Timeout,
+  SOLID_GARBAGE_INTERVAL: NodeJS.Timeout;
 }
 
 export interface TetrisBackground {
@@ -55,7 +60,7 @@ export interface TetrisOptions {
 }
 
 export interface TetrisPropsFunc {
-  HOLD_FUNC: (newBlock: Block) => void;
-  PREVIEW_FUNC: (newBlocks: null | Array<Block>) => void;
+  HOLD_FUNC: (newBlock: TetrisBlock) => void;
+  PREVIEW_FUNC: (newBlocks: null | Array<TetrisBlock>) => void;
   GAMEOVER_FUNC: () => void;
 }

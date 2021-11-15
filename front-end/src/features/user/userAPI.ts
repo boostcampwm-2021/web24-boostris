@@ -1,6 +1,3 @@
-const generateAPIURL = (url: string) =>
-  `${process.env.NODE_ENV === 'production' ? '/api' : ''}${url}`;
-
 export type googleUserInfoProps = {
   email: string;
   name: string;
@@ -13,8 +10,20 @@ export interface registerDataContent {
   oauthInfo: any;
 }
 
+export const fetchAuthData = async () => {
+  return fetch('/api/auth/jwt', {
+    credentials: 'include',
+  }).then((res) => res.json());
+};
+
+export const clearCookie = async () => {
+  return fetch('/api/auth/logout', {
+    credentials: 'include',
+  }).then((res) => res.json());
+};
+
 export const postNewUser = async (registerData: registerDataContent) => {
-  return fetch(generateAPIURL('/register/insert'), {
+  return fetch('/api/register/insert', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -26,7 +35,7 @@ export const postNewUser = async (registerData: registerDataContent) => {
 };
 
 export const fetchGithubUserData = async (code: string) => {
-  return fetch(generateAPIURL('/auth/github/code'), {
+  return fetch('/api/auth/github/code', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -39,7 +48,7 @@ export const fetchGithubUserData = async (code: string) => {
 };
 
 export const fetchNaverUserData = async (accessToken: any) => {
-  return fetch(generateAPIURL(`/auth/naver/token`), {
+  return fetch(`/api/auth/naver/token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -50,10 +59,8 @@ export const fetchNaverUserData = async (accessToken: any) => {
   }).then((res) => res.json());
 };
 
-export const fetchGoogleUserData = async (
-  googleUserInfo: googleUserInfoProps
-) => {
-  return fetch(generateAPIURL(`/auth/google/user`), {
+export const fetchGoogleUserData = async (googleUserInfo: googleUserInfoProps) => {
+  return fetch(`/api/auth/google/user`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
