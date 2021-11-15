@@ -29,7 +29,7 @@ export default function Profile() {
             <div className="statistics-list__item" key={key}>
               <div>{value}</div>
               <div>:</div>
-              <div>{statsticsState[key]}</div>
+              <div>{statsticsState[key] || '0'}</div>
             </div>
           );
         })}
@@ -43,8 +43,8 @@ export default function Profile() {
       <>
         {recentList.map((value) => (
           <div className="recent-list" key={value.date}>
-            <div>{value.date.slice(0, 10)}</div>
-            <div>{value.mode === 'normal' ? '일반전' : '1 vs 1'}</div>
+            <div>{value.game_date.slice(0, 10)}</div>
+            <div>{value.game_mode === 'normal' ? '일반전' : '1 vs 1'}</div>
             <div>{value.ranking}</div>
             <div>{value.play_time}</div>
             <div>{value.attack_cnt}</div>

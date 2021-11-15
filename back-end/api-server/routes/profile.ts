@@ -4,11 +4,14 @@ import { selectTable, innerJoinTable, updateTable } from '../database/query';
 const ProfileRouter = express.Router();
 
 ProfileRouter.post('/', async (req, res, next) => {
+  console.log('시작');
+
   try {
     const stateMessageList = await getStateMessageInDB(req.body.nickname);
     const totalList = await getTotalInDB(req.body.nickname);
     const recentList = await getRecentInDB(req.body.nickname);
 
+    console.log(totalList, recentList);
     if (stateMessageList.length === 0) {
       //잘못된 경우 에러처리
       res.status(401).json({ error: '잘못된 인증입니다.' });
@@ -18,6 +21,8 @@ ProfileRouter.post('/', async (req, res, next) => {
       res.status(200).json({ state_message, total, win, recentList });
     }
   } catch (error) {
+    console.log(error);
+
     res.status(401).json({ error: '잘못된 인증입니다.' });
   }
 });
