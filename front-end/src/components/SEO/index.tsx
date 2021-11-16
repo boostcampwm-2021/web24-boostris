@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 
 function SEO({ children }: { children: React.ReactNode }) {
   return (

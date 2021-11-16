@@ -34,7 +34,13 @@ function LobbyPage() {
 
   const handleFastJoinClick = () => {
     // navigate('/tetris');
-    alert('🔥🔥추가 예정입니다 ^^7 방 생성 > 입장을 통해 입장해주세요 🔥🔥');
+    const availableRooms = rooms.filter((r) => r.current < r.limit);
+    if (availableRooms.length) {
+      const [target] = availableRooms;
+      joinRoom(target.id);
+    } else {
+      alert('🔥🔥 유효한 방이 현재는 없습니다. 방 생성 > 입장을 통해 입장해주세요 🔥🔥');
+    }
   };
   const handleCreateRooomOpen = () => {
     modalRef.current.open();
