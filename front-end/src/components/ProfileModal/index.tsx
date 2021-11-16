@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import './style.scss';
+import { useNavigate } from 'react-router-dom';
 
 export default function ProfileModal({ nickname }: { nickname: string }) {
   const [stateMessage, setStateMessage] = useState('');
+  const navigate = useNavigate();
+
+  const clickMoreProfile = () => {
+    navigate(`/profile/${nickname}`);
+  };
 
   useEffect(() => {
     fetch('api/profile/stateMessage', {
@@ -34,7 +40,7 @@ export default function ProfileModal({ nickname }: { nickname: string }) {
         ></img>
         <div className="profile-modal__nickname">{nickname}</div>
         <textarea className="profile-modal__status" value={stateMessage} disabled></textarea>
-        <div className="profile-modal__more">{`상세 프로필 >`}</div>
+        <div className="profile-modal__more" onClick={clickMoreProfile}>{`상세 프로필 >`}</div>
       </div>
     </div>
   );

@@ -52,7 +52,7 @@ function App() {
             }
           />
           <Route path="rank" element={<RankingPage />} />
-          <Route path="profile" element={<ProfilePage />} />
+          <Route path="profile/:nickname" element={<ProfilePage />} />
         </Route>
       </Routes>
     </div>

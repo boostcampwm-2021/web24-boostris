@@ -3,8 +3,11 @@ import './style.scss';
 import SectionTitle from '../../components/SectionTitle';
 import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
+import { useParams } from 'react-router-dom';
 
 export default function Profile() {
+  const { nickname } = useParams();
+
   const recentHeader = ['날짜', '모드', '등수', '플레이 타임', '공격 횟수', '받은 횟수'];
   const translations = [
     ['total_game_cnt', '총 게임 수'],
@@ -17,7 +20,7 @@ export default function Profile() {
   const [statsticsState, setStatsticsState] = useState({});
   const [editMode, setEditMode] = useState(false);
   const [userState, setUserState] = useState({
-    nickname: useAuth().profile.nickname,
+    nickname,
     stateMessage: '',
   });
 
@@ -65,7 +68,7 @@ export default function Profile() {
       setEditMode(!editMode);
       return;
     } else {
-      fetch('api/profile/stateMessage', {
+      fetch('/api/profile/stateMessage', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...userState }),
@@ -76,7 +79,7 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    fetch('api/profile/stateMessage', {
+    fetch('/api/profile/stateMessage', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nickname: userState.nickname }),
@@ -87,7 +90,7 @@ export default function Profile() {
       })
       .catch((error) => console.log('error:', error));
 
-    fetch('api/profile/total', {
+    fetch('/api/profile/total', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nickname: userState.nickname }),
@@ -108,7 +111,7 @@ export default function Profile() {
           <SectionTitle>프로필</SectionTitle>
           <img
             className="profile-section__image"
-            src="assets/profile.png"
+            src="/assets/profile.png"
             alt="이미지 다운로드 실패"
           ></img>
           <span className="profile-section__player">{`[ ${userState.nickname} ]`}</span>

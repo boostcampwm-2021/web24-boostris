@@ -48,7 +48,7 @@ const Popper = forwardRef(({ children }: { children: React.ReactNode }, ref) => 
       >
         <div className="popper-content">{children}</div>
       </div>
-      <ProfileModal nickname={nickname}></ProfileModal>
+      <ProfileModal nickname={nickname} />
     </div>,
     document.getElementById('popper-root') as HTMLElement
   );
