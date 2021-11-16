@@ -31,6 +31,7 @@ const oauthDupCheck = async (id, req, res) => {
     }
   } catch (e) {
     console.log(e);
+    return [false];
   }
 };
 
