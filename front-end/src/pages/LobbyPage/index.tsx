@@ -5,6 +5,7 @@ import Modal from '../../components/Modal';
 import Popper from '../../components/Popper';
 
 import SectionTitle from '../../components/SectionTitle';
+import SEO from '../../components/SEO';
 import { useSocket } from '../../context/SocketContext';
 import { selectSocket } from '../../features/socket/socketSlice';
 import useAuth from '../../hooks/use-auth';
@@ -79,6 +80,9 @@ function LobbyPage() {
 
   return (
     <AppbarLayout>
+      <SEO>
+        <title>로비</title>
+      </SEO>
       <div className="lobby__page--root" onClick={resetActivatedPopper}>
         <div className="lobby__section lobby__sidebar">
           <SectionTitle>내 정보</SectionTitle>
