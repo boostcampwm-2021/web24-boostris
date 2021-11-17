@@ -25,7 +25,7 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   useEffect(() => {
     if (auth.authenticated) {
-      socketRef.current = io('/lobby/users', {
+      socketRef.current = io('/', {
         transports: ['websocket'],
         path: '/socket.io',
         secure: true,
@@ -46,6 +46,7 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
         navigate(`/game/${roomID}`);
       });
       socketRef.current.on('join room:success', (roomID: string) => {
+        console.log(roomID);
         dispatch(updateRoomID(roomID));
         navigate(`/game/${roomID}`);
       });
