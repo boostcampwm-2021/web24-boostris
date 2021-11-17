@@ -3,7 +3,7 @@ import './style.scss';
 import SectionTitle from '../../components/SectionTitle';
 import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAppDispatch } from '../../app/hooks';
 import { updateNickname } from '../../features/user/userSlice';
 
@@ -129,10 +129,10 @@ export default function Profile() {
             alt="이미지 다운로드 실패"
           ></img>
           <input
+            className={`profile-section__player ${editMode ? 'editMode' : ''}`}
             maxLength={10}
-            className="profile-section__player"
             value={userState.nickname}
-            disabled={!editMode}
+            readOnly={!editMode}
             onChange={changeInput}
           />
           <textarea

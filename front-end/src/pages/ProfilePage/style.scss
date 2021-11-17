@@ -22,12 +22,29 @@
     }
 
     .profile-section__player {
+      background: none;
+      color: white;
+      padding-bottom: 10px;
+      border: none;
+      box-sizing: border-box;
+      text-align: center;
       font-size: 18px;
       margin: 0 auto;
+      width: 220px;
+
+      &.editMode {
+        border-bottom: 1px solid white;
+      }
+
+      &:focus {
+        outline: none;
+        border: none;
+        border-bottom: 1px solid white;
+      }
     }
 
     .profile-section__status {
-      width: 100%;
+      width: 220px;
       background-color: rgba(255, 255, 255, 0.14);
       border: 1px rgba(255, 255, 255, 0.637) solid;
       height: 120px;
@@ -52,7 +69,7 @@
       font-size: 16px;
       padding: 0px;
       margin: 0px auto;
-      width: 200px;
+      width: 220px;
       height: 30px;
       cursor: pointer;
 
