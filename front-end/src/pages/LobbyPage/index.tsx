@@ -36,6 +36,7 @@ function LobbyPage() {
 
   const rowVirtualizer = useVirtual({
     size: users.length,
+    // size: 100 * 1000,
     parentRef,
     estimateSize: useCallback(() => 35, []),
     overscan: 5,
@@ -132,9 +133,8 @@ function LobbyPage() {
                   return (
                     <div
                       key={id}
-                      className={`user__list--item ${
-                        parseInt(activatedUser) === virtualRow.index && 'activated'
-                      }`}
+                      // key={virtualRow.index}
+                      className={`user__list--item ${activatedUser === id && 'activated'}`}
                       onContextMenu={(e) => rightClickListener(e, id)}
                       style={{
                         position: 'absolute',
@@ -147,6 +147,7 @@ function LobbyPage() {
                     >
                       <span className="dot"></span>
                       <span className="name__span">{nickname}</span>
+                      {/* <span className="name__span">Row {virtualRow.index}</span> */}
                     </div>
                   );
                 })}
