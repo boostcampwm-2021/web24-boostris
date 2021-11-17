@@ -74,6 +74,14 @@
           display: inline-block;
           margin-right: 12px;
         }
+        .name__span {
+          display: inline-block;
+          max-width: 150px;
+          word-break: keep-all;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+        }
 
         &.activated {
           background-color: $new-color;

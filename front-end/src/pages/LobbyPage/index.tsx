@@ -1,4 +1,5 @@
-import { MouseEventHandler, useRef, useState } from 'react';
+import { MouseEventHandler, useCallback, useRef, useState } from 'react';
+import { useVirtual } from 'react-virtual';
 // import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../app/hooks';
 import Modal from '../../components/Modal';
@@ -26,11 +27,19 @@ function LobbyPage() {
   const popperRef = useRef<any>();
   const userListContainerRef = useRef<any>();
   const roomNameInputRef = useRef<any>();
+  const parentRef = useRef<any>();
 
   const [activatedUser, setActivatedUser] = useState<string>('');
   const [currentIdx, setCurrentIdx] = useState(0);
   const [modalToggleIdx, setModalToggleIdx] = useState(0);
   const [modalChecked, setModalChecked] = useState(false);
+
+  const rowVirtualizer = useVirtual({
+    size: users.length,
+    parentRef,
+    estimateSize: useCallback(() => 35, []),
+    overscan: 5,
+  });
 
   const handleFastJoinClick = () => {
     // navigate('/tetris');
@@ -110,17 +119,38 @@ function LobbyPage() {
             ))}
           </div>
           <div ref={userListContainerRef} className="user__list__container">
-            <div className="user__list__scroll__root fancy__scroll">
-              {users.map(({ nickname, id }) => (
-                <div
-                  className={`user__list--item ${activatedUser === id && 'activated'}`}
-                  key={id}
-                  onContextMenu={(e) => rightClickListener(e, id)}
-                >
-                  <span className="dot"></span>
-                  {nickname}
-                </div>
-              ))}
+            <div className="user__list__scroll__root fancy__scroll" ref={parentRef}>
+              <div
+                style={{
+                  height: `${rowVirtualizer.totalSize}px`,
+                  width: '100%',
+                  position: 'relative',
+                }}
+              >
+                {rowVirtualizer.virtualItems.map((virtualRow) => {
+                  const { nickname, id } = users[virtualRow.index];
+                  return (
+                    <div
+                      key={id}
+                      className={`user__list--item ${
+                        parseInt(activatedUser) === virtualRow.index && 'activated'
+                      }`}
+                      onContextMenu={(e) => rightClickListener(e, id)}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                    >
+                      <span className="dot"></span>
+                      <span className="name__span">{nickname}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
           <div className="button__group">
