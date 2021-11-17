@@ -3,10 +3,14 @@ import './style.scss';
 import SectionTitle from '../../components/SectionTitle';
 import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
-import { useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { useAppDispatch } from '../../app/hooks';
+import { updateNickname } from '../../features/user/userSlice';
 
 export default function Profile() {
   const { nickname } = useParams();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const recentHeader = ['날짜', '모드', '등수', '플레이 타임', '공격 횟수', '받은 횟수'];
   const translations = [
@@ -20,6 +24,7 @@ export default function Profile() {
   const [statsticsState, setStatsticsState] = useState({});
   const [editMode, setEditMode] = useState(false);
   const [userState, setUserState] = useState({
+    id: useAuth().profile.id,
     nickname,
     stateMessage: '',
   });
@@ -68,14 +73,23 @@ export default function Profile() {
       setEditMode(!editMode);
       return;
     } else {
-      fetch('/api/profile/stateMessage', {
+      fetch('/api/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...userState }),
       })
-        .then(() => setEditMode(!editMode))
+        .then(async () => {
+          setEditMode(!editMode);
+          await dispatch(updateNickname(userState.nickname));
+          navigate(`/profile/${userState.nickname}`);
+        })
         .catch((error) => console.log('error:', error));
     }
+  };
+
+  const changeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target) return;
+    setUserState({ ...userState, nickname: e.target.value });
   };
 
   useEffect(() => {
@@ -102,7 +116,7 @@ export default function Profile() {
       })
       .catch((error) => console.log('error:', error));
     return () => {};
-  }, [userState.nickname]);
+  }, []);
 
   return (
     <AppbarLayout>
@@ -114,7 +128,13 @@ export default function Profile() {
             src="/assets/profile.png"
             alt="이미지 다운로드 실패"
           ></img>
-          <span className="profile-section__player">{`[ ${userState.nickname} ]`}</span>
+          <input
+            maxLength={10}
+            className="profile-section__player"
+            value={userState.nickname}
+            disabled={!editMode}
+            onChange={changeInput}
+          />
           <textarea
             maxLength={50}
             minLength={1}

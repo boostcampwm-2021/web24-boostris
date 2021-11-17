@@ -1,5 +1,6 @@
 import * as express from 'express';
 import { selectTable, innerJoinTable, updateTable } from '../database/query';
+import { setJWT } from './../services/auth';
 
 const ProfileRouter = express.Router();
 
@@ -30,12 +31,15 @@ ProfileRouter.post('/total', async (req, res, next) => {
   }
 });
 
-ProfileRouter.patch('/stateMessage', async (req, res, next) => {
+ProfileRouter.patch('/', async (req, res, next) => {
   try {
-    const result = await updateStateMessageInDB(req.body);
+    const { nickname, id } = req.body;
+    const result = await updateProfileInDB(req.body);
     if (result.warningStatus !== 0) {
       res.status(401).json({ error: '잘못된 인증입니다.' });
     } else {
+      res.clearCookie('user');
+      setJWT(req, res, { nickname, oauth_id: id });
       res.status(200).json({ message: 'done' });
     }
   } catch (error) {
@@ -43,8 +47,12 @@ ProfileRouter.patch('/stateMessage', async (req, res, next) => {
   }
 });
 
-const updateStateMessageInDB = ({ nickname, stateMessage }) => {
-  return updateTable('USER_INFO', `state_message='${stateMessage}'`, `nickname='${nickname}'`);
+const updateProfileInDB = ({ nickname, stateMessage, id }) => {
+  return updateTable(
+    'USER_INFO',
+    `state_message='${stateMessage}', nickname='${nickname}'`,
+    `oauth_id='${id}'`
+  );
 };
 
 const getStateMessageInDB = (nickname) => {
