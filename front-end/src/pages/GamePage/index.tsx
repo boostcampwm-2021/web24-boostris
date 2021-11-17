@@ -15,6 +15,7 @@ import Board from '../../components/Tetris/Board';
 import PreviewBlocks from '../../components/Tetris/PreviewBlocks';
 import BubbleButton from '../../components/BubbleButton';
 import OtherBoard from '../../components/Tetris/OtherBoard';
+import SEO from '../../components/SEO';
 
 interface blockInterface {
   posX: number;
@@ -140,6 +141,12 @@ function GamePage() {
   }, [socketState]);
   return (
     <AppbarLayout>
+      <SEO>
+        <title>게임 입장</title>
+        <meta property="og:title" content={`게임 ${gameID}`} />
+        {/* <meta property="og:url" content="https://www.imdb.com/title/tt0117500/" /> */}
+        <meta property="og:image" content="/logo192.png" />
+      </SEO>
       {socketState ? (
         <div
           className="game__page--root"
