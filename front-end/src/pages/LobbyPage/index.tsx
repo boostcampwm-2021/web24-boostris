@@ -1,5 +1,5 @@
 import { MouseEventHandler, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../app/hooks';
 import Modal from '../../components/Modal';
 import Popper from '../../components/Popper';
@@ -14,13 +14,14 @@ import './style.scss';
 type rightClickEventType = MouseEventHandler | ((e: any, id: string) => void);
 
 function LobbyPage() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const { profile } = useAuth();
   const { rooms, users } = useAppSelector(selectSocket);
   const socketClient = useSocket();
 
   const modalRef = useRef<any>();
+  const notificationModalRef = useRef<any>();
   const popperRef = useRef<any>();
   const userListContainerRef = useRef<any>();
   const roomNameInputRef = useRef<any>();
@@ -42,6 +43,11 @@ function LobbyPage() {
     setModalChecked(false);
     modalRef.current.close();
   };
+
+  const handleNotificationModal = () => {
+    notificationModalRef.current.open();
+  };
+
   const handleCreatRoomSubmit = () => {
     socketClient.current.emit('create room', {
       owner: profile.nickname,
@@ -76,7 +82,12 @@ function LobbyPage() {
       <div className="lobby__page--root" onClick={resetActivatedPopper}>
         <div className="lobby__section lobby__sidebar">
           <SectionTitle>내 정보</SectionTitle>
-          <p className="absolute_border_bottom my__nickname">{profile.nickname}</p>
+          <div className="absolute_border_bottom my__nickname">
+            <p>{profile.nickname}</p>
+            <button className="notification__btn" onClick={handleNotificationModal}>
+              친구알림
+            </button>
+          </div>
           <div className="absolute_border_bottom filter__container toggle__group">
             {['접속자', '친구목록'].map((btn, idx) => (
               <button
@@ -141,7 +152,7 @@ function LobbyPage() {
             </div>
           </div>
         </div>
-        <Modal ref={modalRef} title="방 생성">
+        <Modal ref={modalRef} title="방 생성" type="default">
           <div className="modal__content__row">
             <div className="modal__label">* 방 이름</div>
             <div className="modal__input--container">
@@ -185,6 +196,65 @@ function LobbyPage() {
           <div className="popper__item">프로필</div>
           <div className="popper__item">친구 추가</div>
         </Popper>
+        <Modal ref={notificationModalRef} title="알림센터" type="notification">
+          <div className="notification__title absolute_border_bottom">&gt; 알림 센터</div>
+          <div className="notification__list__container fancy__scroll">
+            <div className="notification__list__item absolute_border_bottom">
+              <div className="notification__content">황정빈님의 친구 요청입니다.</div>
+              <div className="bottom__container">
+                <div className="date__container">2021.10.22</div>
+                <div className="action__btn__container">
+                  [<button>O</button>,<button>X</button>]
+                </div>
+              </div>
+            </div>
+            <div className="notification__list__item absolute_border_bottom">
+              <div className="notification__content">황정빈님의 친구 요청입니다.</div>
+              <div className="bottom__container">
+                <div className="date__container">2021.10.22</div>
+                <div className="action__btn__container">
+                  [<button>O</button>,<button>X</button>]
+                </div>
+              </div>
+            </div>
+            <div className="notification__list__item absolute_border_bottom">
+              <div className="notification__content">황정빈님의 친구 요청입니다.</div>
+              <div className="bottom__container">
+                <div className="date__container">2021.10.22</div>
+                <div className="action__btn__container">
+                  [<button>O</button>,<button>X</button>]
+                </div>
+              </div>
+            </div>
+            <div className="notification__list__item absolute_border_bottom">
+              <div className="notification__content">황정빈님의 친구 요청입니다.</div>
+              <div className="bottom__container">
+                <div className="date__container">2021.10.22</div>
+                <div className="action__btn__container">
+                  [<button>O</button>,<button>X</button>]
+                </div>
+              </div>
+            </div>
+            <div className="notification__list__item absolute_border_bottom">
+              <div className="notification__content">황정빈님의 친구 요청입니다.</div>
+              <div className="bottom__container">
+                <div className="date__container">2021.10.22</div>
+                <div className="action__btn__container">
+                  [<button>O</button>,<button>X</button>]
+                </div>
+              </div>
+            </div>
+            <div className="notification__list__item absolute_border_bottom">
+              <div className="notification__content">황정빈님의 친구 요청입니다.</div>
+              <div className="bottom__container">
+                <div className="date__container">2021.10.22</div>
+                <div className="action__btn__container">
+                  [<button>O</button>,<button>X</button>]
+                </div>
+              </div>
+            </div>
+          </div>
+        </Modal>
       </div>
     </AppbarLayout>
   );
