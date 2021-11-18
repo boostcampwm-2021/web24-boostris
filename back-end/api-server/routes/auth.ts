@@ -55,6 +55,9 @@ AuthRouter.post('/github/code', async (req, res) => {
     const { access_token } = data;
     if (access_token) {
       const user = await getGithubUser(access_token);
+      if (!user) {
+        throw Error('github error');
+      }
       const [isOurUser, target] = await oauthDupCheck(user['id'], req, res); // 일단 중복 안되는 login 으로 해놓음
       const id = user.id;
       res.status(200).json({ id, isOurUser, nickname: target?.nickname });

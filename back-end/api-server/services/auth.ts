@@ -2,13 +2,17 @@ import axios from 'axios';
 import * as jwt from 'jsonwebtoken';
 
 export const getGithubUser = async (token) => {
-  const { data } = await axios.get('https://api.github.com/user', {
-    headers: {
-      Authorization: `token ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  return data;
+  try {
+    const { data } = await axios.get('https://api.github.com/user', {
+      headers: {
+        Authorization: `token ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    return data;
+  } catch (error) {
+    return false;
+  }
 };
 
 export const getUserInfoFromNaver = async (accessToken) => {
