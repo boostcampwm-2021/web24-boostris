@@ -371,9 +371,7 @@ function LobbyPage() {
             ))}
           </div>
         </Modal>
-        {activatedUser !== '' && (
-          <UserPopper profileState={profileState} resetActivatedUser={resetActivatedUser} />
-        )}
+        {activatedUser !== '' && <UserPopper profileState={profileState} />}
       </div>
     </AppbarLayout>
   );

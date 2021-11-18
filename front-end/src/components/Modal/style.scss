@@ -215,6 +215,67 @@
       }
     }
   }
+
+  &.modal--profile {
+    cursor: default;
+    position: absolute;
+    border-radius: 0;
+    background: rgba(54, 65, 113, 0.7);
+    max-width: 600px;
+    border: 1px solid white;
+    min-width: 300px;
+    line-height: 1.4;
+    color: $white;
+
+    font-size: 18px;
+    padding: 20px 28px;
+
+    .modal-content {
+      margin: 0px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      .modal--profile__header {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        .close__btn {
+          padding: 0px;
+          color: white;
+          cursor: pointer;
+        }
+      }
+
+      .modal--profile__image {
+        width: 93px;
+        margin: 20px auto 15px;
+      }
+
+      .modal--profile__more {
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .modal--profile__status {
+        width: 220px;
+        background-color: rgba(255, 255, 255, 0.15);
+        border: 1px rgba(255, 255, 255, 0.6) solid;
+        height: 120px;
+        border-radius: 5px;
+        font-size: 16px;
+        margin: 20px auto;
+        box-sizing: border-box;
+        padding: 10px;
+        color: white;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        &::-webkit-scrollbar {
+          display: none;
+        }
+      }
+    }
+  }
 }
 
 .overlay {

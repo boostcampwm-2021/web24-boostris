@@ -39,6 +39,15 @@ const Modal = forwardRef(
                 X
               </button>
             )}
+            {type === 'profile' && (
+              <div className="modal--profile__header">
+                <div>_</div>
+                <div>[{title}]</div>
+                <button className="close__btn" onClick={close}>
+                  X
+                </button>
+              </div>
+            )}
             {children}
           </div>
         </div>

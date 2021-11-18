@@ -4,11 +4,11 @@ import Popper from '../../components/Popper';
 import { useSocket } from '../../context/SocketContext';
 import { makeRequest } from '../../features/friend/friendSlice';
 import useAuth from '../../hooks/use-auth';
-import ProfileModal from '../ProfileModal';
+import Modal from '../Modal';
 import './style.scss';
+import { useNavigate } from 'react-router-dom';
 
 export default function UserPopper({
-  resetActivatedUser,
   profileState,
 }: {
   resetActivatedUser: () => void;
@@ -25,10 +25,26 @@ export default function UserPopper({
   const { nickname } = useAuth().profile;
   const dispatch = useAppDispatch();
   const { current: socketClient } = useSocket();
+  const modalRef = useRef<any>();
+  const [stateMessage, setStateMessage] = useState('');
+  const navigate = useNavigate();
 
-  const toggleModal = () => {
-    if (modal) resetActivatedUser();
-    setModal(!modal);
+  useEffect(() => {
+    fetch('api/profile/stateMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname: profileState.nickname }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setStateMessage(data.state_message);
+      })
+      .catch((e) => console.error('에러 발생'));
+    return () => {};
+  }, [profileState.nickname]);
+
+  const clickMoreProfile = () => {
+    navigate(`/profile/${profileState.nickname}`);
   };
 
   useEffect(() => {
@@ -37,8 +53,8 @@ export default function UserPopper({
   }, [profileState]);
 
   const clickProfile = () => {
+    modalRef.current.open();
     popperRef.current.close();
-    toggleModal();
   };
 
   const handleRequestFriend = () => {
@@ -60,14 +76,23 @@ export default function UserPopper({
   };
 
   return (
-    <>
+    <div onClick={(e) => e.stopPropagation()}>
       <Popper ref={popperRef}>
         <div className="popper__item" onClick={clickProfile}>
           프로필
         </div>
         <div className="popper__item">친구 추가</div>
       </Popper>
-      {modal && <ProfileModal nickname={profileState.nickname} toggleModal={toggleModal} />}
-    </>
+      <Modal ref={modalRef} title="프로필" type="profile">
+        <img
+          className="modal--profile__image"
+          src="assets/profile.png"
+          alt="이미지 다운로드 실패"
+        ></img>
+        <div className="modal--profile__nickname">{profileState.nickname}</div>
+        <textarea className="modal--profile__status" value={stateMessage} disabled></textarea>
+        <div className="modal--profile__more" onClick={clickMoreProfile}>{`상세 프로필 >`}</div>
+      </Modal>
+    </div>
   );
 }
