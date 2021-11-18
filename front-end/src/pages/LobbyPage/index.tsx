@@ -16,7 +16,6 @@ import './style.scss';
 type rightClickEventType = MouseEventHandler | ((e: any, id: string) => void);
 
 function LobbyPage() {
-
   // const navigate = useNavigate();
 
   const { profile } = useAuth();
@@ -72,7 +71,7 @@ function LobbyPage() {
       name: roomNameInputRef.current.value,
       limit: modalToggleIdx + 2,
       isSecret: modalChecked,
-      nickname: profile.nickname
+      nickname: profile.nickname,
     });
   };
 
@@ -92,8 +91,8 @@ function LobbyPage() {
     setActivatedUser('');
   };
 
-  const joinRoom = (id: string, nickname: string | null) => {
-    socketClient.current.emit('join room', id, nickname);
+  const joinRoom = (id: string) => {
+    socketClient.current.emit('join room', id, profile.nickname);
   };
 
   return (
@@ -176,7 +175,7 @@ function LobbyPage() {
                   className={`room__container ${isSecret ? 'room__type--secret' : ''}`}
                   onClick={() => {
                     if (limit > current) {
-                      joinRoom(id, profile.nickname);
+                      joinRoom(id);
                     } else {
                       alert('정원 초과');
                     }
