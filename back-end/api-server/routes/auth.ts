@@ -31,6 +31,7 @@ const oauthDupCheck = async (id, req, res) => {
     }
   } catch (e) {
     console.log(e);
+    return [false];
   }
 };
 
@@ -51,12 +52,15 @@ AuthRouter.post('/github/code', async (req, res) => {
         code,
       },
     });
-
     const { access_token } = data;
-    const user = await getGithubUser(access_token);
-    const [isOurUser, target] = await oauthDupCheck(user['id'], req, res); // 일단 중복 안되는 login 으로 해놓음
-    const id = user.id;
-    res.status(200).json({ id, isOurUser, nickname: target?.nickname });
+    if (access_token) {
+      const user = await getGithubUser(access_token);
+      const [isOurUser, target] = await oauthDupCheck(user['id'], req, res); // 일단 중복 안되는 login 으로 해놓음
+      const id = user.id;
+      res.status(200).json({ id, isOurUser, nickname: target?.nickname });
+    } else {
+      throw Error('github error');
+    }
   } catch (error) {
     console.error(error);
     res.sendStatus(400);
@@ -68,8 +72,13 @@ AuthRouter.post('/naver/token', async (req, res) => {
   try {
     const userInfoFromNaver = await getUserInfoFromNaver(accessToken);
     const id = userInfoFromNaver['response']['id'];
-    const [isOurUser, target] = await oauthDupCheck(id, req, res);
-    res.json({ id, isOurUser, nickname: target?.nickname });
+
+    if (id) {
+      const [isOurUser, target] = await oauthDupCheck(id, req, res);
+      res.json({ id, isOurUser, nickname: target?.nickname });
+    } else {
+      throw Error('naver error');
+    }
   } catch (error) {
     console.error(error);
     res.sendStatus(400);

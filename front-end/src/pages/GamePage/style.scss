@@ -48,6 +48,7 @@
   width: 572px;
   height: 240px;
   justify-content: space-between;
+  margin-bottom: 55px;
 }
 .slot {
   flex: 1;
@@ -60,4 +61,40 @@
 .slot > .other-board-background {
   background: #131625;
   position: absolute;
+}
+.myNickName {
+  text-align: center;
+}
+.otherNickName {
+  position: relative;
+  text-align: center;
+  width: 127px;
+  top: 250px;
+}
+
+.modal--rank {
+  & > .modal-content {
+    margin-top: 0px;
+    
+    & > .rank-table {
+      text-align: center;
+      min-width: 382px;
+
+      & > tbody > tr:nth-child(1) {
+        color: #0055FB;
+      }
+
+      & > tbody > tr:nth-child(2) {
+        color: #3863B8;
+      }
+
+      & > tbody > tr:nth-child(3) {
+        color: #43508B;
+      }
+
+      & > tbody > tr:nth-child(4) {
+        color: #1C2137;
+      }
+    }
+  }
 }

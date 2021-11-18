@@ -32,6 +32,8 @@ export interface TetrisState {
   CAN_HOLD: boolean;
   SOLID_GARBAGES: number;
   ATTACKED_GARBAGES: number;
+  ATTACK_COUNT: number;
+  ATTACKED_COUNT: number;
   KEYDOWN_RIGHT: boolean;
   KEYDOWN_LEFT: boolean;
   KEYDOWN_DOWN: boolean;
@@ -42,6 +44,8 @@ export interface TetrisState {
 
 export interface TetrisTimer {
   PLAY_TIME: number;
+  PLAY_TIMER: NodeJS.Timeout;
+  BLOCK_TIME: number;
   DROP: NodeJS.Timeout;
   CONFLICT: NodeJS.Timeout;
   SOLID_GARBAGE_TIMEOUT: NodeJS.Timeout,

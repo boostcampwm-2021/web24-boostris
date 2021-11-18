@@ -18,9 +18,11 @@ const Popper = forwardRef(({ children }: { children: React.ReactNode }, ref) => 
   const close = () => {
     setDisplay(false);
   };
+
   const setPosition = (x: number, y: number) => {
     setPos({ x, y });
   };
+
   if (!display) {
     return null;
   }
@@ -28,7 +30,7 @@ const Popper = forwardRef(({ children }: { children: React.ReactNode }, ref) => 
     e.stopPropagation();
   };
   return createPortal(
-    <div>
+    <>
       <div
         className="popper"
         onClick={handleClick}
@@ -39,7 +41,7 @@ const Popper = forwardRef(({ children }: { children: React.ReactNode }, ref) => 
       >
         <div className="popper-content">{children}</div>
       </div>
-    </div>,
+    </>,
     document.getElementById('popper-root') as HTMLElement
   );
 });

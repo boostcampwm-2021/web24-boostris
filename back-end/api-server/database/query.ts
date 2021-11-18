@@ -30,3 +30,8 @@ export const updateTable = async (table, set, condition = null) => {
   queryLine += condition ? `WHERE ${condition}` : ``;
   return connectionQuery(queryLine);
 };
+
+export const deleteTable = async (table, condition) => {
+  let queryLine = `DELETE FROM ${table} WHERE ${condition}`;
+  return connectionQuery(queryLine);
+};
