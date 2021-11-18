@@ -35,7 +35,6 @@ export const requestFriendUpdate = async ({ isAccept, requestee, requester }) =>
     }
     return true;
   } catch (error) {
-    console.log(error);
     return false;
   }
 };
@@ -67,5 +66,23 @@ export const getFriendList = async (nickname) => {
     return returnData;
   } catch (error) {
     return undefined;
+  }
+};
+
+export const checkAlreadyFriend = async ({ requestee, requester }) => {
+  try {
+    if (requestee === requester) return false; // 나 자신과 친구를 맺을 수 없으므로
+    const result = await selectTable(
+      `friend1`,
+      `friendship`,
+      `friend1=(select oauth_id from user_info where nickname='${requestee}') and friend2=(select oauth_id from user_info where nickname='${requester}')`
+    );
+    if (result && result.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return false;
   }
 };

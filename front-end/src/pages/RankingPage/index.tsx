@@ -77,7 +77,6 @@ function RankingPage() {
   const [modeButtonState, setModeButtonState] = useState(1);
   const [players, setPlayers] = useState([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const user = useAppSelector(selectUser);
 
   const categoryButton: MouseEventHandler<HTMLButtonElement> = (
     e: MouseEvent<HTMLButtonElement>
