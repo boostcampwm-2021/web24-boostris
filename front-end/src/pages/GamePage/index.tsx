@@ -16,6 +16,8 @@ import PreviewBlocks from '../../components/Tetris/PreviewBlocks';
 import BubbleButton from '../../components/BubbleButton';
 import OtherBoard from '../../components/Tetris/OtherBoard';
 import SEO from '../../components/SEO';
+import Modal from '../../components/Modal';
+import RankTable from '../../components/Tetris/RankTable';
 
 interface blockInterface {
   posX: number;
@@ -27,13 +29,20 @@ interface blockInterface {
   index: number;
 }
 
+interface RankInterface {
+  nickname: string,
+  playTime: number,
+  attackCnt: number,
+  attackedCnt: number
+}
+
 function GamePage() {
   const { gameID } = useParams();
   const { roomID, rooms, roomMessages } = useAppSelector(selectSocket);
   const dispatch = useAppDispatch();
   const socketClient = useSocket();
   const { profile } = useAuth();
-  const {isReady} = useSocketReady();
+  const {isReady, isStartedGame, setIsStartedGame} = useSocketReady();
   const chatInputRef = useRef<any>();
   const containerRef = useRef<any>();
 
@@ -43,6 +52,15 @@ function GamePage() {
   const [holdBlock, setHoldBlock] = useState<blockInterface | null>(null);
   const [previewBlock, setPreviewBlock] = useState<Array<blockInterface> | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
+
+  const modalRef = useRef<any>();
+  const [rank, setRankState] = useState<RankInterface[]>();
+
+  let rankIdx = 1;
+
+  const handleRankModal = () => {
+    modalRef.current.open();
+  };
 
   useLayoutEffect(() => {
     if (containerRef.current) {
@@ -104,10 +122,13 @@ function GamePage() {
 
   useEffect(() => {
     if(!isReady) return;
-  
     drawBoardBackground(canvas.current, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT, TETRIS.BLOCK_SIZE);
 
-    socketClient.current.on('game started', () => {
+    let startEvent: () => void;
+    let gameOverEvent: () => void;
+    let rankTableEvent: (rank: RankInterface[]) => void;
+
+    socketClient.current.on('game started', startEvent = () => {
       // 다른 플레이어가 게임 시작 누르는 것 감지
       setgameStart(false);
       setgameStart(true);
@@ -116,21 +137,36 @@ function GamePage() {
       setPreviewBlock(null);
     });
 
-    socketClient.current.on('every player game over', () => {
+    socketClient.current.on('every player game over', gameOverEvent = () => {
       // 모든 플레이어가 게임 종료 된 경우
       setGameOver(true);
-      setIsGameStarted(false);
+      setIsStartedGame(false);
     });
+
+    socketClient.current.on('send rank table', rankTableEvent = (rank: RankInterface[]) => {
+      setRankState(rank);
+    });
+
+    return () => {
+      socketClient.current.off('game started', startEvent);
+      socketClient.current.off('every player game over', gameOverEvent);
+      socketClient.current.off('send rank table', rankTableEvent);
+    }
   }, [isReady]);
 
   useEffect(() => {
-    const target = rooms.find((r) => r.id === roomID);
+    if(!rank) return;
+    handleRankModal();
+  }, [rank]);
 
+  useEffect(() => {
+    const target = rooms.find((r) => r.id === roomID);
+  
     if(target?.gameStart) {
-      setIsGameStarted(true);
+      setIsStartedGame(true);
     }
     else {
-      setIsGameStarted(false);
+      setIsStartedGame(false);
     }
   }, []);
 
@@ -151,7 +187,15 @@ function GamePage() {
           className="game__page--root"
           style={{ width: '1200px', display: 'flex', padding: '50px', backgroundColor: '#2b3150' }}
         >
-          <HoldBlock holdBlock={holdBlock} />
+            <div>
+              <HoldBlock holdBlock={holdBlock} />
+              <div>
+                <div>{'플레이 타임'}</div>
+                <div className={'play-time'}>0s</div>
+                <div>{'공격 횟수'}</div>
+                <div className={'attack-count'}>0</div>
+              </div>
+            </div>
           <div style={{ position: 'relative', margin: '0px 40px' }}>
             <canvas
               style={{
@@ -168,20 +212,18 @@ function GamePage() {
               gameOver={gameOver}
               endGame={() => endGame(socketClient.current)}
               getHoldBlockState={getHoldBlock}
-              getPreviewBlocksList={getPreviewBlocks}
-            />
+              getPreviewBlocksList={getPreviewBlocks} />
             <div className={'myNickName'}>{profile.nickname}</div>
           </div>
           <div>
             <PreviewBlocks previewBlock={previewBlock} />
             <BubbleButton
-              variant={!gameOver || isGameStarted ? 'inactive' : 'active'}
+              variant={!gameOver || isStartedGame ? 'inactive' : 'active'}
               label="게임 시작"
               handleClick={() => {
                 clickStartButton(socketClient.current);
-              }}
-              disabled={!gameOver || isGameStarted}
-            />
+              } }
+              disabled={!gameOver || isStartedGame} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div className="slots">
@@ -193,7 +235,7 @@ function GamePage() {
                   <div className="chat__history__scroll__root fancy__scroll" ref={containerRef}>
                     {roomMessages.map(({ id, from, message }) => (
                       <div key={id} className="chat__history__item">
-                        {from === 'socket-server' ? message : `${from} : ${message}`} 
+                        {from === 'socket-server' ? message : `${from} : ${message}`}
                       </div>
                     ))}
                   </div>
@@ -203,8 +245,7 @@ function GamePage() {
                     type="text"
                     className="chat__input"
                     onKeyUp={handleSubmit}
-                    ref={chatInputRef}
-                  />
+                    ref={chatInputRef} />
                   <button className="chat__send__btn" onClick={sendMessage}>
                     전송
                   </button>
@@ -214,6 +255,11 @@ function GamePage() {
           </div>
         </div>
       ) : null}
+      {rank ?
+        (<Modal ref={modalRef} title="게임 결과" type="rank">
+          <RankTable rank={rank} />
+        </Modal>)
+      : null}
     </AppbarLayout>
   );
 }
