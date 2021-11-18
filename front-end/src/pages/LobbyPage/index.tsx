@@ -12,6 +12,7 @@ import { selectSocket } from '../../features/socket/socketSlice';
 import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
 import './style.scss';
+import LobbyChat from '../../components/LobbyChat';
 
 type rightClickEventType = MouseEventHandler | ((e: any, id: string) => void);
 
@@ -165,34 +166,37 @@ function LobbyPage() {
           </div>
         </div>
         <div className="section__divider"></div>
-        <div className="lobby__section lobby__main">
-          <SectionTitle>로비</SectionTitle>
-          <div className="lobby__container">
-            <div className="room__list__scroll__root fancy__scroll">
-              {rooms.map(({ id, owner, name, limit, isSecret, current }) => (
-                <div
-                  key={id}
-                  className={`room__container ${isSecret ? 'room__type--secret' : ''}`}
-                  onClick={() => {
-                    if (limit > current) {
-                      joinRoom(id);
-                    } else {
-                      alert('정원 초과');
-                    }
-                  }}
-                >
-                  <p className="room__title">{name}</p>
-                  <p className="room__desc">{owner}</p>
-                  <p className="room__desc">
-                    {' '}
-                    * 인원 : {current} / {limit}
-                  </p>
-                </div>
-              ))}
+        <div className="lobby__main__container">
+          <div className="lobby__section lobby__main">
+            <SectionTitle>로비</SectionTitle>
+            <div className="lobby__container">
+              <div className="room__list__scroll__root fancy__scroll">
+                {rooms.map(({ id, owner, name, limit, isSecret, current }) => (
+                  <div
+                    key={id}
+                    className={`room__container ${isSecret ? 'room__type--secret' : ''}`}
+                    onClick={() => {
+                      if (limit > current) {
+                        joinRoom(id);
+                      } else {
+                        alert('정원 초과');
+                      }
+                    }}
+                  >
+                    <p className="room__title">{name}</p>
+                    <p className="room__desc">{owner}</p>
+                    <p className="room__desc">
+                      {' '}
+                      * 인원 : {current} / {limit}
+                    </p>
+                  </div>
+                ))}
 
-              <div className="empty__item"></div>
+                <div className="empty__item"></div>
+              </div>
             </div>
           </div>
+          <LobbyChat />
         </div>
         <Modal ref={modalRef} title="방 생성" type="default">
           <div className="modal__content__row">
