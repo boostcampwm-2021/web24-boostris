@@ -174,7 +174,7 @@ function LobbyPage() {
       <SEO>
         <title>로비</title>
       </SEO>
-      <div className="lobby__page--root">
+      <div className="lobby__page--root" onClick={resetActivatedUser}>
         <div className="lobby__section lobby__sidebar">
           <SectionTitle>내 정보</SectionTitle>
           <div className="absolute_border_bottom my__nickname">

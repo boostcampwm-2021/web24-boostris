@@ -36,11 +36,6 @@ export default function UserPopper({
     popperRef.current.open();
   }, [profileState]);
 
-  const resetActivatedPopper = () => {
-    popperRef.current.close();
-    resetActivatedUser();
-  };
-
   const clickProfile = () => {
     popperRef.current.close();
     toggleModal();
@@ -66,18 +61,12 @@ export default function UserPopper({
 
   return (
     <>
-      <div className="popper__overlay" onClick={resetActivatedPopper}>
-        <Popper ref={popperRef}>
-          <div className="popper__item" onClick={clickProfile}>
-            프로필
-          </div>
-          {!profileState.isAlreadyFriend && (
-            <div className="popper__item" onClick={handleRequestFriend}>
-              친구 추가
-            </div>
-          )}
-        </Popper>
-      </div>
+      <Popper ref={popperRef}>
+        <div className="popper__item" onClick={clickProfile}>
+          프로필
+        </div>
+        <div className="popper__item">친구 추가</div>
+      </Popper>
       {modal && <ProfileModal nickname={profileState.nickname} toggleModal={toggleModal} />}
     </>
   );

@@ -33,7 +33,7 @@ export default function ProfileModal({
   return (
     <div className="profile-modal__root">
       <div className="profile-modal__overlay" onClick={toggleModal} />
-      <div className="profile-modal__content">
+      <div className="profile-modal__content" onClick={(e) => e.stopPropagation()}>
         <div className="profile-modal__header">
           <div>{'_'}</div>
           <div className="profile-modal__title">{`[ 프로필 ]`}</div>
