@@ -26,11 +26,16 @@ const setMessage = (data, message) => {
 // 친구 요청 받을 시, 친구 요청 테이블에 넣기
 FriendRouter.post('/request', async (req, res, next) => {
   const { requestee, requester } = req.body; // userId : 친구 요청을 보낸 사람, friendId : 친구 요청을 받은 사람
-  const result = await requestFriend({ requestee, requester });
-  const checkFriend = await checkAlreadyFriend({ requestee, requester }); // 이미 친구인지 확인
-  if (result && !checkFriend) {
-    res.status(200).json(setMessage({}, 'success'));
-  } else {
+  try {
+    const result = await requestFriend({ requestee, requester });
+    const checkFriend = await checkAlreadyFriend({ requestee, requester }); // 이미 친구인지 확인
+    if (result && !checkFriend) {
+      res.status(200).json(setMessage({}, 'success'));
+    } else {
+      throw Error('request make error');
+    }
+  } catch (error) {
+    console.error(error);
     res.status(400).json(setMessage({}, 'fail'));
   }
 });
@@ -38,10 +43,15 @@ FriendRouter.post('/request', async (req, res, next) => {
 // 친구 요청 수락, 거절 + 수락햇을때 실제 친구 데이터베이스에 넣기
 FriendRouter.post('/request-update', async (req, res, next) => {
   const { isAccept, requestee, requester } = req.body;
-  const result = await requestFriendUpdate({ isAccept, requestee, requester });
-  if (result) {
-    res.status(200).json(setMessage({}, 'success'));
-  } else {
+  try {
+    const result = await requestFriendUpdate({ isAccept, requestee, requester });
+    if (result) {
+      res.status(200).json(setMessage({}, 'success'));
+    } else {
+      throw Error('request update error');
+    }
+  } catch (error) {
+    console.error(error);
     res.status(400).json(setMessage({}, 'fail'));
   }
 });
@@ -49,10 +59,15 @@ FriendRouter.post('/request-update', async (req, res, next) => {
 // 나한테 들어온 친구 요청 목록 가져오기
 FriendRouter.get('/request-list', async (req, res, next) => {
   const requestee = req.query.requestee;
-  const friendRequestList = await requestFriendList(requestee);
-  if (friendRequestList ?? 0) {
-    res.status(200).json(setMessage(friendRequestList, 'success'));
-  } else {
+  try {
+    const friendRequestList = await requestFriendList(requestee);
+    if (friendRequestList ?? 0) {
+      res.status(200).json(setMessage(friendRequestList, 'success'));
+    } else {
+      throw Error('request list error');
+    }
+  } catch (error) {
+    console.error(error);
     res.status(400).json(setMessage([], 'fail'));
   }
 });
@@ -60,11 +75,16 @@ FriendRouter.get('/request-list', async (req, res, next) => {
 // 내 친구 목록 가져오기
 FriendRouter.get('/list', async (req, res, next) => {
   const nickname = req.query.nickname;
-  const friendList = await getFriendList(nickname);
-  if (friendList ?? 0) {
-    res.status(200).json(setMessage(friendList, 'success'));
-  } else {
-    res.status(400).json(setMessage({}, 'fail'));
+  try {
+    const friendList = await getFriendList(nickname);
+    if (friendList ?? 0) {
+      res.status(200).json(setMessage(friendList, 'success'));
+    } else {
+      throw Error('friendlist error');
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(400).json(setMessage([], 'fail'));
   }
 });
 
