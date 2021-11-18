@@ -101,6 +101,7 @@ export const userSlice = createSlice({
         status: 'idle',
         nickname: null,
       };
+      state.auth.authenticated = false;
     },
   },
   // The `extraReducers` field lets the slice handle actions defined elsewhere,
@@ -120,6 +121,7 @@ export const userSlice = createSlice({
       })
       .addCase(logOut.fulfilled, (state, action) => {
         state.auth.status = 'idle';
+        state.profile.isOurUser = false;
         state.auth.authenticated = action.payload.authenticated;
       })
       .addCase(fetchGithubUser.pending, (state) => {
@@ -127,21 +129,42 @@ export const userSlice = createSlice({
       })
       .addCase(fetchGithubUser.fulfilled, (state, action) => {
         state.profile = { ...action.payload, status: 'idle' };
-        state.auth.authenticated = true;
+        if (action.payload.isOurUser) {
+          state.auth.authenticated = true;
+        }
+      })
+      .addCase(fetchGithubUser.rejected, (state) => {
+        state.profile.status = 'failed';
+        state.auth.authenticated = false;
       })
       .addCase(fetchNaverUser.pending, (state) => {
         state.profile = { id: null, isOurUser: false, status: 'loading', nickname: null };
       })
       .addCase(fetchNaverUser.fulfilled, (state, action) => {
         state.profile = { ...action.payload, status: 'idle' };
-        state.auth.authenticated = true;
+        if (action.payload.isOurUser) {
+          state.auth.authenticated = true;
+        }
+        if (action.payload.isOurUser) {
+          state.auth.authenticated = true;
+        }
+      })
+      .addCase(fetchNaverUser.rejected, (state) => {
+        state.profile.status = 'failed';
+        state.auth.authenticated = false;
       })
       .addCase(fetchGoogleUser.pending, (state) => {
         state.profile = { id: null, isOurUser: false, status: 'loading', nickname: null };
       })
       .addCase(fetchGoogleUser.fulfilled, (state, action) => {
         state.profile = { ...action.payload, status: 'idle' };
-        state.auth.authenticated = true;
+        if (action.payload.isOurUser) {
+          state.auth.authenticated = true;
+        }
+      })
+      .addCase(fetchGoogleUser.rejected, (state) => {
+        state.profile.status = 'failed';
+        state.auth.authenticated = false;
       })
       .addCase(registerNewUser.pending, (state) => {
         state.register.status = 'loading';

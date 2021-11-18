@@ -44,12 +44,14 @@ export const requestFriendList = async (requestee) => {
     const result = await selectTable(
       `u.nickname, r.created_at`,
       `boostris.FRIEND_REQUEST r left outer join boostris.USER_INFO u ON r.friend_requester = u.oauth_id`,
-      `r.friend_requestee = '${requestee}'`
+      `r.friend_requestee = (select oauth_id from USER_INFO where nickname = '${requestee}')`
     );
     const returnData = [];
     result.map((value) =>
       returnData.push({ nickname: value.nickname, created_at: value.created_at })
     );
+    console.log('!@#!@#@#', requestee);
+    console.log('!@#!@#@#', returnData);
     return returnData;
   } catch (error) {
     return undefined;

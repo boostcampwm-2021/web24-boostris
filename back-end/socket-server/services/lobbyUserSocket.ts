@@ -1,14 +1,19 @@
 import { Namespace } from 'socket.io';
 import { randomUUID } from 'crypto';
 
-import { userSocket } from '../type/socketType';
+import { userRemote, userSocket } from '../type/socketType';
 import { roomList, setRoomList } from '../constant/room';
-import { broadcastUserList, broadcastRoomList, updateRoomCurrent, broadcastRoomMemberUpdate } from '../utils/userUtil';
+import {
+  broadcastUserList,
+  broadcastRoomList,
+  updateRoomCurrent,
+  broadcastRoomMemberUpdate,
+} from '../utils/userUtil';
 
 export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) => {
   socket.on('set userName', (userName) => {
     socket.userName = userName;
-    
+
     broadcastUserList(mainSpace);
     broadcastRoomList(mainSpace);
   });
@@ -30,7 +35,7 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
           gameOverPlayer: 0,
           garbageBlockCnt: [],
           gameStart: false,
-          player: [{id: socket.id, nickname: nickname}]
+          player: [{ id: socket.id, nickname: nickname }],
         },
       ];
 
@@ -52,15 +57,15 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
       !mainSpace.adapter.rooms.get(roomID).has(id)
     ) {
       try {
-        if(target.gameStart) {
+        if (target.gameStart) {
           mainSpace.to(socket.id).emit('already started');
         }
 
-        target.player.push({id: socket.id, nickname: socket.userName});
-        
+        target.player.push({ id: socket.id, nickname: socket.userName });
+
         socket.roomID = roomID;
         socket.join(roomID);
-        
+
         updateRoomCurrent(mainSpace, roomID);
 
         mainSpace.to(socket.id).emit('join room:success', roomID, target.gameStart);
@@ -76,7 +81,7 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
   socket.on('leave room', (roomID: string) => {
     const target = roomList.find((r) => r.id === roomID);
     target.player = target.player.filter((p) => p.id !== socket.id);
-    if(target.player.length === 1) {
+    if (target.player.length === 1) {
       mainSpace.to(roomID).emit('every player game over');
       target.gameStart = false;
     }
@@ -88,11 +93,11 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
     const target = roomList.find((r) => r.id === roomID);
 
     try {
-      if(target.gameStart) {
+      if (target.gameStart) {
         mainSpace.to(socket.id).emit('already started');
       }
-      target.player.push({id: socket.id, nickname: nickname});
-      
+      target.player.push({ id: socket.id, nickname: nickname });
+
       socket.roomID = roomID;
       socket.join(roomID);
 
@@ -109,26 +114,26 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
     mainSpace.to(roomID).emit('receive message', { id, from, message });
   });
 
-  mainSpace.adapter.on('join-room', (room, id) => {
-    updateRoomCurrent(mainSpace, room);
-    broadcastRoomMemberUpdate(mainSpace, room, id);
-    broadcastRoomList(mainSpace);
+  socket.on('refresh friend list', async (nickname) => {
+    const sockets = (await mainSpace.fetchSockets()) as userRemote[];
+    const target = sockets.find((s) => s.userName === nickname);
+    if (target) {
+      mainSpace.to(target.id).emit('refresh friend list');
+    }
   });
 
-  mainSpace.adapter.on('leave-room', (room, id) => {
-    updateRoomCurrent(mainSpace, room);
-    broadcastRoomMemberUpdate(mainSpace, room, id);
-    broadcastRoomList(mainSpace);
+  socket.on('refresh request list', (socketId) => {
+    mainSpace.to(socketId).emit('refresh request list');
   });
 
   socket.on('disconnecting', () => {
     const target = roomList.find((r) => r.id === socket.roomID);
-    
-    if(target) {
+
+    if (target) {
       target.player = target.player.filter((p) => p.id !== socket.id);
-      socket.broadcast.to(socket.roomID).emit('leave player', socket.id); 
-      
-      if(target.player.length === 1) {
+      socket.broadcast.to(socket.roomID).emit('leave player', socket.id);
+
+      if (target.player.length === 1) {
         mainSpace.to(socket.roomID).emit('every player game over');
         target.gameStart = false;
       }
@@ -145,4 +150,4 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
   socket.on('disconnect', async () => {
     broadcastUserList(mainSpace);
   });
-}
+};

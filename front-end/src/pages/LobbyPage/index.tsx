@@ -1,7 +1,7 @@
 import { MouseEventHandler, useCallback, useRef, useState, useEffect } from 'react';
 import { useVirtual } from 'react-virtual';
 // import { useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import Modal from '../../components/Modal';
 
 import SectionTitle from '../../components/SectionTitle';
@@ -12,13 +12,21 @@ import { selectSocket } from '../../features/socket/socketSlice';
 import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
 import './style.scss';
+import {
+  getFriendList,
+  getRequestList,
+  selectFriend,
+  updateRequest,
+} from '../../features/friend/friendSlice';
 
 type rightClickEventType = MouseEventHandler | ((e: any, id: string) => void);
 
 function LobbyPage() {
   const { profile } = useAuth();
   const { rooms, users } = useAppSelector(selectSocket);
+  const { friendList, friendRequestList } = useAppSelector(selectFriend);
   const socketClient = useSocket();
+  const dispatch = useAppDispatch();
 
   const modalRef = useRef<any>();
   const notificationModalRef = useRef<any>();
@@ -34,10 +42,34 @@ function LobbyPage() {
     x: number | null;
     y: number | null;
     nickname: string | null;
-  }>({ x: null, y: null, nickname: null });
+    isAlreadyFriend: boolean;
+    socketId: string;
+  }>({ x: null, y: null, nickname: null, isAlreadyFriend: false, socketId: '' });
 
-  const rowVirtualizer = useVirtual({
+  useEffect(() => {
+    if (profile.nickname) {
+      dispatch(
+        getFriendList({
+          nickname: profile.nickname,
+        })
+      );
+      dispatch(
+        getRequestList({
+          requestee: profile.nickname,
+        })
+      );
+    }
+  }, [dispatch, profile.nickname]);
+
+  const userListVirtualizer = useVirtual({
     size: users.length,
+    // size: 100 * 1000,
+    parentRef,
+    estimateSize: useCallback(() => 35, []),
+    overscan: 5,
+  });
+  const friendListVirtualizer = useVirtual({
+    size: friendList.length,
     // size: 100 * 1000,
     parentRef,
     estimateSize: useCallback(() => 35, []),
@@ -81,13 +113,26 @@ function LobbyPage() {
     e.preventDefault();
     const { target } = e;
     if ((target as HTMLElement).closest('.user__list--item')) {
-      setProfileState({ x: e.clientX, y: e.clientY, nickname: target.innerText });
+      setProfileState({
+        x: e.clientX,
+        y: e.clientY,
+        nickname: target.innerText,
+        isAlreadyFriend: friendList.findIndex((f) => f === target.innerText) !== -1,
+        socketId: id,
+      });
     }
     setActivatedUser(id);
   };
 
   const resetActivatedUser = () => {
-    setProfileState({ ...profileState, x: null, y: null, nickname: null });
+    setProfileState({
+      ...profileState,
+      x: null,
+      y: null,
+      nickname: null,
+      isAlreadyFriend: false,
+      socketId: '',
+    });
     setActivatedUser('');
   };
 
@@ -95,6 +140,33 @@ function LobbyPage() {
     socketClient.current.emit('join room', id, profile.nickname);
   };
 
+  const handleUpdateRequest = (result: boolean, n: string) => {
+    dispatch(
+      updateRequest({
+        isAccept: result ? 1 : 0,
+        requestee: profile.nickname as string,
+        requester: n,
+        cb: () => {
+          notificationModalRef.current.close();
+          dispatch(
+            getRequestList({
+              requestee: profile.nickname as string,
+            })
+          );
+          dispatch(
+            getFriendList({
+              nickname: profile.nickname as string,
+            })
+          );
+
+          if (result) {
+            socketClient.current.emit('refresh friend list', n);
+          }
+        },
+      })
+    );
+  };
+  console.log(friendRequestList.map((r) => ({ ...r, created: new Date(r.created_at) })));
   return (
     <AppbarLayout>
       <SEO>
@@ -105,9 +177,14 @@ function LobbyPage() {
           <SectionTitle>내 정보</SectionTitle>
           <div className="absolute_border_bottom my__nickname">
             <p>{profile.nickname}</p>
-            <button className="notification__btn" onClick={handleNotificationModal}>
-              친구알림
-            </button>
+            <div className="notification__container">
+              <button className="notification__btn" onClick={handleNotificationModal}>
+                알림센터
+              </button>
+              <div className={`notification__badge ${friendRequestList.length > 0 ? 'on' : ''}`}>
+                {friendRequestList.length > 99 ? '99+' : friendRequestList.length}
+              </div>
+            </div>
           </div>
           <div className="absolute_border_bottom filter__container toggle__group">
             {['접속자', '친구목록'].map((btn, idx) => (
@@ -122,37 +199,73 @@ function LobbyPage() {
           </div>
           <div ref={userListContainerRef} className="user__list__container">
             <div className="user__list__scroll__root fancy__scroll" ref={parentRef}>
-              <div
-                style={{
-                  height: `${rowVirtualizer.totalSize}px`,
-                  width: '100%',
-                  position: 'relative',
-                }}
-              >
-                {rowVirtualizer.virtualItems.map((virtualRow: any) => {
-                  const { nickname, id } = users[virtualRow.index];
-                  return (
-                    <div
-                      key={id}
-                      // key={virtualRow.index}
-                      className={`user__list--item ${activatedUser === id && 'activated'}`}
-                      onContextMenu={(e) => rightClickListener(e, id)}
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: `${virtualRow.size}px`,
-                        transform: `translateY(${virtualRow.start}px)`,
-                      }}
-                    >
-                      <span className="dot"></span>
-                      <span className="name__span">{nickname}</span>
-                      {/* <span className="name__span">Row {virtualRow.index}</span> */}
-                    </div>
-                  );
-                })}
-              </div>
+              {currentIdx === 0 ? (
+                <div
+                  style={{
+                    height: `${userListVirtualizer.totalSize}px`,
+                    width: '100%',
+                    position: 'relative',
+                  }}
+                >
+                  {userListVirtualizer.virtualItems.map((virtualRow: any) => {
+                    const { nickname, id } = users[virtualRow.index];
+                    return (
+                      <div
+                        key={id}
+                        // key={virtualRow.index}
+                        className={`user__list--item ${activatedUser === id && 'activated'}`}
+                        onContextMenu={(e) => rightClickListener(e, id)}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: `${virtualRow.size}px`,
+                          transform: `translateY(${virtualRow.start}px)`,
+                        }}
+                      >
+                        <span className="dot"></span>
+                        <span className="name__span">{nickname}</span>
+                        {/* <span className="name__span">Row {virtualRow.index}</span> */}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div
+                  style={{
+                    height: `${friendListVirtualizer.totalSize}px`,
+                    width: '100%',
+                    position: 'relative',
+                  }}
+                >
+                  {friendListVirtualizer.virtualItems.map((virtualRow: any) => {
+                    const nickname = friendList[virtualRow.index];
+                    return (
+                      <div
+                        key={nickname}
+                        className={`user__list--item ${activatedUser === nickname && 'activated'}`}
+                        onContextMenu={(e) => rightClickListener(e, nickname)}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: `${virtualRow.size}px`,
+                          transform: `translateY(${virtualRow.start}px)`,
+                        }}
+                      >
+                        <span
+                          className={`dot ${
+                            users.findIndex((u) => u.nickname === nickname) !== -1 ? '' : 'offline'
+                          }`}
+                        ></span>
+                        <span className="name__span">{nickname}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
           <div className="button__group">
@@ -237,60 +350,20 @@ function LobbyPage() {
         <Modal ref={notificationModalRef} title="알림센터" type="notification">
           <div className="notification__title absolute_border_bottom">&gt; 알림 센터</div>
           <div className="notification__list__container fancy__scroll">
-            <div className="notification__list__item absolute_border_bottom">
-              <div className="notification__content">황정빈님의 친구 요청입니다.</div>
-              <div className="bottom__container">
-                <div className="date__container">2021.10.22</div>
-                <div className="action__btn__container">
-                  [<button>O</button>,<button>X</button>]
+            {friendRequestList.map(({ nickname, created_at }) => (
+              <div className="notification__list__item absolute_border_bottom" key={created_at}>
+                <div className="notification__content">{nickname}님의 친구 요청입니다.</div>
+                <div className="bottom__container">
+                  <div className="date__container">
+                    {new Date(created_at).toLocaleDateString('ko-KR')}
+                  </div>
+                  <div className="action__btn__container">
+                    [<button onClick={() => handleUpdateRequest(true, nickname)}>O</button>,
+                    <button onClick={() => handleUpdateRequest(false, nickname)}>X</button>]
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="notification__list__item absolute_border_bottom">
-              <div className="notification__content">황정빈님의 친구 요청입니다.</div>
-              <div className="bottom__container">
-                <div className="date__container">2021.10.22</div>
-                <div className="action__btn__container">
-                  [<button>O</button>,<button>X</button>]
-                </div>
-              </div>
-            </div>
-            <div className="notification__list__item absolute_border_bottom">
-              <div className="notification__content">황정빈님의 친구 요청입니다.</div>
-              <div className="bottom__container">
-                <div className="date__container">2021.10.22</div>
-                <div className="action__btn__container">
-                  [<button>O</button>,<button>X</button>]
-                </div>
-              </div>
-            </div>
-            <div className="notification__list__item absolute_border_bottom">
-              <div className="notification__content">황정빈님의 친구 요청입니다.</div>
-              <div className="bottom__container">
-                <div className="date__container">2021.10.22</div>
-                <div className="action__btn__container">
-                  [<button>O</button>,<button>X</button>]
-                </div>
-              </div>
-            </div>
-            <div className="notification__list__item absolute_border_bottom">
-              <div className="notification__content">황정빈님의 친구 요청입니다.</div>
-              <div className="bottom__container">
-                <div className="date__container">2021.10.22</div>
-                <div className="action__btn__container">
-                  [<button>O</button>,<button>X</button>]
-                </div>
-              </div>
-            </div>
-            <div className="notification__list__item absolute_border_bottom">
-              <div className="notification__content">황정빈님의 친구 요청입니다.</div>
-              <div className="bottom__container">
-                <div className="date__container">2021.10.22</div>
-                <div className="action__btn__container">
-                  [<button>O</button>,<button>X</button>]
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </Modal>
         {activatedUser !== '' && (

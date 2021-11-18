@@ -27,10 +27,33 @@
       padding: 15px 1rem 22px;
       display: flex;
       justify-content: space-between;
-      .notification__btn {
-        color: $white;
-        cursor: pointer;
-        border: 1px solid $white;
+      .notification__container {
+        position: relative;
+        .notification__btn {
+          color: $white;
+          cursor: pointer;
+          border: 1px solid $white;
+        }
+        .notification__badge {
+          position: absolute;
+          top: -12px;
+          right: -17px;
+          width: 25px;
+          height: 25px;
+          border-radius: 25px;
+          font-size: 16px;
+          font-weight: bold;
+          background-color: $azure-blue;
+          color: $white;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          transform: scale(0);
+          transition: transform 0.2s 0.2s ease-in;
+          &.on {
+            transform: scale(1);
+          }
+        }
       }
     }
     .filter__container {
@@ -73,6 +96,9 @@
           border-radius: 50%;
           display: inline-block;
           margin-right: 12px;
+          &.offline {
+            background-color: $offline;
+          }
         }
         .name__span {
           display: inline-block;
