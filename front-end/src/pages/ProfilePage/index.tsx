@@ -49,8 +49,8 @@ export default function Profile() {
     if (recentList.length === 0) return;
     return (
       <>
-        {recentList.map((value) => (
-          <div className="recent-list" key={value.date}>
+        {recentList.map((value, id) => (
+          <div className="recent-list" key={value.game_date}>
             <div>{value.game_date.slice(0, 10)}</div>
             <div>{value.game_mode === 'normal' ? '일반전' : '1 vs 1'}</div>
             <div>{value.ranking}</div>
@@ -107,7 +107,7 @@ export default function Profile() {
     fetch('/api/profile/total', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname: userState.nickname }),
+      body: JSON.stringify({ id: userState.id }),
     })
       .then((res) => res.json())
       .then((data) => {
