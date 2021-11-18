@@ -145,11 +145,11 @@ export const initTetrisSocket = (mainSpace: Namespace, socket: userSocket) => {
           });
         });
 
-        axios({
-          method: 'post',
-          url: '/api/game/record',
-          data: data
-        });
+        // axios({
+        //   method: 'post',
+        //   url: '/api/game/record',
+        //   data: data
+        // });
       }
     }
   });
