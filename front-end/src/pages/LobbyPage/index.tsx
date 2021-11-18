@@ -3,11 +3,11 @@ import { useVirtual } from 'react-virtual';
 // import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../app/hooks';
 import Modal from '../../components/Modal';
-import Popper from '../../components/Popper';
 
 import SectionTitle from '../../components/SectionTitle';
 import SEO from '../../components/SEO';
 import { useSocket, useSocketReady } from '../../context/SocketContext';
+import UserPopper from '../../components/UserPopper';
 import { selectSocket } from '../../features/socket/socketSlice';
 import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
@@ -16,15 +16,12 @@ import './style.scss';
 type rightClickEventType = MouseEventHandler | ((e: any, id: string) => void);
 
 function LobbyPage() {
-  // const navigate = useNavigate();
-
   const { profile } = useAuth();
   const { rooms, users } = useAppSelector(selectSocket);
   const socketClient = useSocket();
 
   const modalRef = useRef<any>();
   const notificationModalRef = useRef<any>();
-  const popperRef = useRef<any>();
   const userListContainerRef = useRef<any>();
   const roomNameInputRef = useRef<any>();
   const parentRef = useRef<any>();
@@ -33,6 +30,11 @@ function LobbyPage() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [modalToggleIdx, setModalToggleIdx] = useState(0);
   const [modalChecked, setModalChecked] = useState(false);
+  const [profileState, setProfileState] = useState<{
+    x: number | null;
+    y: number | null;
+    nickname: string | null;
+  }>({ x: null, y: null, nickname: null });
 
   const rowVirtualizer = useVirtual({
     size: users.length,
@@ -79,16 +81,13 @@ function LobbyPage() {
     e.preventDefault();
     const { target } = e;
     if ((target as HTMLElement).closest('.user__list--item')) {
-      popperRef.current.setPosition(e.clientX, e.clientY);
-      popperRef.current.setUserNickname(target.innerText);
-      popperRef.current.open();
+      setProfileState({ x: e.clientX, y: e.clientY, nickname: target.innerText });
     }
     setActivatedUser(id);
   };
 
-  const resetActivatedPopper = () => {
-    const targetRef = popperRef.current;
-    targetRef.close();
+  const resetActivatedUser = () => {
+    setProfileState({ ...profileState, x: null, y: null, nickname: null });
     setActivatedUser('');
   };
 
@@ -101,7 +100,7 @@ function LobbyPage() {
       <SEO>
         <title>로비</title>
       </SEO>
-      <div className="lobby__page--root" onClick={resetActivatedPopper}>
+      <div className="lobby__page--root">
         <div className="lobby__section lobby__sidebar">
           <SectionTitle>내 정보</SectionTitle>
           <div className="absolute_border_bottom my__nickname">
@@ -235,10 +234,6 @@ function LobbyPage() {
             <button onClick={handleCreatRoomSubmit}>예</button>]
           </div>
         </Modal>
-        <Popper ref={popperRef}>
-          <div className="popper__item">프로필</div>
-          <div className="popper__item">친구 추가</div>
-        </Popper>
         <Modal ref={notificationModalRef} title="알림센터" type="notification">
           <div className="notification__title absolute_border_bottom">&gt; 알림 센터</div>
           <div className="notification__list__container fancy__scroll">
@@ -298,6 +293,9 @@ function LobbyPage() {
             </div>
           </div>
         </Modal>
+        {activatedUser !== '' && (
+          <UserPopper profileState={profileState} resetActivatedUser={resetActivatedUser} />
+        )}
       </div>
     </AppbarLayout>
   );

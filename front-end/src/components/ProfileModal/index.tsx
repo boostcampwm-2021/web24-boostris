@@ -2,7 +2,13 @@ import React, { useEffect, useState } from 'react';
 import './style.scss';
 import { useNavigate } from 'react-router-dom';
 
-export default function ProfileModal({ nickname }: { nickname: string }) {
+export default function ProfileModal({
+  nickname,
+  toggleModal,
+}: {
+  nickname: string | null;
+  toggleModal: () => void;
+}) {
   const [stateMessage, setStateMessage] = useState('');
   const navigate = useNavigate();
 
@@ -26,12 +32,14 @@ export default function ProfileModal({ nickname }: { nickname: string }) {
 
   return (
     <div className="profile-modal__root">
-      <div className="profile-modal__overlay" />
+      <div className="profile-modal__overlay" onClick={toggleModal} />
       <div className="profile-modal__content">
         <div className="profile-modal__header">
           <div>{'_'}</div>
           <div className="profile-modal__title">{`[ 프로필 ]`}</div>
-          <div className="profile-modal__exit">X</div>
+          <div className="profile-modal__exit" onClick={toggleModal}>
+            X
+          </div>
         </div>
         <img
           className="profile-modal__image"
