@@ -42,12 +42,14 @@ export const requestFriendUpdate = async ({ isAccept, requestee, requester }) =>
 export const requestFriendList = async (requestee) => {
   try {
     const result = await selectTable(
-      `nickname`,
-      `user_info`,
-      `oauth_id in (select friend_requester from friend_request where friend_requestee=(select oauth_id from user_info where nickname='${requestee}'));`
+      `u.nickname, r.created_at`,
+      `boostris.FRIEND_REQUEST r left outer join boostris.USER_INFO u ON r.friend_requester = u.oauth_id`,
+      `r.friend_requestee = '${requestee}'`
     );
     const returnData = [];
-    result.map((value) => returnData.push(value.nickname));
+    result.map((value) =>
+      returnData.push({ nickname: value.nickname, created_at: value.created_at })
+    );
     return returnData;
   } catch (error) {
     return undefined;
