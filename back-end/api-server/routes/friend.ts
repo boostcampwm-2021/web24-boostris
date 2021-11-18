@@ -45,9 +45,9 @@ FriendRouter.post('/request-update', async (req, res, next) => {
 });
 
 // 나한테 들어온 친구 요청 목록 가져오기
-FriendRouter.post('/request-list', async (req, res, next) => {
-  const { requestee } = req.body;
-  const friendRequestList = await requestFriendList({ requestee });
+FriendRouter.get('/request-list', async (req, res, next) => {
+  const requestee = req.query.requestee;
+  const friendRequestList = await requestFriendList(requestee);
   if (friendRequestList ?? 0) {
     res.status(200).json(setMessage(friendRequestList, 'success'));
   } else {
@@ -56,9 +56,9 @@ FriendRouter.post('/request-list', async (req, res, next) => {
 });
 
 // 내 친구 목록 가져오기
-FriendRouter.post('/list', async (req, res, next) => {
-  const { id } = req.body;
-  const friendList = await getFriendList({ id });
+FriendRouter.get('/list', async (req, res, next) => {
+  const nickname = req.query.nickname;
+  const friendList = await getFriendList(nickname);
   if (friendList ?? 0) {
     res.status(200).json(setMessage(friendList, 'success'));
   } else {
