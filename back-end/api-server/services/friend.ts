@@ -35,7 +35,6 @@ export const requestFriendUpdate = async ({ isAccept, requestee, requester }) =>
     }
     return true;
   } catch (error) {
-    console.log(error);
     return false;
   }
 };
@@ -43,12 +42,16 @@ export const requestFriendUpdate = async ({ isAccept, requestee, requester }) =>
 export const requestFriendList = async (requestee) => {
   try {
     const result = await selectTable(
-      `nickname`,
-      `user_info`,
-      `oauth_id in (select friend_requester from friend_request where friend_requestee=(select oauth_id from user_info where nickname='${requestee}'));`
+      `u.nickname, r.created_at`,
+      `boostris.FRIEND_REQUEST r left outer join boostris.USER_INFO u ON r.friend_requester = u.oauth_id`,
+      `r.friend_requestee = (select oauth_id from USER_INFO where nickname = '${requestee}')`
     );
     const returnData = [];
-    result.map((value) => returnData.push(value.nickname));
+    result.map((value) =>
+      returnData.push({ nickname: value.nickname, created_at: value.created_at })
+    );
+    console.log('!@#!@#@#', requestee);
+    console.log('!@#!@#@#', returnData);
     return returnData;
   } catch (error) {
     return undefined;
@@ -67,5 +70,23 @@ export const getFriendList = async (nickname) => {
     return returnData;
   } catch (error) {
     return undefined;
+  }
+};
+
+export const checkAlreadyFriend = async ({ requestee, requester }) => {
+  try {
+    if (requestee === requester) return false; // 나 자신과 친구를 맺을 수 없으므로
+    const result = await selectTable(
+      `friend1`,
+      `friendship`,
+      `friend1=(select oauth_id from user_info where nickname='${requestee}') and friend2=(select oauth_id from user_info where nickname='${requester}')`
+    );
+    if (result && result.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return false;
   }
 };

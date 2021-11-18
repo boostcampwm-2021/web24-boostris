@@ -1,7 +1,7 @@
 import { Namespace } from 'socket.io';
 import { randomUUID } from 'crypto';
 
-import { userSocket } from '../type/socketType';
+import { userRemote, userSocket } from '../type/socketType';
 import { roomList, setRoomList } from '../constant/room';
 import {
   broadcastUserList,
@@ -118,16 +118,17 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
     mainSpace.emit('receive lobby message', { id, from, message });
   });
 
-  mainSpace.adapter.on('join-room', (room, id) => {
-    updateRoomCurrent(mainSpace, room);
-    broadcastRoomMemberUpdate(mainSpace, room, id);
-    broadcastRoomList(mainSpace);
+  socket.on('refresh friend list', async (nickname) => {
+    const sockets = (await mainSpace.fetchSockets()) as userRemote[];
+    const target = sockets.find((s) => s.userName === nickname);
+    if (target) {
+      mainSpace.to(target.id).emit('refresh friend list');
+    }
+
   });
 
-  mainSpace.adapter.on('leave-room', (room, id) => {
-    updateRoomCurrent(mainSpace, room);
-    broadcastRoomMemberUpdate(mainSpace, room, id);
-    broadcastRoomList(mainSpace);
+  socket.on('refresh request list', (socketId) => {
+    mainSpace.to(socketId).emit('refresh request list');
   });
 
   socket.on('disconnecting', () => {

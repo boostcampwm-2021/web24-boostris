@@ -3,6 +3,7 @@ import { useRef, createContext, useEffect, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { useAppDispatch } from '../app/hooks';
+import { getFriendList, getRequestList } from '../features/friend/friendSlice';
 import {
   roomInfo,
   updateRoomID,
@@ -67,6 +68,12 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
         setIsValidRoom(true);
         dispatch(updateRoomID(roomID));
         navigate(`/game/${roomID}`);
+      });
+      socketRef.current.on('refresh friend list', () => {
+        dispatch(getFriendList({ nickname: profile.nickname as string }));
+      });
+      socketRef.current.on('refresh request list', () => {
+        dispatch(getRequestList({ requestee: profile.nickname as string }));
       });
       socketRef.current.on('leave room:success', () => {});
       socketRef.current.on('redirect to lobby', () => {

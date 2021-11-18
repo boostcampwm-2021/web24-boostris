@@ -1,5 +1,6 @@
 import * as express from 'express';
 import {
+  checkAlreadyFriend,
   getFriendList,
   requestFriend,
   requestFriendList,
@@ -26,7 +27,8 @@ const setMessage = (data, message) => {
 FriendRouter.post('/request', async (req, res, next) => {
   const { requestee, requester } = req.body; // userId : 친구 요청을 보낸 사람, friendId : 친구 요청을 받은 사람
   const result = await requestFriend({ requestee, requester });
-  if (result) {
+  const checkFriend = await checkAlreadyFriend({ requestee, requester }); // 이미 친구인지 확인
+  if (result && !checkFriend) {
     res.status(200).json(setMessage({}, 'success'));
   } else {
     res.status(400).json(setMessage({}, 'fail'));

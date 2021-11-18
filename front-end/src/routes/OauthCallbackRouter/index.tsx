@@ -15,6 +15,9 @@ function OauthCallbackRouter() {
     if ((user.profile.id && user.profile.status === 'idle') || user.profile.status === 'failed') {
       if (user.profile.isOurUser) {
         navigate('/');
+      } else if (user.profile.status === 'failed') {
+        navigate('/');
+        //TODO: error message
       } else {
         navigate('/register');
       }
