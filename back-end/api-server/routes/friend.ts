@@ -53,7 +53,7 @@ FriendRouter.get('/request-list', async (req, res, next) => {
   if (friendRequestList ?? 0) {
     res.status(200).json(setMessage(friendRequestList, 'success'));
   } else {
-    res.status(400).json(setMessage({}, 'fail'));
+    res.status(400).json(setMessage([], 'fail'));
   }
 });
 

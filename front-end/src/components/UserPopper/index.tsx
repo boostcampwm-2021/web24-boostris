@@ -11,7 +11,6 @@ import { useNavigate } from 'react-router-dom';
 export default function UserPopper({
   profileState,
 }: {
-  resetActivatedUser: () => void;
   profileState: {
     x: number | null;
     y: number | null;
@@ -21,7 +20,6 @@ export default function UserPopper({
   };
 }) {
   const popperRef = useRef<any>();
-  const [modal, setModal] = useState(false);
   const { nickname } = useAuth().profile;
   const dispatch = useAppDispatch();
   const { current: socketClient } = useSocket();
@@ -81,7 +79,11 @@ export default function UserPopper({
         <div className="popper__item" onClick={clickProfile}>
           프로필
         </div>
-        <div className="popper__item">친구 추가</div>
+        {!profileState.isAlreadyFriend && (
+          <div className="popper__item" onClick={handleRequestFriend}>
+            친구 추가
+          </div>
+        )}
       </Popper>
       <Modal ref={modalRef} title="프로필" type="profile">
         <img
