@@ -1,11 +1,10 @@
-import { MouseEventHandler, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { MouseEventHandler, useRef, useState, useEffect } from 'react';
 import { useAppSelector } from '../../app/hooks';
 import Modal from '../../components/Modal';
 import Popper from '../../components/Popper';
 
 import SectionTitle from '../../components/SectionTitle';
-import { useSocket } from '../../context/SocketContext';
+import { useSocket, useSocketReady } from '../../context/SocketContext';
 import { selectSocket } from '../../features/socket/socketSlice';
 import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
@@ -14,8 +13,6 @@ import './style.scss';
 type rightClickEventType = MouseEventHandler | ((e: any, id: string) => void);
 
 function LobbyPage() {
-  const navigate = useNavigate();
-
   const { profile } = useAuth();
   const { rooms, users } = useAppSelector(selectSocket);
   const socketClient = useSocket();
@@ -31,7 +28,6 @@ function LobbyPage() {
   const [modalChecked, setModalChecked] = useState(false);
 
   const handleFastJoinClick = () => {
-    // navigate('/tetris');
     alert('🔥🔥추가 예정입니다 ^^7 방 생성 > 입장을 통해 입장해주세요 🔥🔥');
   };
   const handleCreateRooomOpen = () => {
@@ -48,6 +44,7 @@ function LobbyPage() {
       name: roomNameInputRef.current.value,
       limit: modalToggleIdx + 2,
       isSecret: modalChecked,
+      nickname: profile.nickname
     });
   };
 
@@ -67,8 +64,8 @@ function LobbyPage() {
     setActivatedUser('');
   };
 
-  const joinRoom = (id: string) => {
-    socketClient.current.emit('join room', id);
+  const joinRoom = (id: string, nickname: string | null) => {
+    socketClient.current.emit('join room', id, nickname);
   };
 
   return (
@@ -122,7 +119,7 @@ function LobbyPage() {
                   className={`room__container ${isSecret ? 'room__type--secret' : ''}`}
                   onClick={() => {
                     if (limit > current) {
-                      joinRoom(id);
+                      joinRoom(id, profile.nickname);
                     } else {
                       alert('정원 초과');
                     }

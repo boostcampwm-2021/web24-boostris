@@ -14,17 +14,19 @@ import { RootState } from '../../app/store';
 type loadingState = 'idle' | 'loading' | 'failed';
 
 export interface UserState {
-  profile: {
-    id: string | number | null;
-    isOurUser: boolean;
-    status: loadingState;
-    nickname: null | string;
-  };
+  profile: Profile;
   register: { status: loadingState; dupCheck: boolean | null };
   auth: {
     status: loadingState;
     authenticated: boolean;
   };
+}
+
+export interface Profile {
+  id: string | number | null;
+  isOurUser: boolean;
+  status: loadingState;
+  nickname: null | string;
 }
 
 const initialState: UserState = {

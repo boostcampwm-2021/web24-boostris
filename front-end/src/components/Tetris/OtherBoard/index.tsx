@@ -1,26 +1,26 @@
-import React, { useEffect, useRef } from 'react';
-import { Socket } from 'socket.io-client';
 
-import { useAppDispatch, useAppSelector } from '../../../app/hooks';
-import { fetchGithubUser, selectUser } from '../../../features/user/userSlice';
+import { useEffect } from 'react';
+import { Socket } from 'socket.io-client';
+import useAuth from '../../../hooks/use-auth';
+import { useAppSelector } from '../../../app/hooks';
 import * as TETRIS from '../../../constants/tetris';
+import { selectSocket } from '../../../features/socket/socketSlice';
+import { useSocketReady } from '../../../context/SocketContext';
 
 import '../style.scss';
 
 import {
-  TetrisBlock,
   TetrisBlocks,
-  TetrisState,
-  TetrisTimer,
   TetrisBackground,
-  TetrisOptions,
-  TetrisPropsFunc,
 } from '../types';
+
 import { drawOtherCell } from '../utils/block';
 import { drawBoardBackground } from '../utils/tetrisDrawUtil';
+import { Profile } from '../../../features/user/userSlice';
 
 interface PlayerInterface {
   PLAYER: string;
+  NICKNAME: HTMLDivElement;
   GARBAGES: number;
   CANVAS: HTMLCanvasElement;
   CTX: CanvasRenderingContext2D;
@@ -67,11 +67,12 @@ const drawBlock = (BLOCK: TetrisBlocks, BACKGROUND: TetrisBackground) => {
   );
 };
 
-const initSocketEvent = (socket: Socket, canvasContainer: React.RefObject<HTMLCanvasElement>[]) => {
-  socket.on('enter new player', (id) => {
+const initSocketEvent = (socket: Socket, roomID: string | null, profile: Profile) => {
+  socket.on('enter new player', (id, nickname) => {
     // 새로운 플레이어 입장 시 해당 플레이어의 CANVAS 초기화
     PLAYERS.push({
       PLAYER: id,
+      NICKNAME: null as unknown as HTMLDivElement,
       GARBAGES: 0,
       CANVAS: null as unknown as HTMLCanvasElement,
       CTX: null as unknown as CanvasRenderingContext2D,
@@ -80,6 +81,8 @@ const initSocketEvent = (socket: Socket, canvasContainer: React.RefObject<HTMLCa
 
     const idx = PLAYERS.length - 1;
 
+    PLAYERS[idx].NICKNAME = document.querySelector(`[data-other-player="${idx}"]`) as HTMLDivElement;
+    PLAYERS[idx].NICKNAME.innerText = nickname;
     PLAYERS[idx].CANVAS = document.querySelector(`[data-player="${idx}"]`) as HTMLCanvasElement;
     PLAYERS[idx].CTX = PLAYERS[idx].CANVAS?.getContext('2d') as CanvasRenderingContext2D;
     PLAYERS[idx].CTX.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
@@ -87,11 +90,12 @@ const initSocketEvent = (socket: Socket, canvasContainer: React.RefObject<HTMLCa
     PLAYERS[idx].IMAGE.src = '/assets/other_block.png';
     PLAYERS[idx].IMAGE.onload = () => {};
   });
-  socket.emit('get other players info', (res: []) => {
+  socket.emit('get other players info', roomID, (res: []) => {
     // 초기 접속 시 다른 플레이어 정보 요청
-    res.forEach((id) => {
+    res.forEach((p: {id:string; nickname: string}) => {
       PLAYERS.push({
-        PLAYER: id,
+        PLAYER: p.id,
+        NICKNAME: null as unknown as HTMLDivElement,
         GARBAGES: 0,
         CANVAS: null as unknown as HTMLCanvasElement,
         CTX: null as unknown as CanvasRenderingContext2D,
@@ -100,9 +104,11 @@ const initSocketEvent = (socket: Socket, canvasContainer: React.RefObject<HTMLCa
 
       const idx = PLAYERS.length - 1;
 
+      PLAYERS[idx].NICKNAME = document.querySelector(`[data-other-player="${idx}"]`) as HTMLDivElement;
+      PLAYERS[idx].NICKNAME.innerText = p.nickname;
       PLAYERS[idx].CANVAS = document.querySelector(`[data-player="${idx}"]`) as HTMLCanvasElement;
       PLAYERS[idx].CTX = PLAYERS[idx].CANVAS?.getContext('2d') as CanvasRenderingContext2D;
-      PLAYERS[idx].CTX.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
+      PLAYERS[idx].CTX?.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
       PLAYERS[idx].IMAGE = new Image();
       PLAYERS[idx].IMAGE.src = '/assets/other_block.png';
       PLAYERS[idx].IMAGE.onload = () => {};
@@ -164,8 +170,15 @@ const initSocketEvent = (socket: Socket, canvasContainer: React.RefObject<HTMLCa
     });
   });
 
-  socket.on('disconnect player', (id) => {
-    PLAYERS = PLAYERS.filter((PLAYER) => PLAYER.PLAYER !== id);
+  socket.on('leave player', (id) => {
+    // 뒤로 가기, 로비로 갈때 예외 처리 필요
+    const target = PLAYERS.find((p) => p.PLAYER === id) as PlayerInterface;
+
+    if(target) {
+      target?.CTX.clearRect(0, 0, TETRIS.OTHER_BOARD_WIDTH + TETRIS.OTHER_ATTACK_BAR, TETRIS.OTHER_BOARD_HEIGHT);
+      target.NICKNAME.innerText = '';
+      PLAYERS = PLAYERS.filter((PLAYER) => PLAYER.PLAYER !== id);
+    }
   });
 };
 
@@ -184,17 +197,17 @@ const drawOtherBoardBackground = () => {
 };
 
 const OtherBoard = ({ socket }: { socket: Socket }): JSX.Element => {
-  const canvasContainer = [
-    useRef<HTMLCanvasElement>(null),
-    useRef<HTMLCanvasElement>(null),
-    useRef<HTMLCanvasElement>(null),
-  ];
-  // const user = useAppSelector(selectUser);
+  const { roomID } = useAppSelector(selectSocket);
+  const { profile } = useAuth();
+  const { isValidRoom } = useSocketReady();
 
   useEffect(() => {
-    drawOtherBoardBackground();
-    initSocketEvent(socket, canvasContainer);
-  }, []);
+    if (isValidRoom && roomID) {
+      PLAYERS = [];
+      drawOtherBoardBackground();
+      initSocketEvent(socket, roomID, profile);
+    }
+  }, [isValidRoom, roomID]);
 
   return (
     <>
@@ -211,6 +224,7 @@ const OtherBoard = ({ socket }: { socket: Socket }): JSX.Element => {
           width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.OTHER_ATTACK_BAR}
           height={TETRIS.OTHER_BOARD_HEIGHT}
         ></canvas>
+        <div className={'otherNickName'} data-other-player={0}></div>
       </div>
       <div className="slot">
         <canvas
@@ -225,6 +239,7 @@ const OtherBoard = ({ socket }: { socket: Socket }): JSX.Element => {
           width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.OTHER_ATTACK_BAR}
           height={TETRIS.OTHER_BOARD_HEIGHT}
         ></canvas>
+        <div className={'otherNickName'} data-other-player={1}></div>
       </div>
       <div className="slot">
         <canvas
@@ -239,6 +254,7 @@ const OtherBoard = ({ socket }: { socket: Socket }): JSX.Element => {
           width={TETRIS.OTHER_BOARD_WIDTH + TETRIS.OTHER_ATTACK_BAR}
           height={TETRIS.OTHER_BOARD_HEIGHT}
         ></canvas>
+        <div className={'otherNickName'} data-other-player={2}></div>
       </div>
     </>
   );
