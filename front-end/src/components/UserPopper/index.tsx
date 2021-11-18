@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Popper from '../../components/Popper';
 import ProfileModal from '../ProfileModal';
+import './style.scss';
 
 export default function UserPopper({
   resetActivatedUser,
@@ -11,7 +12,6 @@ export default function UserPopper({
 }) {
   const popperRef = useRef<any>();
   const [modal, setModal] = useState(false);
-  const [popper, setPopper] = useState(true);
 
   const toggleModal = () => {
     if (modal) resetActivatedUser();
