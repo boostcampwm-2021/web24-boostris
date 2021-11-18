@@ -69,6 +69,14 @@ export const fetchGoogleUser = createAsyncThunk(
   }
 );
 
+export const updateNickname = createAsyncThunk(
+  'profile/updateNickname',
+  async (nickname: string | undefined) => {
+    const response = await fetchAuthData();
+    return response;
+  }
+);
+
 export const registerNewUser = createAsyncThunk(
   'user/registerNewUser',
   async (data: registerDataContent) => {
@@ -141,6 +149,11 @@ export const userSlice = createSlice({
       .addCase(registerNewUser.fulfilled, (state, action) => {
         state.register = action.payload;
         state.register.status = 'idle';
+      })
+      .addCase(updateNickname.fulfilled, (state, action) => {
+        state.profile.id = action.payload.oauth_id;
+        state.profile.nickname = action.payload.nickname;
+        state.profile.isOurUser = true;
       });
   },
 });
