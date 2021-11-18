@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Popper from '../../components/Popper';
+import useAuth from '../../hooks/use-auth';
 import ProfileModal from '../ProfileModal';
 import './style.scss';
 
@@ -12,6 +13,7 @@ export default function UserPopper({
 }) {
   const popperRef = useRef<any>();
   const [modal, setModal] = useState(false);
+  const { nickname } = useAuth().profile;
 
   const toggleModal = () => {
     if (modal) resetActivatedUser();
@@ -33,6 +35,11 @@ export default function UserPopper({
     toggleModal();
   };
 
+  const handleRequestFriend = () => {
+    console.log(profileState.nickname);
+    console.log(nickname);
+  };
+
   return (
     <>
       <div className="popper__overlay" onClick={resetActivatedPopper}>
@@ -40,7 +47,9 @@ export default function UserPopper({
           <div className="popper__item" onClick={clickProfile}>
             프로필
           </div>
-          <div className="popper__item">친구 추가</div>
+          <div className="popper__item" onClick={handleRequestFriend}>
+            친구 추가
+          </div>
         </Popper>
       </div>
       {modal && <ProfileModal nickname={profileState.nickname} toggleModal={toggleModal} />}
