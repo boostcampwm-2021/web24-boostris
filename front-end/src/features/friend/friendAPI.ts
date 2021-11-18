@@ -16,13 +16,14 @@ export interface requestApiBody {
 
 export interface requestUpdateApiBody extends requestApiBody {
   isAccept: number;
+  cb: Function;
 }
 
 export interface requestListApiBody {
   requestee: string;
 }
 export interface listApiBody {
-  id: string;
+  nickname: string;
 }
 
 export const makeFriendRequest = async (requestBody: requestApiBody) => {
@@ -38,6 +39,7 @@ export const makeFriendRequest = async (requestBody: requestApiBody) => {
 };
 
 export const updateFriendRequest = async (requestBody: requestUpdateApiBody) => {
+  const { isAccept, requestee, requester } = requestBody;
   return fetch('/api/friend/request-update', {
     method: 'POST',
     credentials: 'include',
@@ -45,7 +47,7 @@ export const updateFriendRequest = async (requestBody: requestUpdateApiBody) => 
       'Content-Type': 'application/json',
       Accept: 'application/json',
     },
-    body: JSON.stringify(requestBody),
+    body: JSON.stringify({ isAccept, requestee, requester }),
   }).then((res) => res.json());
 };
 
@@ -60,7 +62,7 @@ export const requestList = async (requestBody: requestListApiBody) => {
 };
 
 export const friendList = async (requestBody: listApiBody) => {
-  return fetch(`/api/friend/list?requestee=${requestBody.id}`, {
+  return fetch(`/api/friend/list?nickname=${requestBody.nickname}`, {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',

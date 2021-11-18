@@ -1,3 +1,8 @@
+import {
+  broadcastRoomMemberUpdate,
+  broadcastRoomList,
+  updateRoomCurrent,
+} from './../utils/userUtil';
 import { Server } from 'socket.io';
 
 import { initLobbyUserSocket } from './lobbyUserSocket';
@@ -25,5 +30,16 @@ export const initSocket = (httpServer) => {
 
     initLobbyUserSocket(mainSpace, socket);
     initTetrisSocket(mainSpace, socket);
+  });
+  mainSpace.adapter.on('join-room', (room, id) => {
+    updateRoomCurrent(mainSpace, room);
+    broadcastRoomMemberUpdate(mainSpace, room, id);
+    broadcastRoomList(mainSpace);
+  });
+
+  mainSpace.adapter.on('leave-room', (room, id) => {
+    updateRoomCurrent(mainSpace, room);
+    broadcastRoomMemberUpdate(mainSpace, room, id);
+    broadcastRoomList(mainSpace);
   });
 };

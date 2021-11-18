@@ -73,6 +73,9 @@
           border-radius: 50%;
           display: inline-block;
           margin-right: 12px;
+          &.offline {
+            background-color: $offline;
+          }
         }
         .name__span {
           display: inline-block;
