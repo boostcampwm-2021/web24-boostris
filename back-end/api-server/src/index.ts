@@ -10,6 +10,8 @@ import AuthRouter from '../routes/auth';
 import InsertDbRegister from '../routes/registerDBInsert';
 import ProfileRouter from '../routes/profile';
 import RankingRouter from '../routes/rankingSearch';
+import FriendRouter from '../routes/friend';
+
 
 import { registerDupCheck } from '../middlewares/jwt';
 
@@ -35,6 +37,7 @@ app.use('/api/auth', AuthRouter);
 app.use('/api/rank', RankingRouter);
 app.use('/api/register', registerDupCheck, InsertDbRegister);
 app.use('/api/profile', ProfileRouter);
+app.use('/api/friend', FriendRouter);
 
 app.get('/api', (req: express.Request, res: express.Response) => {
   res.send('start');

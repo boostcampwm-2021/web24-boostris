@@ -11,6 +11,7 @@ export const selectTable = (column, table, condition = null, ...rest) => {
   let queryLine = `SELECT ${column} FROM ${table} `;
   queryLine += condition ? `WHERE ${condition}` : ``;
   rest.map((value) => (queryLine += value));
+  console.log(queryLine);
   return connectionQuery(queryLine);
 };
 
@@ -28,5 +29,10 @@ export const innerJoinTable = async (column, tableA, tableB, on = null, conditio
 export const updateTable = async (table, set, condition = null) => {
   let queryLine = `UPDATE ${table} SET ${set} `;
   queryLine += condition ? `WHERE ${condition}` : ``;
+  return connectionQuery(queryLine);
+};
+
+export const deleteTable = async (table, condition) => {
+  let queryLine = `DELETE FROM ${table} WHERE ${condition}`;
   return connectionQuery(queryLine);
 };
