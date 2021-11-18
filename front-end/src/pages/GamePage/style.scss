@@ -48,6 +48,7 @@
   width: 572px;
   height: 240px;
   justify-content: space-between;
+  margin-bottom: 55px;
 }
 .slot {
   flex: 1;
@@ -60,4 +61,13 @@
 .slot > .other-board-background {
   background: #131625;
   position: absolute;
+}
+.myNickName {
+  text-align: center;
+}
+.otherNickName {
+  position: relative;
+  text-align: center;
+  width: 127px;
+  top: 250px;
 }

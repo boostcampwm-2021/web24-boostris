@@ -4,8 +4,9 @@ import { userSocket } from '../type/socketType';
 import { roomList } from '../constant/room';
 
 export const initTetrisSocket = (mainSpace: Namespace, socket: userSocket) => {
-  socket.on('get other players info', (res) => {
-    const otherPlayer = [...mainSpace.adapter.rooms.get(socket.roomID)].filter((p) => p !== socket.id);
+  socket.on('get other players info', (roomID, res) => {
+    const target = roomList.find((r) => r.id === roomID);
+    const otherPlayer = target.player.filter((p) => p.id !== socket.id);
     res(otherPlayer);
   });
 
@@ -27,7 +28,7 @@ export const initTetrisSocket = (mainSpace: Namespace, socket: userSocket) => {
   });
 
   socket.on('attack other player', (garbage) => {
-    const target = roomList.find((r) => r.id === socket.id);
+    const target = roomList.find((r) => r.id === socket.roomID);
 
     if(target.garbageBlockCnt.length === 1) return; // 한 명 남은 경우 예외 처리
 
@@ -61,7 +62,7 @@ export const initTetrisSocket = (mainSpace: Namespace, socket: userSocket) => {
 
   socket.on('game over', () => {
     // 누군가 게임 오버 시
-    const target = roomList.find((r) => r.id === socket.id);
+    const target = roomList.find((r) => r.id === socket.roomID);
 
     target.garbageBlockCnt = target.garbageBlockCnt.filter(player => player.id !== socket.id);
     target.gameOverPlayer++;
