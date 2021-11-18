@@ -1,7 +1,7 @@
 import { nanoid } from '@reduxjs/toolkit';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { drawBoardBackground } from '../../components/Tetris/utils/tetrisDrawUtil';
 import { useSocket, useSocketReady } from '../../context/SocketContext';
@@ -28,20 +28,20 @@ interface blockInterface {
 
 function GamePage() {
   const { gameID } = useParams();
-  const { roomID, roomMembers, roomMessages } = useAppSelector(selectSocket);
+  const { roomID, rooms, roomMessages } = useAppSelector(selectSocket);
   const dispatch = useAppDispatch();
   const socketClient = useSocket();
   const { profile } = useAuth();
-  const isReady = useSocketReady();
+  const {isReady} = useSocketReady();
   const chatInputRef = useRef<any>();
   const containerRef = useRef<any>();
 
+  const [isGameStarted, setIsGameStarted] = useState(false);
   const [gameStart, setgameStart] = useState(false);
   const [gameOver, setGameOver] = useState(true);
   const [holdBlock, setHoldBlock] = useState<blockInterface | null>(null);
   const [previewBlock, setPreviewBlock] = useState<Array<blockInterface> | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const navigate = useNavigate();
 
   useLayoutEffect(() => {
     if (containerRef.current) {
@@ -102,10 +102,9 @@ function GamePage() {
   };
 
   useEffect(() => {
-    socketClient.current.on('already started', () => {
-      alert('게임이 진행중이라 입장하실 수 없습니다.');
-      navigate(`/`);
-    });
+    if(!isReady) return;
+  
+    drawBoardBackground(canvas.current, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT, TETRIS.BLOCK_SIZE);
 
     socketClient.current.on('game started', () => {
       // 다른 플레이어가 게임 시작 누르는 것 감지
@@ -119,17 +118,24 @@ function GamePage() {
     socketClient.current.on('every player game over', () => {
       // 모든 플레이어가 게임 종료 된 경우
       setGameOver(true);
+      setIsGameStarted(false);
     });
-  }, []);
+  }, [isReady]);
 
   useEffect(() => {
-    if (!canvas.current) return;
-    drawBoardBackground(canvas.current, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT, TETRIS.BLOCK_SIZE);
-  }, [socketClient.current]);
+    const target = rooms.find((r) => r.id === roomID);
+
+    if(target?.gameStart) {
+      setIsGameStarted(true);
+    }
+    else {
+      setIsGameStarted(false);
+    }
+  }, []);
 
   return (
     <AppbarLayout>
-      {socketClient.current ? (
+      {isReady ? (
         <div
           className="game__page--root"
           style={{ width: '1200px', display: 'flex', padding: '50px', backgroundColor: '#2b3150' }}
@@ -153,16 +159,17 @@ function GamePage() {
               getHoldBlockState={getHoldBlock}
               getPreviewBlocksList={getPreviewBlocks}
             />
+            <div className={'myNickName'}>{profile.nickname}</div>
           </div>
           <div>
             <PreviewBlocks previewBlock={previewBlock} />
             <BubbleButton
-              variant={!gameOver ? 'inactive' : 'active'}
+              variant={!gameOver || isGameStarted ? 'inactive' : 'active'}
               label="게임 시작"
               handleClick={() => {
                 clickStartButton(socketClient.current);
               }}
-              disabled={!gameOver}
+              disabled={!gameOver || isGameStarted}
             />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -170,17 +177,12 @@ function GamePage() {
               <OtherBoard socket={socketClient.current} />
             </div>
             <div>
-              <div>Game# {gameID}</div>
-              Members :
-              {roomMembers.map((m) => (
-                <div key={m.id}>{m.nickname}</div>
-              ))}
               <div className="chats__container">
                 <div className="chat__history__container">
                   <div className="chat__history__scroll__root fancy__scroll" ref={containerRef}>
                     {roomMessages.map(({ id, from, message }) => (
                       <div key={id} className="chat__history__item">
-                        {from} : {message}
+                        {from === 'socket-server' ? message : `${from} : ${message}`} 
                       </div>
                     ))}
                   </div>
