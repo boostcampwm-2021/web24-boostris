@@ -1,5 +1,5 @@
 import { nanoid } from '@reduxjs/toolkit';
-import { useRef, createContext, useEffect, useContext, useState } from 'react';
+import { useRef, createContext, useEffect, useContext, useState, SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { useAppDispatch } from '../app/hooks';
@@ -19,18 +19,23 @@ import useAuth from '../hooks/use-auth';
 type SocketStateType = {
   isReady: boolean;
   isValidRoom: boolean;
-};
+  isStartedGame: boolean;
+  setIsStartedGame: React.Dispatch<SetStateAction<boolean>>;
+}
 
 const SocketContext = createContext<any>(null);
 const SocketReadyContext = createContext<SocketStateType>({
   isReady: false,
   isValidRoom: false,
+  isStartedGame: false,
+  setIsStartedGame: () => {}
 });
 
 function SocketProvider({ children }: { children: React.ReactNode }) {
   const socketRef = useRef<any>(null);
   const [isReady, setIsReady] = useState(false);
   const [isValidRoom, setIsValidRoom] = useState(false);
+  const [isStartedGame, setIsStartedGame] = useState(false);
   const { profile, auth } = useAuth();
 
   const dispatch = useAppDispatch();
@@ -65,6 +70,7 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
           message: `${profile.nickname}님이 입장하셨습니다.`,
           id: nanoid(),
         });
+        setIsStartedGame(isStartedGame);
         setIsValidRoom(true);
         dispatch(updateRoomID(roomID));
         navigate(`/game/${roomID}`);
@@ -108,9 +114,7 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <SocketContext.Provider value={socketRef}>
-      <SocketReadyContext.Provider value={{ isReady, isValidRoom }}>
-        {children}
-      </SocketReadyContext.Provider>
+      <SocketReadyContext.Provider value={{isReady, isValidRoom, isStartedGame, setIsStartedGame}}>{children}</SocketReadyContext.Provider>
     </SocketContext.Provider>
   );
 }

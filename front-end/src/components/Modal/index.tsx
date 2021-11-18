@@ -48,6 +48,7 @@ const Modal = forwardRef(
                 </button>
               </div>
             )}
+            {type === 'rank' && <div className="modal__title">[{title}]</div>}
             {children}
           </div>
         </div>

@@ -11,6 +11,8 @@ import {
   TetrisPropsFunc,
 } from '../types';
 import { drawCell } from '../utils/block';
+import { useAppSelector } from '../../../app/hooks';
+import { selectUser } from '../../../features/user/userSlice';
 
 const BOARD: number[][] = TETRIS.BOARD;
 
@@ -27,6 +29,8 @@ const STATE: TetrisState = {
   CAN_HOLD: null as unknown as boolean,
   SOLID_GARBAGES: null as unknown as number,
   ATTACKED_GARBAGES: null as unknown as number,
+  ATTACK_COUNT: 0,
+  ATTACKED_COUNT: 0,
   KEYDOWN_RIGHT: null as unknown as boolean,
   KEYDOWN_LEFT: null as unknown as boolean,
   KEYDOWN_DOWN: null as unknown as boolean,
@@ -36,7 +40,9 @@ const STATE: TetrisState = {
 };
 
 const TIMER: TetrisTimer = {
-  PLAY_TIME: null as unknown as number,
+  PLAY_TIME: 0,
+  PLAY_TIMER: null as unknown as NodeJS.Timeout,
+  BLOCK_TIME: 0,
   DROP: null as unknown as NodeJS.Timeout,
   CONFLICT: null as unknown as NodeJS.Timeout,
   SOLID_GARBAGE_TIMEOUT: null as unknown as NodeJS.Timeout,
@@ -105,6 +111,10 @@ const clearLine = (board: number[][], socket: Socket) => {
 
   if (TETRIS.GARBAGE_RULES[key] === 0) return;
   socket.emit('attack other player', TETRIS.GARBAGE_RULES[key]);
+  STATE.ATTACK_COUNT += TETRIS.GARBAGE_RULES[key];
+
+  const attackCnt = document.querySelector('.attack-count') as HTMLDivElement;
+  attackCnt.innerText = `${STATE.ATTACK_COUNT}`;
 };
 
 // BOARD에 SOLID GARBAGE를 만드는 함수
@@ -345,6 +355,8 @@ const initTetris = (
   STATE.CAN_HOLD = true;
   STATE.SOLID_GARBAGES = 0;
   STATE.ATTACKED_GARBAGES = 0;
+  STATE.ATTACK_COUNT = 0;
+  STATE.ATTACKED_COUNT = 0;
   STATE.KEYDOWN_RIGHT = false;
   STATE.KEYDOWN_LEFT = false;
   STATE.KEYDOWN_DOWN = false;
@@ -359,6 +371,7 @@ const initTetris = (
   BLOCK.BEFORE = null as unknown as TetrisBlock;
 
   TIMER.PLAY_TIME = 0;
+  TIMER.BLOCK_TIME = 0;
 
   BACKGROUND.CANVAS = document.querySelector('.board') as HTMLCanvasElement;
   BACKGROUND.CTX = BACKGROUND.CANVAS.getContext('2d') as CanvasRenderingContext2D;
@@ -405,11 +418,13 @@ const freezeBlock = (
 // 게임 종료 시 처리해야할 것들을 모아둔 함수
 const finishGame = (
   BOARD: number[][],
+  STATE: TetrisState,
   TIMER: TetrisTimer,
   BACKGROUND: TetrisBackground,
   PROPS_FUNC: TetrisPropsFunc,
   socket: Socket
 ) => {
+  clearInterval(TIMER.PLAY_TIMER);
   gameoverBlocks(BOARD);
   socket.emit('drop block', BOARD, 'finish');
   drawBoard(BOARD, BACKGROUND);
@@ -440,7 +455,7 @@ const initNewBlockCycle = (
   STATE.CAN_HOLD = true;
 
   clearInterval(TIMER.DROP);
-  TIMER.PLAY_TIME = 0;
+  TIMER.BLOCK_TIME = 0;
   TIMER.DROP = setInterval(() => {
     BLOCK.NEXT = moves[TETRIS.KEY.DOWN](BLOCK.NOW);
     moveBlock(BOARD, BLOCK, BACKGROUND, socket);
@@ -465,7 +480,7 @@ const dropBlockCycle = (
 
   // 게임 오버 검사
   if (isGameOver(BOARD, BLOCK.NEXT)) {
-    finishGame(BOARD, TIMER, BACKGROUND, PROPS_FUNC, socket);
+    finishGame(BOARD, STATE, TIMER, BACKGROUND, PROPS_FUNC, socket);
     return;
   }
   initNewBlockCycle(BOARD, BLOCK, STATE, TIMER, BACKGROUND, socket);
@@ -514,8 +529,22 @@ const Board = ({
   getHoldBlockState: (newBlock: TetrisBlock) => void;
   getPreviewBlocksList: (newBlocks: null | Array<TetrisBlock>) => void;
 }): JSX.Element => {
+  const { profile } = useAppSelector(selectUser);
+  let attackedEvent: (garbage: any) => void;
+  let gameOverEvent: () => void;
+  
   useEffect(() => {
     if (!gameStart) return;
+
+    const playTime = document.querySelector('.play-time') as HTMLDivElement;
+    playTime.innerText = `0s`;
+    const attackCnt = document.querySelector('.attack-count') as HTMLDivElement;
+    attackCnt.innerText = `0`;
+
+    TIMER.PLAY_TIMER = setInterval(() => {
+      TIMER.PLAY_TIME++;
+      playTime.innerText = `${TIMER.PLAY_TIME}s`;
+    }, 1000);
 
     initTetris(
       BOARD,
@@ -540,20 +569,20 @@ const Board = ({
       TIMER.CONFLICT = setInterval(() => {
         // 블록이 떨어지면서 바닥에 도달한 경우, 0.5초 마다 움직임이 있는지 검사하는 타이머, 움직임이 없으면 freeze 있으면 다시 0.5초 동안 반복
         if (isBottom(BOARD, BLOCK.NOW)) {
-          if (JSON.stringify(BLOCK.NOW) === JSON.stringify(BLOCK.BEFORE) || TIMER.PLAY_TIME >= 20) {
+          if (JSON.stringify(BLOCK.NOW) === JSON.stringify(BLOCK.BEFORE) || TIMER.BLOCK_TIME >= 20) {
             dropBlockCycle(
               BOARD,
               BLOCK,
               STATE,
               TIMER,
-              TIMER.PLAY_TIME >= 20 ? OPTIONS.TIME_OUT : '',
+              TIMER.BLOCK_TIME >= 20 ? OPTIONS.TIME_OUT : '',
               PROPS_FUNC,
               BACKGROUND,
               socket
             );
           }
         }
-        TIMER.PLAY_TIME += 0.5;
+        TIMER.BLOCK_TIME += 0.5;
       }, 500);
 
       TIMER.SOLID_GARBAGE_TIMEOUT = setTimeout(
@@ -562,20 +591,6 @@ const Board = ({
       ); // 솔리드 가비지 타이머
     };
 
-    //   window.onkeydown = function(e){ //키를 눌렀을때
-    //     var that = this;//키 누르기 반영할 개체 가리킴
-    //     this.keytime = setTimeout(function(){
-    //         //여기에 키를 누를때마다 수행할 부분 구현
-    //         that.isFirstPressed = true; //처음 눌렀다는 속성 반영
-    //         that.onkeydown.call(that, e);//연속 수행
-    //     }, this.isFirstPressed ? 100 : 1000);
-    // };
-    // window.onkeyup = function(){ //키를 뗐을때
-    //     clearTimeout(this.keytime); //키 누르기 중단
-    //     this.isFirstPressed = false; //처음 누르기 초기화
-    // }
-    //let keydown = false;
-    //let keydownInterval: NodeJS.Timeout;
     let leftInterval: NodeJS.Timeout;
     let leftContInterval: NodeJS.Timeout;
     let leftTimeOut: NodeJS.Timeout;
@@ -739,7 +754,8 @@ const Board = ({
     window.addEventListener('keyup', keyUpEventHandler);
 
     return () => {
-      TIMER.PLAY_TIME = 0;
+      TIMER.BLOCK_TIME = 0;
+      clearInterval(TIMER.PLAY_TIMER);
       clearInterval(TIMER.DROP);
       clearInterval(TIMER.CONFLICT);
       clearInterval(TIMER.SOLID_GARBAGE_INTERVAL);
@@ -761,10 +777,10 @@ const Board = ({
   }, [gameStart]);
 
   useEffect(() => {
-    socket.on('attacked', (garbage) => {
+    socket.on('attacked', attackedEvent = (garbage: any) => {
       STATE.ATTACKED_GARBAGES += garbage;
-
-      if (STATE.ATTACKED_GARBAGES === 0) return;
+      STATE.ATTACKED_COUNT += garbage;
+    
       BACKGROUND.CTX.fillStyle = '#0055FB';
       BACKGROUND.CTX.clearRect(TETRIS.BOARD_WIDTH, 0, TETRIS.ATTACK_BAR, TETRIS.BOARD_HEIGHT);
       BACKGROUND.CTX.fillRect(
@@ -774,6 +790,15 @@ const Board = ({
         STATE.ATTACKED_GARBAGES * TETRIS.BLOCK_ONE_SIZE
       );
     });
+
+    socket.on('game over info', gameOverEvent = () => {
+      socket.emit('get game over info', profile.id, TIMER.PLAY_TIME, STATE.ATTACK_COUNT, STATE.ATTACKED_COUNT);
+    });
+
+    return () => {
+      socket.off('attacked', attackedEvent);
+      socket.off('game over info', gameOverEvent);
+    };
   }, []);
 
   return (
