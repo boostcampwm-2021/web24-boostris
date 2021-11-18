@@ -148,6 +148,20 @@ function LobbyPage() {
         requester: n,
         cb: () => {
           notificationModalRef.current.close();
+          dispatch(
+            getRequestList({
+              requestee: profile.nickname as string,
+            })
+          );
+          dispatch(
+            getFriendList({
+              nickname: profile.nickname as string,
+            })
+          );
+
+          if (result) {
+            socketClient.current.emit('refresh friend list', n);
+          }
         },
       })
     );
@@ -163,9 +177,16 @@ function LobbyPage() {
           <SectionTitle>내 정보</SectionTitle>
           <div className="absolute_border_bottom my__nickname">
             <p>{profile.nickname}</p>
-            <button className="notification__btn" onClick={handleNotificationModal}>
-              친구알림
-            </button>
+            <div className="notification__container">
+              <button className="notification__btn" onClick={handleNotificationModal}>
+                친구알림
+              </button>
+              {friendRequestList.length !== 0 && (
+                <div className="notification__badge on">
+                  {friendRequestList.length > 99 ? '99+' : friendRequestList.length}
+                </div>
+              )}
+            </div>
           </div>
           <div className="absolute_border_bottom filter__container toggle__group">
             {['접속자', '친구목록'].map((btn, idx) => (
