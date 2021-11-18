@@ -196,7 +196,7 @@ function LobbyPage() {
               </div>
             </div>
           </div>
-          <LobbyChat />
+          <LobbyChat nickname={profile.nickname} socketClient={socketClient} />
         </div>
         <Modal ref={modalRef} title="방 생성" type="default">
           <div className="modal__content__row">

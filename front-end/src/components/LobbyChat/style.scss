@@ -20,6 +20,8 @@
     box-sizing: border-box;
     padding: 10px 20px;
     z-index: 15px;
+    display: flex;
+    flex-direction: column;
     height: 200px;
     bottom: 40px;
     border: 1px solid white;
@@ -27,6 +29,20 @@
     .lobby-chat__history__header {
       text-align: right;
       cursor: pointer;
+      display: flex;
+      font-size: 18px;
+      margin-bottom: 10px;
+      justify-content: space-between;
+    }
+
+    .lobby-chat__history__scroll__root {
+      overflow: auto;
+      height: 100%;
+      font-size: 16px;
+
+      * {
+        margin-bottom: 7px;
+      }
     }
   }
 
@@ -41,13 +57,17 @@
       color: $white;
 
       &:focus {
-        border: 1px solid $white;
+        outline: none;
       }
     }
     .lobby-chat__send__btn {
       padding: 4px 8px;
       border: 1px solid $white;
       color: $white;
+
+      &:focus {
+        outline: none;
+      }
     }
   }
 }

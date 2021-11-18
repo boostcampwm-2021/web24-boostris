@@ -10,19 +10,20 @@ import {
   updateRoomMessages,
   updateRooms,
   updateUsers,
+  updateLobbyMessages,
   userInfo,
 } from '../features/socket/socketSlice';
 import useAuth from '../hooks/use-auth';
 
 type SocketStateType = {
-  isReady : boolean;
+  isReady: boolean;
   isValidRoom: boolean;
-}
+};
 
 const SocketContext = createContext<any>(null);
 const SocketReadyContext = createContext<SocketStateType>({
   isReady: false,
-  isValidRoom: false
+  isValidRoom: false,
 });
 
 function SocketProvider({ children }: { children: React.ReactNode }) {
@@ -83,6 +84,13 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
           dispatch(updateRoomMessages({ from, message, id }));
         }
       );
+
+      socketRef.current.on(
+        'receive lobby message',
+        ({ from, message, id }: { from: string; message: string; id: string }) => {
+          dispatch(updateLobbyMessages({ from, message, id }));
+        }
+      );
     }
     return () => {
       if (socketRef.current && !auth.authenticated) {
@@ -93,7 +101,9 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <SocketContext.Provider value={socketRef}>
-      <SocketReadyContext.Provider value={{isReady, isValidRoom}}>{children}</SocketReadyContext.Provider>
+      <SocketReadyContext.Provider value={{ isReady, isValidRoom }}>
+        {children}
+      </SocketReadyContext.Provider>
     </SocketContext.Provider>
   );
 }
