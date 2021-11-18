@@ -9,10 +9,11 @@ export type roomInfo = {
   limit: number;
   isSecret: boolean;
   current: number;
+  gameStart: boolean;
 };
 export type userInfo = { nickname: string; id: string };
 
-type roomMember = { nickname: string; id: string };
+export type roomMember = { nickname: string; id: string };
 type messageInfo = { from: string; message: string; id: string };
 export interface SocketState {
   rooms: roomInfo[];

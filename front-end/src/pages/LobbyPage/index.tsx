@@ -1,4 +1,4 @@
-import { MouseEventHandler, useCallback, useRef, useState } from 'react';
+import { MouseEventHandler, useCallback, useRef, useState, useEffect } from 'react';
 import { useVirtual } from 'react-virtual';
 // import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../app/hooks';
@@ -7,7 +7,7 @@ import Popper from '../../components/Popper';
 
 import SectionTitle from '../../components/SectionTitle';
 import SEO from '../../components/SEO';
-import { useSocket } from '../../context/SocketContext';
+import { useSocket, useSocketReady } from '../../context/SocketContext';
 import { selectSocket } from '../../features/socket/socketSlice';
 import useAuth from '../../hooks/use-auth';
 import AppbarLayout from '../../layout/AppbarLayout';
@@ -16,6 +16,7 @@ import './style.scss';
 type rightClickEventType = MouseEventHandler | ((e: any, id: string) => void);
 
 function LobbyPage() {
+
   // const navigate = useNavigate();
 
   const { profile } = useAuth();
@@ -71,6 +72,7 @@ function LobbyPage() {
       name: roomNameInputRef.current.value,
       limit: modalToggleIdx + 2,
       isSecret: modalChecked,
+      nickname: profile.nickname
     });
   };
 
@@ -90,8 +92,8 @@ function LobbyPage() {
     setActivatedUser('');
   };
 
-  const joinRoom = (id: string) => {
-    socketClient.current.emit('join room', id);
+  const joinRoom = (id: string, nickname: string | null) => {
+    socketClient.current.emit('join room', id, nickname);
   };
 
   return (
@@ -174,7 +176,7 @@ function LobbyPage() {
                   className={`room__container ${isSecret ? 'room__type--secret' : ''}`}
                   onClick={() => {
                     if (limit > current) {
-                      joinRoom(id);
+                      joinRoom(id, profile.nickname);
                     } else {
                       alert('정원 초과');
                     }
