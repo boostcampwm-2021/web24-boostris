@@ -60,8 +60,8 @@ export const getFriendList = async (nickname) => {
   try {
     const result = await selectTable(
       `nickname`,
-      `user_info`,
-      `oauth_id in (select friend2 from friendship where friend1=(select oauth_id from user_info where nickname='${nickname}'))`
+      `USER_INFO`,
+      `oauth_id in (select friend2 from FRIENDSHIP where friend1=(select oauth_id from USER_INFO where nickname='${nickname}'))`
     );
     const returnData = [];
     result.map((value) => returnData.push(value.nickname));
