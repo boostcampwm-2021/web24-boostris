@@ -72,8 +72,13 @@ AuthRouter.post('/naver/token', async (req, res) => {
   try {
     const userInfoFromNaver = await getUserInfoFromNaver(accessToken);
     const id = userInfoFromNaver['response']['id'];
-    const [isOurUser, target] = await oauthDupCheck(id, req, res);
-    res.json({ id, isOurUser, nickname: target?.nickname });
+
+    if (id) {
+      const [isOurUser, target] = await oauthDupCheck(id, req, res);
+      res.json({ id, isOurUser, nickname: target?.nickname });
+    } else {
+      throw Error('naver error');
+    }
   } catch (error) {
     console.error(error);
     res.sendStatus(400);

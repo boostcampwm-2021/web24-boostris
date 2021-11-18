@@ -129,6 +129,10 @@ export const userSlice = createSlice({
         state.profile = { ...action.payload, status: 'idle' };
         state.auth.authenticated = true;
       })
+      .addCase(fetchGithubUser.rejected, (state) => {
+        state.profile.status = 'failed';
+        state.auth.authenticated = false;
+      })
       .addCase(fetchNaverUser.pending, (state) => {
         state.profile = { id: null, isOurUser: false, status: 'loading', nickname: null };
       })
@@ -136,12 +140,20 @@ export const userSlice = createSlice({
         state.profile = { ...action.payload, status: 'idle' };
         state.auth.authenticated = true;
       })
+      .addCase(fetchNaverUser.rejected, (state) => {
+        state.profile.status = 'failed';
+        state.auth.authenticated = false;
+      })
       .addCase(fetchGoogleUser.pending, (state) => {
         state.profile = { id: null, isOurUser: false, status: 'loading', nickname: null };
       })
       .addCase(fetchGoogleUser.fulfilled, (state, action) => {
         state.profile = { ...action.payload, status: 'idle' };
         state.auth.authenticated = true;
+      })
+      .addCase(fetchGoogleUser.rejected, (state) => {
+        state.profile.status = 'failed';
+        state.auth.authenticated = false;
       })
       .addCase(registerNewUser.pending, (state) => {
         state.register.status = 'loading';
