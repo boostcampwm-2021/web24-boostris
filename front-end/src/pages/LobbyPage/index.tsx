@@ -166,7 +166,7 @@ function LobbyPage() {
       })
     );
   };
-
+  console.log(friendRequestList.map((r) => ({ ...r, created: new Date(r.created_at) })));
   return (
     <AppbarLayout>
       <SEO>
@@ -352,14 +352,16 @@ function LobbyPage() {
         <Modal ref={notificationModalRef} title="알림센터" type="notification">
           <div className="notification__title absolute_border_bottom">&gt; 알림 센터</div>
           <div className="notification__list__container fancy__scroll">
-            {friendRequestList.map((n) => (
-              <div className="notification__list__item absolute_border_bottom" key={n}>
-                <div className="notification__content">{n}님의 친구 요청입니다.</div>
+            {friendRequestList.map(({ nickname, created_at }) => (
+              <div className="notification__list__item absolute_border_bottom" key={created_at}>
+                <div className="notification__content">{nickname}님의 친구 요청입니다.</div>
                 <div className="bottom__container">
-                  <div className="date__container">2021.10.22</div>
+                  <div className="date__container">
+                    {new Date(created_at).toLocaleDateString('ko-KR')}
+                  </div>
                   <div className="action__btn__container">
-                    [<button onClick={() => handleUpdateRequest(true, n)}>O</button>,
-                    <button onClick={() => handleUpdateRequest(false, n)}>X</button>]
+                    [<button onClick={() => handleUpdateRequest(true, nickname)}>O</button>,
+                    <button onClick={() => handleUpdateRequest(false, nickname)}>X</button>]
                   </div>
                 </div>
               </div>
