@@ -179,13 +179,11 @@ function LobbyPage() {
             <p>{profile.nickname}</p>
             <div className="notification__container">
               <button className="notification__btn" onClick={handleNotificationModal}>
-                친구알림
+                알림센터
               </button>
-              {friendRequestList.length !== 0 && (
-                <div className="notification__badge on">
-                  {friendRequestList.length > 99 ? '99+' : friendRequestList.length}
-                </div>
-              )}
+              <div className={`notification__badge ${friendRequestList.length > 0 ? 'on' : ''}`}>
+                {friendRequestList.length > 99 ? '99+' : friendRequestList.length}
+              </div>
             </div>
           </div>
           <div className="absolute_border_bottom filter__container toggle__group">
