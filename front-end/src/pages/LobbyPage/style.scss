@@ -25,6 +25,13 @@
       font-size: 18px;
       line-height: 21px;
       padding: 15px 1rem 22px;
+      display: flex;
+      justify-content: space-between;
+      .notification__btn {
+        color: $white;
+        cursor: pointer;
+        border: 1px solid $white;
+      }
     }
     .filter__container {
       display: flex;
@@ -66,6 +73,14 @@
           border-radius: 50%;
           display: inline-block;
           margin-right: 12px;
+        }
+        .name__span {
+          display: inline-block;
+          max-width: 150px;
+          word-break: keep-all;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
         }
 
         &.activated {

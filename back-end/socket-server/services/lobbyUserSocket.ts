@@ -13,7 +13,7 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
     broadcastRoomList(mainSpace);
   });
 
-  socket.on('create room', ({ owner, name, limit, isSecret }) => {
+  socket.on('create room', ({ owner, name, limit, isSecret, nickname }) => {
     try {
       let newRoomID = randomUUID();
       socket.roomID = newRoomID;
@@ -30,7 +30,7 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
           gameOverPlayer: 0,
           garbageBlockCnt: [],
           gameStart: false,
-          player: [socket.id]
+          player: [{id: socket.id, nickname: nickname}]
         },
       ];
 
@@ -51,10 +51,23 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
       mainSpace.adapter.rooms.has(roomID) &&
       !mainSpace.adapter.rooms.get(roomID).has(id)
     ) {
-      socket.join(roomID);
-      mainSpace.to(socket.id).emit('join room:success', roomID);
+      try {
+        if(target.gameStart) {
+          mainSpace.to(socket.id).emit('already started');
+        }
 
-      updateRoomCurrent(mainSpace, roomID);
+        target.player.push({id: socket.id, nickname: socket.userName});
+        
+        socket.roomID = roomID;
+        socket.join(roomID);
+        
+        updateRoomCurrent(mainSpace, roomID);
+
+        mainSpace.to(socket.id).emit('join room:success', roomID, target.gameStart);
+        socket.broadcast.to(roomID).emit('enter new player', socket.id, socket.userName);
+      } catch (error) {
+        mainSpace.to(socket.id).emit('join room:fail', roomID);
+      }
     } else {
       mainSpace.to(socket.id).emit('redirect to lobby');
     }
@@ -62,29 +75,31 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
 
   socket.on('leave room', (roomID: string) => {
     const target = roomList.find((r) => r.id === roomID);
-    target.player = target.player.filter((p) => p !== socket.id);
+    target.player = target.player.filter((p) => p.id !== socket.id);
+    if(target.player.length === 1) {
+      mainSpace.to(roomID).emit('every player game over');
+      target.gameStart = false;
+    }
+    socket.broadcast.to(socket.roomID).emit('leave player', socket.id);
     socket.leave(roomID);
   });
 
-  socket.on('join room', (roomID: string) => {
+  socket.on('join room', (roomID: string, nickname) => {
     const target = roomList.find((r) => r.id === roomID);
 
     try {
       if(target.gameStart) {
         mainSpace.to(socket.id).emit('already started');
-        socket.disconnect();
-        return;
       }
-
-      target.player.push(socket.id);
+      target.player.push({id: socket.id, nickname: nickname});
       
       socket.roomID = roomID;
       socket.join(roomID);
-      
+
       updateRoomCurrent(mainSpace, roomID);
 
-      mainSpace.to(socket.id).emit('join room:success', roomID);
-      socket.broadcast.to(roomID).emit('enter new player', socket.id);
+      mainSpace.to(socket.id).emit('join room:success', roomID, target.gameStart);
+      socket.broadcast.to(roomID).emit('enter new player', socket.id, nickname);
     } catch (error) {
       mainSpace.to(socket.id).emit('join room:fail', roomID);
     }
@@ -107,6 +122,18 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
   });
 
   socket.on('disconnecting', () => {
+    const target = roomList.find((r) => r.id === socket.roomID);
+    
+    if(target) {
+      target.player = target.player.filter((p) => p.id !== socket.id);
+      socket.broadcast.to(socket.roomID).emit('leave player', socket.id); 
+      
+      if(target.player.length === 1) {
+        mainSpace.to(socket.roomID).emit('every player game over');
+        target.gameStart = false;
+      }
+    }
+
     const roomsWillDelete = [];
     mainSpace.adapter.rooms.forEach((value, key) => {
       if (socket.rooms.has(key) && value.size === 1) roomsWillDelete.push(key);
@@ -116,9 +143,6 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
   });
 
   socket.on('disconnect', async () => {
-    // 게임 종료 시 다른 사람들한테 전달
-    socket.broadcast.to(socket.roomID).emit('disconnect player', socket.id);
-
     broadcastUserList(mainSpace);
   });
 }
