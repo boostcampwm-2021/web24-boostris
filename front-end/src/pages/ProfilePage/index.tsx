@@ -9,6 +9,7 @@ import { updateNickname } from '../../features/user/userSlice';
 
 export default function Profile() {
   const { nickname } = useParams();
+  const authProfile = useAuth().profile;
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -24,7 +25,7 @@ export default function Profile() {
   const [statsticsState, setStatsticsState] = useState({});
   const [editMode, setEditMode] = useState(false);
   const [userState, setUserState] = useState({
-    id: useAuth().profile.id,
+    id: authProfile.id,
     nickname,
     stateMessage: '',
   });
@@ -143,9 +144,12 @@ export default function Profile() {
             onChange={changeTextArea}
             value={userState.stateMessage}
           ></textarea>
-          <button className="profile-section__button" onClick={clickEditButton}>
-            {editMode ? `Save Profile` : `Edit Profile`}
-          </button>
+
+          {authProfile.nickname === nickname && (
+            <button className="profile-section__button" onClick={clickEditButton}>
+              {editMode ? `Save Profile` : `Edit Profile`}
+            </button>
+          )}
         </div>
         <div className="total-section">
           <div className="statistics-section ">
