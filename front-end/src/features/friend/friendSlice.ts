@@ -27,6 +27,7 @@ export const makeRequest = createAsyncThunk(
   'friend/makeRequest',
   async (requestBody: requestApiBody) => {
     const response = await makeFriendRequest(requestBody);
+    requestBody.cb();
     return response;
   }
 );

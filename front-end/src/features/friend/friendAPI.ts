@@ -12,11 +12,11 @@ export interface registerDataContent {
 export interface requestApiBody {
   requestee: string;
   requester: string;
+  cb: Function;
 }
 
 export interface requestUpdateApiBody extends requestApiBody {
   isAccept: number;
-  cb: Function;
 }
 
 export interface requestListApiBody {
@@ -27,6 +27,7 @@ export interface listApiBody {
 }
 
 export const makeFriendRequest = async (requestBody: requestApiBody) => {
+  const { requestee, requester } = requestBody;
   return fetch('/api/friend/request', {
     method: 'POST',
     credentials: 'include',
@@ -34,7 +35,7 @@ export const makeFriendRequest = async (requestBody: requestApiBody) => {
       'Content-Type': 'application/json',
       Accept: 'application/json',
     },
-    body: JSON.stringify(requestBody),
+    body: JSON.stringify({ requestee, requester }),
   }).then((res) => res.json());
 };
 

@@ -3,6 +3,7 @@ import { useRef, createContext, useEffect, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { useAppDispatch } from '../app/hooks';
+import { getRequestList } from '../features/friend/friendSlice';
 import {
   roomInfo,
   updateRoomID,
@@ -15,14 +16,14 @@ import {
 import useAuth from '../hooks/use-auth';
 
 type SocketStateType = {
-  isReady : boolean;
+  isReady: boolean;
   isValidRoom: boolean;
-}
+};
 
 const SocketContext = createContext<any>(null);
 const SocketReadyContext = createContext<SocketStateType>({
   isReady: false,
-  isValidRoom: false
+  isValidRoom: false,
 });
 
 function SocketProvider({ children }: { children: React.ReactNode }) {
@@ -67,6 +68,9 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
         dispatch(updateRoomID(roomID));
         navigate(`/game/${roomID}`);
       });
+      socketRef.current.on('refresh request list', () => {
+        dispatch(getRequestList({ requestee: profile.nickname as string }));
+      });
       socketRef.current.on('leave room:success', () => {});
       socketRef.current.on('redirect to lobby', () => {
         setIsValidRoom(false);
@@ -93,7 +97,9 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <SocketContext.Provider value={socketRef}>
-      <SocketReadyContext.Provider value={{isReady, isValidRoom}}>{children}</SocketReadyContext.Provider>
+      <SocketReadyContext.Provider value={{ isReady, isValidRoom }}>
+        {children}
+      </SocketReadyContext.Provider>
     </SocketContext.Provider>
   );
 }

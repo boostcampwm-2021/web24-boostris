@@ -115,7 +115,7 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
   });
 
   socket.on('refresh request list', (socketId) => {
-    console.log(socketId);
+    mainSpace.to(socketId).emit('refresh request list');
   });
 
   socket.on('disconnecting', () => {

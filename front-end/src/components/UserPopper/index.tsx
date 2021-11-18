@@ -54,9 +54,11 @@ export default function UserPopper({
         makeRequest({
           requester: nickname,
           requestee: profileState.nickname,
+          cb: () => {
+            socketClient.emit('refresh request list', profileState.socketId);
+          },
         })
       );
-      socketClient.emit('refresh request list', profileState.socketId);
     } else {
       alert('오류발생 다시 시도해주세요');
     }
