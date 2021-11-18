@@ -9,7 +9,7 @@ import 'dotenv/config';
 import AuthRouter from '../routes/auth';
 import InsertDbRegister from '../routes/registerDBInsert';
 import ProfileRouter from '../routes/profile';
-import RankRouter from '../routes/rankSearch';
+import RankingRouter from '../routes/rankingSearch';
 
 import { registerDupCheck } from '../middlewares/jwt';
 
@@ -32,7 +32,7 @@ app.use(logger('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', AuthRouter);
-app.use('/api/rank', RankRouter);
+app.use('/api/rank', RankingRouter);
 app.use('/api/register', registerDupCheck, InsertDbRegister);
 app.use('/api/profile', ProfileRouter);
 
