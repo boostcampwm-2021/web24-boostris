@@ -12,7 +12,6 @@ import ProfileRouter from '../routes/profile';
 import RankingRouter from '../routes/rankingSearch';
 import FriendRouter from '../routes/friend';
 
-
 import { registerDupCheck } from '../middlewares/jwt';
 
 class App {
