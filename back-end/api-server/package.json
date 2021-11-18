@@ -26,6 +26,7 @@
     "@types/yamljs": "^0.2.31",
     "cors": "^2.8.5",
     "nodemon": "^2.0.14",
+    "swagger-autogen": "^2.12.6",
     "swagger-jsdoc": "^6.1.0",
     "swagger-ui-express": "^4.1.6",
     "ts-node": "^10.4.0",

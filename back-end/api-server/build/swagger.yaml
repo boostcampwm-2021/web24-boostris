@@ -40,8 +40,8 @@ paths:
           name: 'body'
           description: 'Github code를 받습니다.'
           required: true
-          #schema:
-          #  $ref: '#/definitions/Pet'
+          schema:
+            $ref: '#/definitions/GithubAuthParameter'
       responses:
         '200':
           description:
@@ -54,6 +54,7 @@ paths:
       #  - petstore_auth:
       #      - 'write:pets'
       #      - 'read:pets'
+
   /api/auth/naver/token:
     post:
       tags:
@@ -70,8 +71,8 @@ paths:
           name: 'body'
           description: 'Access Token을 받습니다.'
           required: true
-          #schema:
-          #  $ref: '#/definitions/Pet'
+          schema:
+            $ref: '#/definitions/NaverAuthParameter'
       responses:
         '200':
           description:
@@ -102,8 +103,8 @@ paths:
           name: 'body'
           description: 'email, name을 받습니다.'
           required: true
-          #schema:
-          #  $ref: '#/definitions/Pet'
+          schema:
+            $ref: '#/definitions/GoogleAuthParameter'
       responses:
         '200':
           description:
@@ -121,7 +122,7 @@ paths:
     get:
       tags:
         - 'api'
-      summary: 'Cookie에 들어있는 JWT 유효성 검사'
+      summary: 'Cookie에 들어있는 JWT 유효성 검사 후, 검증되면 추가적으로 닉네임, oauth_id 정보 전송'
       description: ''
       #operationId: 'githubCode'
       consumes:
@@ -129,18 +130,16 @@ paths:
       produces:
         - 'application/json'
       parameters:
-        - in: 'body'
-          name: 'body'
-          description: 'Github code를 받습니다.'
+        - in: 'header'
+          name: 'header'
+          description: 'req.cookies.user 값이 필요합니다.'
           required: true
-          #schema:
-          #  $ref: '#/definitions/Pet'
       responses:
         '200':
           description:
           schema:
             items:
-              $ref: '#/definitions/JwtParameter'
+              $ref: '#/definitions/JwtResponse'
         '400':
           description: 'Invalid input'
       #security:
@@ -160,9 +159,9 @@ paths:
       produces:
         - 'application/json'
       parameters:
-        - in: 'body'
-          name: 'body'
-          description: 'Github code를 받습니다.'
+        - in: 'header'
+          name: 'header'
+          description: 'user 쿠키를 지웁니다.'
           required: true
           #schema:
           #  $ref: '#/definitions/Pet'
@@ -171,7 +170,7 @@ paths:
           description:
           schema:
             items:
-              $ref: '#/definitions/JwtParameter'
+              $ref: '#/definitions/LogoutResponse'
         '400':
           description: 'Invalid input'
       #security:
@@ -199,14 +198,14 @@ paths:
           name: 'body'
           description: 'DB 쿼리문으로 조건에 맞는 랭킹 정보를 뽑아냅니다'
           required: true
-          #schema:
-          #  $ref: '#/definitions/Pet'
+          schema:
+            $ref: '#/definitions/RankingParameter'
       responses:
         '200':
           description:
           schema:
             items:
-              $ref: '#/definitions/RankingParameter'
+              $ref: '#/definitions/RankingResponse'
         '400':
           description: 'Invalid input'
       #security:
@@ -219,6 +218,40 @@ paths:
       tags:
         - 'api'
       summary: '랭킹 페이지 왼쪽 프로필을 위한 api'
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: '승리 횟수, 공격 횟수를 검색하기 위해 nickname를 받습니다.'
+          required: true
+          schema:
+            $ref: '#/definitions/RankingMyinfoParameter'
+      responses:
+        '200':
+          description:
+          schema:
+            items:
+              $ref: '#/definitions/RankingResponse'
+        '400':
+          description: 'Invalid input'
+      #security:
+      #  - petstore_auth:
+      #      - 'write:pets'
+      #      - 'read:pets'
+
+  #######################################
+  #####          Register
+  #######################################
+  /api/register/insert:
+    post:
+      tags:
+        - 'api'
+      summary: ''
       description: ''
       #operationId: 'githubCode'
       consumes:
@@ -245,71 +278,130 @@ paths:
       #      - 'write:pets'
       #      - 'read:pets'
 
-#######################################
-#####          Register
-#######################################
-/api/register/insert:
-  post:
-    tags:
-      - 'api'
-    summary: ''
-    description: ''
-    #operationId: 'githubCode'
-    consumes:
-      - 'application/json'
-    produces:
-      - 'application/json'
-    parameters:
-      - in: 'body'
-        name: 'body'
-        description: '승리 횟수, 공격 횟수를 검색하기 위해 nickname를 받습니다.'
-        required: true
-        #schema:
-        #  $ref: '#/definitions/Pet'
-    responses:
-      '200':
-        description:
-        schema:
-          items:
-            $ref: '#/definitions/RankingParameter'
-      '400':
-        description: 'Invalid input'
-    #security:
-    #  - petstore_auth:
-    #      - 'write:pets'
-    #      - 'read:pets'
+  #######################################
+  #####          Profile
+  #######################################
+  /api/profile:
+    patch:
+      tags:
+        - 'api'
+      summary: ''
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: '승리 횟수, 공격 횟수를 검색하기 위해 nickname를 받습니다.'
+          required: true
+          #schema:
+          #  $ref: '#/definitions/Pet'
+      responses:
+        '200':
+          description:
+          schema:
+            items:
+              $ref: '#/definitions/RankingParameter'
+        '400':
+          description: 'Invalid input'
+    post:
+      tags:
+        - 'api'
+      summary: ''
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: '승리 횟수, 공격 횟수를 검색하기 위해 nickname를 받습니다.'
+          required: true
+          #schema:
+          #  $ref: '#/definitions/Pet'
+      responses:
+        '200':
+          description:
+          schema:
+            items:
+              $ref: '#/definitions/RankingParameter'
+        '400':
+          description: 'Invalid input'
 
 definitions:
   #parameters
+  GithubAuthParameter:
+    type: 'object'
+    properties:
+      code:
+        type: 'string'
 
+  NaverAuthParameter:
+    type: 'object'
+    properties:
+      accessToken:
+        type: 'string'
+
+  GoogleAuthParameter:
+    type: 'object'
+    properties:
+      email:
+        type: 'string'
+      name:
+        type: 'string'
+
+  RankingParameter:
+    type: 'object'
+    properties:
+      category:
+        type: 'string'
+      mode:
+        type: 'string'
+      nickName:
+        type: 'string'
+      offsetRank:
+        type: 'string'
+      lastNickName:
+        type: 'string'
+
+  RankingMyinfoParameter:
+    type: 'object'
+    properties:
+      nickname:
+        type: 'string'
   #reponses
   AuthResponse:
     type: 'object'
     properties:
       id:
         type: 'string'
-      authenticated:
+      isOurUser:
         type: 'boolean'
-      oauth_id:
+      nickname:
         type: 'string'
 
-  GithubAuthParameter:
-    type: 'object'
-    properties:
-      data:
-        type: 'string'
-      authenticated:
-        type: 'boolean'
-      oauth_id:
-        type: 'string'
-
-  JwtParameter:
+  JwtResponse:
     type: 'object'
     properties:
       authenticated:
         type: 'boolean'
+      nickname:
+        type: 'string'
+      oauth_id:
+        type: 'string'
 
-  RankingParameter:
+  LogoutResponse:
+    type: 'object'
+    properties:
+      authenticated:
+        type: 'boolean'
+
+  RankingResponse:
     type: 'object'
     properties:
       data:
