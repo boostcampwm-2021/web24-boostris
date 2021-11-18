@@ -1,0 +1,73 @@
+@import 'common/styles/base';
+
+.hidden {
+  display: none;
+}
+
+.lobby-chats__container {
+  padding: 0px 15px;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  box-sizing: border-box;
+  bottom: 10px;
+  width: 100%;
+  justify-content: center;
+
+  .lobby-chat__history__container {
+    background-color: rgba(54, 65, 113, 0.7);
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 20px;
+    z-index: 15px;
+    display: flex;
+    flex-direction: column;
+    height: 200px;
+    bottom: 40px;
+    border: 1px solid white;
+
+    .lobby-chat__history__header {
+      text-align: right;
+      cursor: pointer;
+      display: flex;
+      font-size: 18px;
+      margin-bottom: 10px;
+      justify-content: space-between;
+    }
+
+    .lobby-chat__history__scroll__root {
+      overflow: auto;
+      height: 100%;
+      font-size: 16px;
+
+      * {
+        margin-bottom: 7px;
+      }
+    }
+  }
+
+  .lobby-chat__input__container {
+    display: flex;
+    box-sizing: border-box;
+
+    .lobby-chat__input {
+      flex: 1;
+      background-color: transparent;
+      border: 1px solid $white;
+      color: $white;
+
+      &:focus {
+        outline: none;
+      }
+    }
+    .lobby-chat__send__btn {
+      padding: 4px 8px;
+      border: 1px solid $white;
+      color: $white;
+
+      &:focus {
+        outline: none;
+      }
+    }
+  }
+}

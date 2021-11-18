@@ -114,12 +114,17 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
     mainSpace.to(roomID).emit('receive message', { id, from, message });
   });
 
+  socket.on('send lobby message', ({ from, message, id }) => {
+    mainSpace.emit('receive lobby message', { id, from, message });
+  });
+
   socket.on('refresh friend list', async (nickname) => {
     const sockets = (await mainSpace.fetchSockets()) as userRemote[];
     const target = sockets.find((s) => s.userName === nickname);
     if (target) {
       mainSpace.to(target.id).emit('refresh friend list');
     }
+
   });
 
   socket.on('refresh request list', (socketId) => {

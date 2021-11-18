@@ -11,6 +11,7 @@ import {
   updateRoomMessages,
   updateRooms,
   updateUsers,
+  updateLobbyMessages,
   userInfo,
 } from '../features/socket/socketSlice';
 import useAuth from '../hooks/use-auth';
@@ -88,6 +89,13 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
         'receive message',
         ({ from, message, id }: { from: string; message: string; id: string }) => {
           dispatch(updateRoomMessages({ from, message, id }));
+        }
+      );
+
+      socketRef.current.on(
+        'receive lobby message',
+        ({ from, message, id }: { from: string; message: string; id: string }) => {
+          dispatch(updateLobbyMessages({ from, message, id }));
         }
       );
     }
