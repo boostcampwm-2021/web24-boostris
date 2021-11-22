@@ -21,7 +21,6 @@ ProfileRouter.post('/stateMessage', async (req, res, next) => {
 
 ProfileRouter.post('/total', async (req, res, next) => {
   try {
-    console.log(req.body.nickname, '너가 문제니?');
     const [{ oauth_id }] = await getOauthId(req.body.nickname);
     const totalList = await getTotalInDB(oauth_id);
     const recentList = await getRecentInDB(oauth_id);

@@ -121,7 +121,7 @@ export default function Profile() {
         setStatsticsState({ ...statsticsState, ...data.total[0], ...data.win[0] });
         setRecentList([...data.recentList]);
       })
-      .catch((error) => console.log('★error:', error));
+      .catch((error) => console.log('error:', error));
     return () => {};
   }, [nickname]);
 
