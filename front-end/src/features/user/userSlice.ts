@@ -14,17 +14,19 @@ import { RootState } from '../../app/store';
 type loadingState = 'idle' | 'loading' | 'failed';
 
 export interface UserState {
-  profile: {
-    id: string | number | null;
-    isOurUser: boolean;
-    status: loadingState;
-    nickname: null | string;
-  };
+  profile: Profile;
   register: { status: loadingState; dupCheck: boolean | null };
   auth: {
     status: loadingState;
     authenticated: boolean;
   };
+}
+
+export interface Profile {
+  id: string | number | null;
+  isOurUser: boolean;
+  status: loadingState;
+  nickname: null | string;
 }
 
 const initialState: UserState = {
@@ -67,6 +69,14 @@ export const fetchGoogleUser = createAsyncThunk(
   }
 );
 
+export const updateNickname = createAsyncThunk(
+  'profile/updateNickname',
+  async (nickname: string | undefined) => {
+    const response = await fetchAuthData();
+    return response;
+  }
+);
+
 export const registerNewUser = createAsyncThunk(
   'user/registerNewUser',
   async (data: registerDataContent) => {
@@ -91,6 +101,7 @@ export const userSlice = createSlice({
         status: 'idle',
         nickname: null,
       };
+      state.auth.authenticated = false;
     },
   },
   // The `extraReducers` field lets the slice handle actions defined elsewhere,
@@ -110,6 +121,7 @@ export const userSlice = createSlice({
       })
       .addCase(logOut.fulfilled, (state, action) => {
         state.auth.status = 'idle';
+        state.profile.isOurUser = false;
         state.auth.authenticated = action.payload.authenticated;
       })
       .addCase(fetchGithubUser.pending, (state) => {
@@ -117,21 +129,42 @@ export const userSlice = createSlice({
       })
       .addCase(fetchGithubUser.fulfilled, (state, action) => {
         state.profile = { ...action.payload, status: 'idle' };
-        state.auth.authenticated = true;
+        if (action.payload.isOurUser) {
+          state.auth.authenticated = true;
+        }
+      })
+      .addCase(fetchGithubUser.rejected, (state) => {
+        state.profile.status = 'failed';
+        state.auth.authenticated = false;
       })
       .addCase(fetchNaverUser.pending, (state) => {
         state.profile = { id: null, isOurUser: false, status: 'loading', nickname: null };
       })
       .addCase(fetchNaverUser.fulfilled, (state, action) => {
         state.profile = { ...action.payload, status: 'idle' };
-        state.auth.authenticated = true;
+        if (action.payload.isOurUser) {
+          state.auth.authenticated = true;
+        }
+        if (action.payload.isOurUser) {
+          state.auth.authenticated = true;
+        }
+      })
+      .addCase(fetchNaverUser.rejected, (state) => {
+        state.profile.status = 'failed';
+        state.auth.authenticated = false;
       })
       .addCase(fetchGoogleUser.pending, (state) => {
         state.profile = { id: null, isOurUser: false, status: 'loading', nickname: null };
       })
       .addCase(fetchGoogleUser.fulfilled, (state, action) => {
         state.profile = { ...action.payload, status: 'idle' };
-        state.auth.authenticated = true;
+        if (action.payload.isOurUser) {
+          state.auth.authenticated = true;
+        }
+      })
+      .addCase(fetchGoogleUser.rejected, (state) => {
+        state.profile.status = 'failed';
+        state.auth.authenticated = false;
       })
       .addCase(registerNewUser.pending, (state) => {
         state.register.status = 'loading';
@@ -139,6 +172,11 @@ export const userSlice = createSlice({
       .addCase(registerNewUser.fulfilled, (state, action) => {
         state.register = action.payload;
         state.register.status = 'idle';
+      })
+      .addCase(updateNickname.fulfilled, (state, action) => {
+        state.profile.id = action.payload.oauth_id;
+        state.profile.nickname = action.payload.nickname;
+        state.profile.isOurUser = true;
       });
   },
 });

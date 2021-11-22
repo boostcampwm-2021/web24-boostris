@@ -1,7 +1,7 @@
 import { nanoid } from '@reduxjs/toolkit';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { drawBoardBackground } from '../../components/Tetris/utils/tetrisDrawUtil';
 import { useSocket, useSocketReady } from '../../context/SocketContext';
@@ -15,6 +15,9 @@ import Board from '../../components/Tetris/Board';
 import PreviewBlocks from '../../components/Tetris/PreviewBlocks';
 import BubbleButton from '../../components/BubbleButton';
 import OtherBoard from '../../components/Tetris/OtherBoard';
+import SEO from '../../components/SEO';
+import Modal from '../../components/Modal';
+import RankTable from '../../components/Tetris/RankTable';
 
 interface blockInterface {
   posX: number;
@@ -25,24 +28,39 @@ interface blockInterface {
   color: number;
   index: number;
 }
+
+interface RankInterface {
+  nickname: string,
+  playTime: number,
+  attackCnt: number,
+  attackedCnt: number
+}
+
 function GamePage() {
   const { gameID } = useParams();
-  const { roomID, roomMembers, roomMessages } = useAppSelector(selectSocket);
+  const { roomID, rooms, roomMessages } = useAppSelector(selectSocket);
   const dispatch = useAppDispatch();
   const socketClient = useSocket();
   const { profile } = useAuth();
-  const isReady = useSocketReady();
+  const {isReady, isStartedGame, setIsStartedGame} = useSocketReady();
   const chatInputRef = useRef<any>();
   const containerRef = useRef<any>();
 
+  const [isGameStarted, setIsGameStarted] = useState(false);
   const [gameStart, setgameStart] = useState(false);
   const [gameOver, setGameOver] = useState(true);
   const [holdBlock, setHoldBlock] = useState<blockInterface | null>(null);
   const [previewBlock, setPreviewBlock] = useState<Array<blockInterface> | null>(null);
-  const socketRef = useRef<any>(null);
-  const [socketState, setSocketState] = useState(false);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const navigate = useNavigate();
+
+  const modalRef = useRef<any>();
+  const [rank, setRankState] = useState<RankInterface[]>();
+
+  let rankIdx = 1;
+
+  const handleRankModal = () => {
+    modalRef.current.open();
+  };
 
   useLayoutEffect(() => {
     if (containerRef.current) {
@@ -86,7 +104,7 @@ function GamePage() {
   };
 
   const clickStartButton = (socket: Socket) => {
-    socket.emit('game start');
+    socket.emit('game start', roomID);
   };
 
   const endGame = (socket: Socket) => {
@@ -103,49 +121,81 @@ function GamePage() {
   };
 
   useEffect(() => {
-    socketRef.current = io('/tetris', {
-      transports: ['websocket'],
-      path: '/socket.io',
-      secure: true,
+    if(!isReady) return;
+    drawBoardBackground(canvas.current, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT, TETRIS.BLOCK_SIZE);
+
+    let startEvent: () => void;
+    let gameOverEvent: () => void;
+    let rankTableEvent: (rank: RankInterface[]) => void;
+
+    socketClient.current.on('game started', startEvent = () => {
+      // 다른 플레이어가 게임 시작 누르는 것 감지
+      setgameStart(false);
+      setgameStart(true);
+      setGameOver(false);
+      setHoldBlock(null);
+      setPreviewBlock(null);
     });
 
-    socketRef.current.on('connect', () => {
-      setSocketState(true);
-      socketRef.current.emit('join room', roomID);
-
-      socketRef.current.on('already started', () => {
-        alert('게임이 진행중이라 입장하실 수 없습니다.');
-        navigate(`/`);
-      });
-
-      socketRef.current.on('game started', () => {
-        // 다른 플레이어가 게임 시작 누르는 것 감지
-        setgameStart(false);
-        setgameStart(true);
-        setGameOver(false);
-        setHoldBlock(null);
-        setPreviewBlock(null);
-      });
-
-      socketRef.current.on('every player game over', () => {
-        // 모든 플레이어가 게임 종료 된 경우
-        setGameOver(true);
-      });
+    socketClient.current.on('every player game over', gameOverEvent = () => {
+      // 모든 플레이어가 게임 종료 된 경우
+      setGameOver(true);
+      setIsStartedGame(false);
     });
-  }, []);
+
+    socketClient.current.on('send rank table', rankTableEvent = (rank: RankInterface[]) => {
+      setRankState(rank);
+    });
+
+    return () => {
+      socketClient.current.off('game started', startEvent);
+      socketClient.current.off('every player game over', gameOverEvent);
+      socketClient.current.off('send rank table', rankTableEvent);
+    }
+  }, [isReady]);
 
   useEffect(() => {
-    if (!canvas.current) return;
-    drawBoardBackground(canvas.current, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT, TETRIS.BLOCK_SIZE);
-  }, [socketState]);
+    if(!rank) return;
+    handleRankModal();
+  }, [rank]);
+
+  useEffect(() => {
+    const target = rooms.find((r) => r.id === roomID);
+  
+    if(target?.gameStart) {
+      setIsStartedGame(true);
+    }
+    else {
+      setIsStartedGame(false);
+    }
+  }, []);
+
   return (
     <AppbarLayout>
-      {socketState ? (
+
+
+      <SEO>
+        <title>게임 입장</title>
+        <meta property="og:title" content={`게임 ${gameID}`} />
+        {/* <meta property="og:url" content="https://www.imdb.com/title/tt0117500/" /> */}
+        <meta property="og:image" content="/logo192.png" />
+      </SEO>
+
+      {isReady ? (
+
         <div
           className="game__page--root"
           style={{ width: '1200px', display: 'flex', padding: '50px', backgroundColor: '#2b3150' }}
         >
-          <HoldBlock holdBlock={holdBlock} />
+            <div>
+              <HoldBlock holdBlock={holdBlock} />
+              <div>
+                <div>{'플레이 타임'}</div>
+                <div className={'play-time'}>0s</div>
+                <div>{'공격 횟수'}</div>
+                <div className={'attack-count'}>0</div>
+              </div>
+            </div>
           <div style={{ position: 'relative', margin: '0px 40px' }}>
             <canvas
               style={{
@@ -157,41 +207,35 @@ function GamePage() {
               ref={canvas}
             ></canvas>
             <Board
-              socket={socketRef.current}
+              socket={socketClient.current}
               gameStart={gameStart}
               gameOver={gameOver}
-              endGame={() => endGame(socketRef.current)}
+              endGame={() => endGame(socketClient.current)}
               getHoldBlockState={getHoldBlock}
-              getPreviewBlocksList={getPreviewBlocks}
-            />
+              getPreviewBlocksList={getPreviewBlocks} />
+            <div className={'myNickName'}>{profile.nickname}</div>
           </div>
           <div>
             <PreviewBlocks previewBlock={previewBlock} />
             <BubbleButton
-              variant={!gameOver ? 'inactive' : 'active'}
+              variant={!gameOver || isStartedGame ? 'inactive' : 'active'}
               label="게임 시작"
               handleClick={() => {
-                clickStartButton(socketRef.current);
-              }}
-              disabled={!gameOver}
-            />
+                clickStartButton(socketClient.current);
+              } }
+              disabled={!gameOver || isStartedGame} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div className="slots">
-              <OtherBoard socket={socketRef.current} />
+              <OtherBoard socket={socketClient.current} />
             </div>
             <div>
-              <div>Game# {gameID}</div>
-              Members :
-              {roomMembers.map((m) => (
-                <div key={m.id}>{m.nickname}</div>
-              ))}
               <div className="chats__container">
                 <div className="chat__history__container">
                   <div className="chat__history__scroll__root fancy__scroll" ref={containerRef}>
                     {roomMessages.map(({ id, from, message }) => (
                       <div key={id} className="chat__history__item">
-                        {from} : {message}
+                        {from === 'socket-server' ? message : `${from} : ${message}`}
                       </div>
                     ))}
                   </div>
@@ -201,8 +245,7 @@ function GamePage() {
                     type="text"
                     className="chat__input"
                     onKeyUp={handleSubmit}
-                    ref={chatInputRef}
-                  />
+                    ref={chatInputRef} />
                   <button className="chat__send__btn" onClick={sendMessage}>
                     전송
                   </button>
@@ -212,8 +255,11 @@ function GamePage() {
           </div>
         </div>
       ) : null}
-      {/* <div className="game__page--root">
-      </div> */}
+      {rank ?
+        (<Modal ref={modalRef} title="게임 결과" type="rank">
+          <RankTable rank={rank} />
+        </Modal>)
+      : null}
     </AppbarLayout>
   );
 }

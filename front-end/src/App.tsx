@@ -12,9 +12,8 @@ import useAuth from './hooks/use-auth';
 import WithSocketPage from './pages/WithSocketPage';
 import RequireAuth from './routes/RequireAuth';
 import LobbyPage from './pages/LobbyPage';
-import Tetris from './components/Tetris';
 import GamePage from './pages/GamePage';
-import RankPage from './pages/RankPage';
+import RankingPage from './pages/RankingPage';
 import './App.scss';
 
 function App() {
@@ -45,14 +44,6 @@ function App() {
             }
           />
           <Route
-            path="tetris"
-            element={
-              <RequireAuth>
-                <Tetris />
-              </RequireAuth>
-            }
-          />
-          <Route
             path="game/:gameID"
             element={
               <RequireAuth>
@@ -60,8 +51,8 @@ function App() {
               </RequireAuth>
             }
           />
-          <Route path="rank" element={<RankPage />} />
-          <Route path="profile" element={<ProfilePage />} />
+          <Route path="rank" element={<RankingPage />} />
+          <Route path="profile/:nickname" element={<ProfilePage />} />
         </Route>
       </Routes>
     </div>

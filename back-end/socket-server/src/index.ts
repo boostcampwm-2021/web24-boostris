@@ -1,5 +1,6 @@
 import { initSocket } from './../services/socket';
 import * as express from 'express';
+
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
@@ -25,13 +26,6 @@ app.use(
 app.use(logger('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.get('/socket/hello', (req: express.Request, res: express.Response) => {
-  res.json('world');
-});
-app.get('/socket', (req: express.Request, res: express.Response) => {
-  res.send('start');
-});
 
 const server = http.createServer(app);
 

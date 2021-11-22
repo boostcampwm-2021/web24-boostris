@@ -1,13 +1,18 @@
 import { Link } from 'react-router-dom';
 import { useAppDispatch } from '../../app/hooks';
 import { logOut } from '../../features/user/userSlice';
+import useAuth from '../../hooks/use-auth';
+
 import './style.scss';
 
 function AppbarLayout({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
+  const { nickname } = useAuth().profile;
+
   const handleLogout = () => {
     dispatch(logOut());
   };
+
   return (
     <div className="layout__root">
       <div className="appbar__container">
@@ -21,7 +26,7 @@ function AppbarLayout({ children }: { children: React.ReactNode }) {
           <Link className="appbar__link" to="/rank">
             랭킹
           </Link>
-          <Link className="appbar__link" to="/profile">
+          <Link className="appbar__link" to={`/profile/${nickname}`}>
             프로필
           </Link>
           <Link className="appbar__link" onClick={handleLogout} to="/login">
