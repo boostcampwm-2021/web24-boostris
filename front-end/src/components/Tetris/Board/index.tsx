@@ -622,7 +622,7 @@ const Board = ({
                 (leftInterval = setInterval(() => {
                   window.dispatchEvent(new KeyboardEvent('keydown', { key: event.key }));
                 }, 20)),
-              200
+              100
             );
           }
           moveBlock(BOARD, BLOCK, BACKGROUND, socket);
@@ -642,7 +642,7 @@ const Board = ({
                 (rightInterval = setInterval(() => {
                   window.dispatchEvent(new KeyboardEvent('keydown', { key: event.key }));
                 }, 20)),
-              200
+              100
             );
           }
           moveBlock(BOARD, BLOCK, BACKGROUND, socket);
@@ -711,7 +711,7 @@ const Board = ({
                 (rightContInterval = setInterval(() => {
                   window.dispatchEvent(new KeyboardEvent('keydown', { key: TETRIS.KEY.RIGHT }));
                 }, 20)),
-              200
+              100
             );
           }
           break;
@@ -728,7 +728,7 @@ const Board = ({
                 (leftContInterval = setInterval(() => {
                   window.dispatchEvent(new KeyboardEvent('keydown', { key: TETRIS.KEY.LEFT }));
                 }, 20)),
-              200
+              100
             );
           }
           break;
