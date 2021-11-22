@@ -1,5 +1,6 @@
 import { initSocket } from './../services/socket';
 import * as express from 'express';
+import 'dotenv/config';
 
 const cors = require('cors');
 const cookieParser = require('cookie-parser');

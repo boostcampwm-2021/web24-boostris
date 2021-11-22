@@ -128,7 +128,7 @@ const makeData = (socket, target) => {
 const sendData = (data) => {
   axios({
     method: 'post',
-    url: 'http://localhost:4000/api/game/record',
+    url: `${process.env.API_HOST}/api/game/record`,
     data: data,
   });
 }
