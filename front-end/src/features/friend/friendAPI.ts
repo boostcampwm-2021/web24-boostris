@@ -23,7 +23,7 @@ export interface requestListApiBody {
   requestee: string;
 }
 export interface listApiBody {
-  nickname: string;
+  oauthID: string;
 }
 
 export const makeFriendRequest = async (requestBody: requestApiBody) => {
@@ -63,7 +63,7 @@ export const requestList = async (requestBody: requestListApiBody) => {
 };
 
 export const friendList = async (requestBody: listApiBody) => {
-  return fetch(`/api/friend/list?nickname=${requestBody.nickname}`, {
+  return fetch(`/api/friend/list?oauthId=${requestBody.oauthID}`, {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',

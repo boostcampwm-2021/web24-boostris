@@ -17,10 +17,11 @@ export default function UserPopper({
     nickname: string | null;
     isAlreadyFriend: boolean;
     socketId: string;
+    oauthID: string;
   };
 }) {
   const popperRef = useRef<any>();
-  const { nickname } = useAuth().profile;
+  const { nickname, id } = useAuth().profile;
   const dispatch = useAppDispatch();
   const { current: socketClient } = useSocket();
   const modalRef = useRef<any>();
@@ -56,13 +57,13 @@ export default function UserPopper({
   };
 
   const handleRequestFriend = () => {
-    if (nickname === profileState.nickname) {
+    if (id === profileState.oauthID) {
       alert('나는 이미 나의 친구입니다.💓');
-    } else if (nickname && profileState.nickname) {
+    } else if (id && profileState.oauthID) {
       dispatch(
         makeRequest({
-          requester: nickname,
-          requestee: profileState.nickname,
+          requester: `${id}`,
+          requestee: profileState.oauthID,
           cb: () => {
             socketClient.emit('refresh request list', profileState.socketId);
           },
