@@ -5,8 +5,9 @@ const GameRecordRouter = express.Router();
 
 GameRecordRouter.post('/', async (req, res, next) => {
   const { game, players } = req.body;
+  console.log('hello', req.body);
   const insertGameInfoResult = await insertGameInfo(game);
-  const insertPlayerInfoResult = await insertPlayerInfo(players);
+  const insertPlayerInfoResult = await insertPlayerInfo(game.game_id, players);
   if (insertGameInfoResult && insertPlayerInfoResult) {
     res.status(200).json({ message: 'success' });
   } else {
