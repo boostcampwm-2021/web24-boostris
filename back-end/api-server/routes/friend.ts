@@ -59,7 +59,6 @@ FriendRouter.post('/request-update', async (req, res, next) => {
 // 나한테 들어온 친구 요청 목록 가져오기
 FriendRouter.get('/request-list', async (req, res, next) => {
   const requestee = req.query.requestee;
-  console.log(req.query);
   try {
     const friendRequestList = await requestFriendList(requestee);
     if (friendRequestList ?? 0) {
