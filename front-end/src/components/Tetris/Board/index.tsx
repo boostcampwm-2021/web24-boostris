@@ -110,6 +110,7 @@ const clearLine = (board: number[][], socket: Socket) => {
   const key = clearLineCnt.toString();
 
   if (TETRIS.GARBAGE_RULES[key] === 0) return;
+
   socket.emit('attack other player', TETRIS.GARBAGE_RULES[key]);
   STATE.ATTACK_COUNT += TETRIS.GARBAGE_RULES[key];
 
@@ -449,9 +450,7 @@ const initNewBlockCycle = (
   setSolidBlock(BOARD, STATE, socket);
 
   BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
-
-  // STATE.SOLID_GARBAGES = 0;
-  // STATE.ATTACKED_GARBAGES = 0;
+  
   STATE.CAN_HOLD = true;
 
   clearInterval(TIMER.DROP);
