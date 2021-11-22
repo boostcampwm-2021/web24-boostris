@@ -50,7 +50,7 @@ export default function Profile() {
     if (recentList.length === 0) return;
     return (
       <>
-        {recentList.map((value, id) => (
+        {recentList.map((value) => (
           <div className="recent-list" key={value.game_date}>
             <div>{value.game_date.slice(0, 10)}</div>
             <div>{value.game_mode === 'normal' ? '일반전' : '1 vs 1'}</div>
@@ -94,30 +94,32 @@ export default function Profile() {
   };
 
   useEffect(() => {
+    setUserState({ ...userState, nickname });
+
     fetch('/api/profile/stateMessage', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname: userState.nickname }),
+      body: JSON.stringify({ nickname }),
     })
       .then((res) => res.json())
       .then((data) => {
-        setUserState({ ...userState, stateMessage: data.state_message });
+        setUserState({ ...userState, nickname, stateMessage: data.state_message });
       })
       .catch((error) => console.log('error:', error));
 
     fetch('/api/profile/total', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: userState.id }),
+      body: JSON.stringify({ nickname }),
     })
       .then((res) => res.json())
       .then((data) => {
         setStatsticsState({ ...statsticsState, ...data.total[0], ...data.win[0] });
         setRecentList([...data.recentList]);
       })
-      .catch((error) => console.log('error:', error));
+      .catch((error) => console.log('★error:', error));
     return () => {};
-  }, []);
+  }, [nickname]);
 
   return (
     <AppbarLayout>
