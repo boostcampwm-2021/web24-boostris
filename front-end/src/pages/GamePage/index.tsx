@@ -104,7 +104,7 @@ function GamePage() {
   };
 
   const clickStartButton = (socket: Socket) => {
-    socket.emit('game start', roomID);
+    socket.emit('game start');
   };
 
   const endGame = (socket: Socket) => {
