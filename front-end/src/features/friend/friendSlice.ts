@@ -31,6 +31,7 @@ export const makeRequest = createAsyncThunk(
     return response;
   }
 );
+
 export const updateRequest = createAsyncThunk(
   'friend/updateRequest',
   async (requestBody: requestUpdateApiBody) => {

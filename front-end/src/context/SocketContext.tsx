@@ -21,14 +21,14 @@ type SocketStateType = {
   isValidRoom: boolean;
   isStartedGame: boolean;
   setIsStartedGame: React.Dispatch<SetStateAction<boolean>>;
-}
+};
 
 const SocketContext = createContext<any>(null);
 const SocketReadyContext = createContext<SocketStateType>({
   isReady: false,
   isValidRoom: false,
   isStartedGame: false,
-  setIsStartedGame: () => {}
+  setIsStartedGame: () => {},
 });
 
 function SocketProvider({ children }: { children: React.ReactNode }) {
@@ -49,7 +49,7 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
       });
       socketRef.current.on('connect', () => {
         setIsReady(true);
-        socketRef.current.emit('set userName', profile.nickname);
+        socketRef.current.emit('set userName', profile.nickname, profile.id);
       });
 
       socketRef.current.on('user list update', (list: userInfo[]) => {
@@ -76,10 +76,10 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
         navigate(`/game/${roomID}`);
       });
       socketRef.current.on('refresh friend list', () => {
-        dispatch(getFriendList({ nickname: profile.nickname as string }));
+        dispatch(getFriendList({ oauthID: profile.id as string }));
       });
       socketRef.current.on('refresh request list', () => {
-        dispatch(getRequestList({ requestee: profile.nickname as string }));
+        dispatch(getRequestList({ requestee: profile.id as string }));
       });
       socketRef.current.on('leave room:success', () => {});
       socketRef.current.on('redirect to lobby', () => {
@@ -114,7 +114,11 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <SocketContext.Provider value={socketRef}>
-      <SocketReadyContext.Provider value={{isReady, isValidRoom, isStartedGame, setIsStartedGame}}>{children}</SocketReadyContext.Provider>
+      <SocketReadyContext.Provider
+        value={{ isReady, isValidRoom, isStartedGame, setIsStartedGame }}
+      >
+        {children}
+      </SocketReadyContext.Provider>
     </SocketContext.Provider>
   );
 }

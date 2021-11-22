@@ -12,7 +12,9 @@ export const broadcastUserList = async (mainSpace: Namespace) => {
   const sockets = (await mainSpace.fetchSockets()) as userRemote[];
   mainSpace.emit(
     'user list update',
-    sockets.filter((s) => s.userName).map((s) => ({ nickname: s.userName, id: s.id }))
+    sockets
+      .filter((s) => s.userName)
+      .map((s) => ({ nickname: s.userName, id: s.id, oauthID: s.oauthID }))
   );
 };
 
@@ -28,7 +30,7 @@ export const broadcastRoomMemberUpdate = async (mainSpace: Namespace, room, id) 
       'room member list',
       sockets
         .filter((s) => [...mainSpace.adapter.rooms.get(room)].includes(s.id))
-        .map((s) => ({ nickname: s.userName, id: s.id }))
+        .map((s) => ({ nickname: s.userName, id: s.id, oauthID: s.oauthID }))
     );
   }
 };
