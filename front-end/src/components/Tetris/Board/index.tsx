@@ -792,7 +792,13 @@ const Board = ({
     });
 
     socket.on('game over info', gameOverEvent = () => {
-      socket.emit('get game over info', profile.id, TIMER.PLAY_TIME, STATE.ATTACK_COUNT, STATE.ATTACKED_COUNT);
+      const data = {
+        oauthID: profile.id,
+        playTime: TIMER.PLAY_TIME,
+        attackCnt: STATE.ATTACK_COUNT,
+        attackedCnt: STATE.ATTACKED_COUNT
+      }
+      socket.emit('get game over info', data);
     });
 
     return () => {

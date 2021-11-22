@@ -104,7 +104,7 @@ function GamePage() {
   };
 
   const clickStartButton = (socket: Socket) => {
-    socket.emit('game start', roomID);
+    socket.emit('game start');
   };
 
   const endGame = (socket: Socket) => {
@@ -129,6 +129,7 @@ function GamePage() {
     let rankTableEvent: (rank: RankInterface[]) => void;
 
     socketClient.current.on('game started', startEvent = () => {
+      console.log('tre');
       // 다른 플레이어가 게임 시작 누르는 것 감지
       setgameStart(false);
       setgameStart(true);
