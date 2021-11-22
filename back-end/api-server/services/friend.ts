@@ -10,7 +10,6 @@ export const requestFriend = async ({ requestee, requester }) => {
     );
     return true;
   } catch (error) {
-    console.log(error);
     return false;
   }
 };
@@ -35,13 +34,17 @@ export const requestFriendUpdate = async ({ isAccept, requestee, requester }) =>
 export const requestFriendList = async (requestee) => {
   try {
     const result = await selectTable(
-      `friend_requester, created_at`,
-      `FRIEND_REQUEST`,
-      `friend_requestee='${requestee}'`
+      `u.nickname, r.created_at, u.oauth_id`,
+      `FRIEND_REQUEST r left outer join USER_INFO u ON r.friend_requester = u.oauth_id`,
+      `r.friend_requestee = '${requestee}'`
     );
     const returnData = [];
     result.map((value) =>
-      returnData.push({ oauth_id: value.friend_requester, created_at: value.created_at })
+      returnData.push({
+        oauth_id: value.oauth_id,
+        nickname: value.nickname,
+        created_at: value.created_at,
+      })
     );
     return returnData;
   } catch (error) {
@@ -51,9 +54,13 @@ export const requestFriendList = async (requestee) => {
 
 export const getFriendList = async (oauthId) => {
   try {
-    const result = await selectTable(`friend2`, `FRIENDSHIP`, `friend1='${oauthId}'`);
+    const result = await selectTable(
+      `nickname`,
+      `USER_INFO`,
+      `oauth_id in (select friend2 from FRIENDSHIP where friend1='${oauthId}')`
+    );
     const returnData = [];
-    result.map((value) => returnData.push(value.friend2));
+    result.map((value) => returnData.push(value.nickname));
     return returnData;
   } catch (error) {
     return undefined;
