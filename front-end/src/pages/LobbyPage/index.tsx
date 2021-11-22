@@ -143,12 +143,12 @@ function LobbyPage() {
     socketClient.current.emit('join room', id, profile.nickname);
   };
 
-  const handleUpdateRequest = (result: boolean, n: string) => {
+  const handleUpdateRequest = (result: boolean, oauth_id: string) => {
     dispatch(
       updateRequest({
         isAccept: result ? 1 : 0,
         requestee: profile.id as string,
-        requester: n,
+        requester: oauth_id,
         cb: () => {
           notificationModalRef.current.close();
           dispatch(
@@ -163,7 +163,7 @@ function LobbyPage() {
           );
 
           if (result) {
-            socketClient.current.emit('refresh friend list', n);
+            socketClient.current.emit('refresh friend list', oauth_id);
           }
         },
       })

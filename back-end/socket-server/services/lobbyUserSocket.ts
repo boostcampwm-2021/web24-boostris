@@ -131,9 +131,9 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
     mainSpace.emit('receive lobby message', { id, from, message });
   });
 
-  socket.on('refresh friend list', async (nickname) => {
+  socket.on('refresh friend list', async (oauthID) => {
     const sockets = (await mainSpace.fetchSockets()) as userRemote[];
-    const target = sockets.find((s) => s.userName === nickname);
+    const target = sockets.find((s) => s.oauthID === oauthID);
     if (target) {
       mainSpace.to(target.id).emit('refresh friend list');
     }
