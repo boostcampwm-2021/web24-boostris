@@ -11,6 +11,7 @@ import InsertDbRegister from '../routes/registerDBInsert';
 import ProfileRouter from '../routes/profile';
 import RankingRouter from '../routes/rankingSearch';
 import FriendRouter from '../routes/friend';
+import GameRecordRouter from '../routes/gameRecord';
 
 import { registerDupCheck } from '../middlewares/jwt';
 
@@ -37,6 +38,7 @@ app.use('/api/rank', RankingRouter);
 app.use('/api/register', registerDupCheck, InsertDbRegister);
 app.use('/api/profile', ProfileRouter);
 app.use('/api/friend', FriendRouter);
+app.use('/api/game/record', GameRecordRouter);
 
 app.get('/api', (req: express.Request, res: express.Response) => {
   res.send('start');
