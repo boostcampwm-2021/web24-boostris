@@ -93,7 +93,7 @@ export const initTetrisSocket = (mainSpace: Namespace, socket: userSocket) => {
         target.gamingPlayer.length === 1 ||
         target.gameOverPlayer === target.gamingPlayer.length - 1
       ) {
-        target.gameStart = false;
+        // target.gameStart = false;
         mainSpace.to(socket.roomID).emit('every player game over');
 
         if (target.gamingPlayer.length !== 1) {
@@ -130,7 +130,8 @@ export const initTetrisSocket = (mainSpace: Namespace, socket: userSocket) => {
         rankTarget.attackedCnt = attackedCnt;
       }
 
-      if (target.semaphore === target.gamingPlayer.length) {
+      if (target.gameStart && target.semaphore === target.gamingPlayer.length) {
+        target.gameStart = false;
         target.semaphore = 0;
         target.gameOverPlayer = 0;
 
