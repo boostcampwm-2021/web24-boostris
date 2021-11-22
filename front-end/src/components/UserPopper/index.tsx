@@ -60,6 +60,7 @@ export default function UserPopper({
     if (id === profileState.oauthID) {
       alert('나는 이미 나의 친구입니다.💓');
     } else if (id && profileState.oauthID) {
+      alert('친구 신청을 보냈습니다.');
       dispatch(
         makeRequest({
           requester: `${id}`,
@@ -72,6 +73,7 @@ export default function UserPopper({
     } else {
       alert('오류발생 다시 시도해주세요');
     }
+    popperRef.current.close();
   };
 
   return (

@@ -6,6 +6,7 @@ import AppbarLayout from '../../layout/AppbarLayout';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppDispatch } from '../../app/hooks';
 import { updateNickname } from '../../features/user/userSlice';
+import { useSocket } from '../../context/SocketContext';
 
 export default function Profile() {
   const { nickname } = useParams();
@@ -29,6 +30,8 @@ export default function Profile() {
     nickname,
     stateMessage: '',
   });
+
+  const socketClient = useSocket();
 
   const drawStatistics = (statsticsState: any) => {
     return (
@@ -82,6 +85,7 @@ export default function Profile() {
         .then(async () => {
           setEditMode(!editMode);
           await dispatch(updateNickname(userState.nickname));
+          socketClient.current.emit('set userName', userState.nickname);
           navigate(`/profile/${userState.nickname}`);
         })
         .catch((error) => console.log('error:', error));
