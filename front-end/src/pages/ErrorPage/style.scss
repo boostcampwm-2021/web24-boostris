@@ -12,8 +12,14 @@
 
   .error__page__text {
     font-size: 22px;
-    margin: 50px 0px;
+    margin-top: 50px;
     white-space: pre-wrap;
+    text-align: center;
+  }
+
+  .error__page__magician {
+    white-space: pre-wrap;
+    margin: 30px 0px 50px;
     text-align: center;
   }
 
