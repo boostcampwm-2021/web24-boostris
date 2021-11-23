@@ -193,7 +193,14 @@ function LobbyPage() {
               <button
                 className={`${currentIdx === idx && 'selected'} toggle__btn`}
                 key={btn}
-                onClick={() => setCurrentIdx(idx)}
+                onClick={async () => {
+                  setCurrentIdx(idx);
+                  await dispatch(
+                    getFriendList({
+                      oauthID: `${profile.id}`,
+                    })
+                  );
+                }}
               >
                 {btn}
               </button>

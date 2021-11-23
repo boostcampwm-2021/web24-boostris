@@ -84,7 +84,7 @@ export default function Profile() {
       })
         .then(async () => {
           setEditMode(!editMode);
-          await dispatch(updateNickname(userState.nickname));
+          await dispatch(updateNickname());
           socketClient.current.emit('set userName', userState.nickname);
           navigate(`/profile/${userState.nickname}`);
         })
