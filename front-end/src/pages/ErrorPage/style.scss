@@ -1,0 +1,18 @@
+.error__page--root {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 100px;
+
+  .error__page__title {
+    font-size: 35px;
+    margin-bottom: 70px;
+  }
+
+  .error__page__text {
+    font-size: 25px;
+    margin-top: 70px;
+    white-space: pre-wrap;
+  }
+}
