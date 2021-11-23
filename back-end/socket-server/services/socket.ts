@@ -7,7 +7,7 @@ import { Server } from 'socket.io';
 
 import { initLobbyUserSocket } from './lobbyUserSocket';
 import { initTetrisSocket } from './tetrisSocket';
-import { userSocket } from '../type/socketType';
+import { userRemote, userSocket } from '../type/socketType';
 import { roomList } from '../constant/room';
 
 const wrap = (middleware) => (socket, next) => middleware(socket.request, {}, next);
@@ -26,12 +26,12 @@ export const initSocket = (httpServer) => {
   mainSpace.setMaxListeners(0);
   mainSpace.adapter.setMaxListeners(0);
 
-  mainSpace.on('connection', (socket: userSocket) => {
+  mainSpace.on('connection', async (socket: userSocket) => {
     socket.setMaxListeners(0);
-
     initLobbyUserSocket(mainSpace, socket);
     initTetrisSocket(mainSpace, socket);
   });
+
   mainSpace.adapter.on('join-room', (room, id) => {
     updateRoomCurrent(mainSpace, room);
     broadcastRoomMemberUpdate(mainSpace, room, id);
@@ -41,13 +41,13 @@ export const initSocket = (httpServer) => {
   mainSpace.adapter.on('leave-room', (roomID, id) => {
     const target = roomList.find((r) => r.id === roomID);
 
-    if(target) {
+    if (target) {
       target.player = target.player.filter((p) => p.id !== id);
       target.gamingPlayer = target.gamingPlayer.filter((p) => p.id !== id);
       target.garbageBlockCnt = target.garbageBlockCnt.filter((p) => p.id !== id);
       target.rank = target.rank.filter((r) => r.id !== id);
-      
-      if(target.gamingPlayer.length === 1) {
+
+      if (target.gamingPlayer.length === 1) {
         mainSpace.to(roomID).emit('every player game over');
         target.gameStart = false;
       }
