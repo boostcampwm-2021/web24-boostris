@@ -106,7 +106,7 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
       );
     }
     return () => {
-      (socketRef.current as Socket).close();
+      if (auth.authenticated) (socketRef.current as Socket).close();
     };
   }, [auth.authenticated, profile.nickname]);
 
