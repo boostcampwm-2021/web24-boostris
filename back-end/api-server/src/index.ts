@@ -12,6 +12,8 @@ import ProfileRouter from '../routes/profile';
 import RankingRouter from '../routes/rankingSearch';
 import FriendRouter from '../routes/friend';
 import GameRecordRouter from '../routes/gameRecord';
+import * as swaggerUi from 'swagger-ui-express';
+import * as YAML from 'yamljs';
 
 import { registerDupCheck } from '../middlewares/jwt';
 
@@ -22,6 +24,8 @@ class App {
   }
 }
 const app = new App().application;
+const swaggerSpec = YAML.load(path.join(__dirname, '../build/swagger.yaml'));
+
 app.use(cookieParser());
 app.use(express.json());
 app.use(
@@ -39,6 +43,7 @@ app.use('/api/register', registerDupCheck, InsertDbRegister);
 app.use('/api/profile', ProfileRouter);
 app.use('/api/friend', FriendRouter);
 app.use('/api/game/record', GameRecordRouter);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get('/api', (req: express.Request, res: express.Response) => {
   res.send('start');
