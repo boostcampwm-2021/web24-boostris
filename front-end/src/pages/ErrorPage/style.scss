@@ -6,13 +6,19 @@
   margin-top: 100px;
 
   .error__page__title {
-    font-size: 35px;
-    margin-bottom: 70px;
+    font-size: 30px;
+    margin-bottom: 50px;
   }
 
   .error__page__text {
-    font-size: 25px;
-    margin-top: 70px;
+    font-size: 22px;
+    margin: 50px 0px;
     white-space: pre-wrap;
+    text-align: center;
+  }
+
+  .error__page__button {
+    font-size: 25px;
+    text-align: center;
   }
 }

@@ -1,21 +1,21 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import './style.scss';
+import { unauthorize, duplicate } from './constants';
+import BubbleButton from '../../components/BubbleButton';
 
 export default function ErrorPage() {
   const { title } = useParams();
+  const navigate = useNavigate();
 
   let pageText = '에러 발생';
 
   switch (title) {
     case 'duplicate':
-      pageText = `
-    어라! 이미 다른 탭에서 로그인이 되어있으시네요!
-
-    다른 탭에서 로그인이 되어있는지 확인해주시고, 
-
-    로그인은 한 곳에서만 부탁드립니다 (づ￣ 3￣)づ
-    `;
+      pageText = duplicate;
+      break;
+    case 'unauthorize':
+      pageText = unauthorize;
       break;
     default:
       break;
@@ -26,6 +26,14 @@ export default function ErrorPage() {
       <div className="error__page__title">놀라지 마세요!</div>
       <img src="/assets/error.png" alt="" />
       <div className="error__page__text">{pageText}</div>
+      {title !== 'duplicate' && (
+        <BubbleButton
+          variant="active"
+          label="로비로 이동하기"
+          handleClick={() => navigate('/', { replace: true })}
+          disabled={false}
+        />
+      )}
     </div>
   );
 }
