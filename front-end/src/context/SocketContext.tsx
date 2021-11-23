@@ -106,11 +106,9 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
       );
     }
     return () => {
-      if (socketRef.current && !auth.authenticated) {
-        (socketRef.current as Socket).close();
-      }
+      if (auth.authenticated) (socketRef.current as Socket).close();
     };
-  }, [auth.authenticated]);
+  }, [auth.authenticated, profile.nickname]);
 
   return (
     <SocketContext.Provider value={socketRef}>

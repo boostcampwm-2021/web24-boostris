@@ -6,6 +6,7 @@ import AppbarLayout from '../../layout/AppbarLayout';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppDispatch } from '../../app/hooks';
 import { updateNickname } from '../../features/user/userSlice';
+import { useSocket } from '../../context/SocketContext';
 
 export default function Profile() {
   const { nickname } = useParams();
@@ -30,6 +31,8 @@ export default function Profile() {
     stateMessage: '',
   });
 
+  const socketClient = useSocket();
+
   const drawStatistics = (statsticsState: any) => {
     return (
       <>
@@ -50,7 +53,7 @@ export default function Profile() {
     if (recentList.length === 0) return;
     return (
       <>
-        {recentList.map((value, id) => (
+        {recentList.map((value) => (
           <div className="recent-list" key={value.game_date}>
             <div>{value.game_date.slice(0, 10)}</div>
             <div>{value.game_mode === 'normal' ? '일반전' : '1 vs 1'}</div>
@@ -82,6 +85,7 @@ export default function Profile() {
         .then(async () => {
           setEditMode(!editMode);
           await dispatch(updateNickname(userState.nickname));
+          socketClient.current.emit('set userName', userState.nickname);
           navigate(`/profile/${userState.nickname}`);
         })
         .catch((error) => console.log('error:', error));
@@ -94,21 +98,23 @@ export default function Profile() {
   };
 
   useEffect(() => {
+    setUserState({ ...userState, nickname });
+
     fetch('/api/profile/stateMessage', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname: userState.nickname }),
+      body: JSON.stringify({ nickname }),
     })
       .then((res) => res.json())
       .then((data) => {
-        setUserState({ ...userState, stateMessage: data.state_message });
+        setUserState({ ...userState, nickname, stateMessage: data.state_message });
       })
       .catch((error) => console.log('error:', error));
 
     fetch('/api/profile/total', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: userState.id }),
+      body: JSON.stringify({ nickname }),
     })
       .then((res) => res.json())
       .then((data) => {
@@ -117,7 +123,7 @@ export default function Profile() {
       })
       .catch((error) => console.log('error:', error));
     return () => {};
-  }, []);
+  }, [nickname]);
 
   return (
     <AppbarLayout>

@@ -21,8 +21,9 @@ ProfileRouter.post('/stateMessage', async (req, res, next) => {
 
 ProfileRouter.post('/total', async (req, res, next) => {
   try {
-    const totalList = await getTotalInDB(req.body.id);
-    const recentList = await getRecentInDB(req.body.id);
+    const [{ oauth_id }] = await getOauthId(req.body.nickname);
+    const totalList = await getTotalInDB(oauth_id);
+    const recentList = await getRecentInDB(oauth_id);
     const [total, win] = totalList;
     res.status(200).json({ total, win, recentList });
   } catch (error) {
@@ -46,6 +47,10 @@ ProfileRouter.patch('/', async (req, res, next) => {
     res.status(401).json({ error: '잘못된 인증입니다.' });
   }
 });
+
+const getOauthId = (nickname) => {
+  return selectTable('oauth_id', 'USER_INFO', `nickname='${nickname}'`);
+};
 
 const updateProfileInDB = ({ nickname, stateMessage, id }) => {
   return updateTable(
