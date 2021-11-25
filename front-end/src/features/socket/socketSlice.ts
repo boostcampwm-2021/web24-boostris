@@ -11,7 +11,7 @@ export type roomInfo = {
   current: number;
   gameStart: boolean;
 };
-export type userInfo = { nickname: string; id: string };
+export type userInfo = { nickname: string; id: string; oauthID: string };
 
 export type roomMember = { nickname: string; id: string };
 type messageInfo = { from: string; message: string; id: string };

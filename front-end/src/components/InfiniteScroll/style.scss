@@ -1,0 +1,15 @@
+@import 'common/styles/base';
+
+.recent__list--scroll {
+  height: 250px;
+  overflow-y: scroll;
+
+  .recent__list {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    text-align: center;
+    font-size: 17px;
+    padding: 15px 40px;
+    box-sizing: border-box;
+  }
+}

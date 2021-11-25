@@ -39,30 +39,36 @@ AuthRouter.post('/github/code', async (req, res) => {
   const { code } = req.body;
 
   try {
-    const { data } = await axios({
-      method: 'POST',
-      url: 'https://github.com/login/oauth/access_token',
-      headers: {
-        accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      data: {
-        client_id: process.env.GITHUB_CLIENT_ID,
-        client_secret: process.env.GITHUB_CLIENT_SECRET,
-        code,
-      },
-    });
-    const { access_token } = data;
-    if (access_token) {
-      const user = await getGithubUser(access_token);
-      if (!user) {
+    if (code) {
+      const { data } = await axios({
+        method: 'POST',
+        url: 'https://github.com/login/oauth/access_token',
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          client_id: process.env.GITHUB_CLIENT_ID,
+          client_secret: process.env.GITHUB_CLIENT_SECRET,
+          code,
+        },
+      });
+      const { access_token } = data;
+      if (access_token) {
+        const user = await getGithubUser(access_token);
+        if (!user) {
+          throw Error('github error');
+        }
+        const [isOurUser, target] = await oauthDupCheck(user['id'], req, res); // 일단 중복 안되는 login 으로 해놓음
+        const id = user.id;
+        res.status(200).json({ id, isOurUser, nickname: target?.nickname });
+      } else {
         throw Error('github error');
       }
-      const [isOurUser, target] = await oauthDupCheck(user['id'], req, res); // 일단 중복 안되는 login 으로 해놓음
-      const id = user.id;
-      res.status(200).json({ id, isOurUser, nickname: target?.nickname });
     } else {
-      throw Error('github error');
+      res.status(400).json({
+        success: false,
+      });
     }
   } catch (error) {
     console.error(error);

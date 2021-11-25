@@ -31,7 +31,7 @@ function RankLeftProfile() {
   const user = useAppSelector(selectUser);
   useEffect(() => {
     (async function effect() {
-      const myInfo = await fetchGetMyCntInfo({ nickname: user.profile.nickname });
+      const myInfo = await fetchGetMyCntInfo({ oauthId: user.profile.id });
       const playerWin = myInfo.data?.['player_win'];
       const attackCnt = myInfo.data?.['attack_cnt'];
       const tmp: any = [playerWin, attackCnt];

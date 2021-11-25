@@ -46,7 +46,6 @@ function GamePage() {
   const chatInputRef = useRef<any>();
   const containerRef = useRef<any>();
 
-  const [isGameStarted, setIsGameStarted] = useState(false);
   const [gameStart, setgameStart] = useState(false);
   const [gameOver, setGameOver] = useState(true);
   const [holdBlock, setHoldBlock] = useState<blockInterface | null>(null);
@@ -55,8 +54,6 @@ function GamePage() {
 
   const modalRef = useRef<any>();
   const [rank, setRankState] = useState<RankInterface[]>();
-
-  let rankIdx = 1;
 
   const handleRankModal = () => {
     modalRef.current.open();
@@ -91,6 +88,7 @@ function GamePage() {
       sendMessage();
     }
   };
+
   const sendMessage = () => {
     if (chatInputRef.current.value.length) {
       socketClient.current.emit('send message', {
@@ -104,7 +102,7 @@ function GamePage() {
   };
 
   const clickStartButton = (socket: Socket) => {
-    socket.emit('game start', roomID);
+    socket.emit('game start');
   };
 
   const endGame = (socket: Socket) => {
@@ -212,7 +210,8 @@ function GamePage() {
               gameOver={gameOver}
               endGame={() => endGame(socketClient.current)}
               getHoldBlockState={getHoldBlock}
-              getPreviewBlocksList={getPreviewBlocks} />
+              getPreviewBlocksList={getPreviewBlocks}
+            />
             <div className={'myNickName'}>{profile.nickname}</div>
           </div>
           <div>
