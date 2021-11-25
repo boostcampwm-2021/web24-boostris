@@ -84,9 +84,9 @@ export default function Profile() {
       })
         .then(async () => {
           setEditMode(!editMode);
-          await dispatch(updateNickname(userState.nickname));
+          await dispatch(updateNickname());
           socketClient.current.emit('set userName', userState.nickname);
-          navigate(`/profile/${userState.nickname}`);
+          navigate(`/profile/${userState.nickname}`, { replace: true });
         })
         .catch((error) => console.log('error:', error));
     }
@@ -109,7 +109,10 @@ export default function Profile() {
       .then((data) => {
         setUserState({ ...userState, nickname, stateMessage: data.state_message });
       })
-      .catch((error) => console.log('error:', error));
+      .catch((error) => {
+        navigate('/error/unauthorize', { replace: true });
+        console.log('error:', error);
+      });
 
     fetch('/api/profile/total', {
       method: 'POST',
@@ -121,7 +124,10 @@ export default function Profile() {
         setStatsticsState({ ...statsticsState, ...data.total[0], ...data.win[0] });
         setRecentList([...data.recentList]);
       })
-      .catch((error) => console.log('error:', error));
+      .catch((error) => {
+        navigate('/error/unauthorize', { replace: true });
+        console.log('error:', error);
+      });
     return () => {};
   }, [nickname]);
 

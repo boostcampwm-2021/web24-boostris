@@ -47,9 +47,18 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
         path: '/socket.io',
         secure: true,
       });
+
       socketRef.current.on('connect', () => {
+        socketRef.current.emit('duplicate check', profile.id);
+      });
+
+      socketRef.current.on('duplicate check:success', () => {
         setIsReady(true);
         socketRef.current.emit('set userName', profile.nickname, profile.id);
+      });
+
+      socketRef.current.on('duplicate check:fail', () => {
+        navigate('/error/duplicate');
       });
 
       socketRef.current.on('user list update', (list: userInfo[]) => {

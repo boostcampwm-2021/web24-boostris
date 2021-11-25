@@ -11,10 +11,19 @@ import {
 } from '../utils/userUtil';
 
 export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) => {
-  socket.on('set userName', (userName, oauthID) => {
+  socket.on('duplicate check', async (oauthID) => {
+    const sockets = (await mainSpace.fetchSockets()) as userRemote[];
+    if (sockets.filter((s) => s.oauthID === oauthID).length >= 1) {
+      mainSpace.to(socket.id).emit('duplicate check:fail');
+      socket.disconnect();
+    } else {
+      mainSpace.emit('duplicate check:success');
+    }
+  });
+
+  socket.on('set userName', async (userName, oauthID) => {
     socket.userName = userName;
     socket.oauthID = oauthID;
-
     broadcastUserList(mainSpace);
     broadcastRoomList(mainSpace);
   });
