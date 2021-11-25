@@ -39,11 +39,8 @@ export default function InfiniteScroll({
   const [list, setList] = useState<any>([]);
   const [hasMore, setHasMore] = useState(false);
 
-  useEffect(() => console.log(hasMore), [hasMore]);
-
   useEffect(() => {
     setLoading(true);
-    console.log(pageNum);
     fetch(fetchURL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
