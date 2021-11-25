@@ -52,6 +52,8 @@ AuthRouter.post('/github/code', async (req, res) => {
           client_secret: process.env.GITHUB_CLIENT_SECRET,
           code,
         },
+        timeout: 3000,
+        timeoutErrorMessage: 'time out',
       });
       const { access_token } = data;
       if (access_token) {
