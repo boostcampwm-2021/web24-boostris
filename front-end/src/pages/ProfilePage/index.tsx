@@ -7,6 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAppDispatch } from '../../app/hooks';
 import { updateNickname } from '../../features/user/userSlice';
 import { useSocket } from '../../context/SocketContext';
+import InfiniteScroll from '../../components/InfiniteScroll';
 
 export default function Profile() {
   const { nickname } = useParams();
@@ -18,12 +19,14 @@ export default function Profile() {
   const translations = [
     ['total_game_cnt', '총 게임 수'],
     ['total_play_time', '총 플레이 시간'],
-    ['single_player_win', '1vs1 승리 횟수'],
+    ['single_player_win', '1 vs 1 승리 횟수'],
     ['multi_player_win', '일반전 승리 횟수'],
     ['total_attack_cnt', '총 공격 횟수'],
   ];
+
   const [recentList, setRecentList] = useState<string[][]>([]);
   const [statsticsState, setStatsticsState] = useState({});
+
   const [editMode, setEditMode] = useState(false);
   const [userState, setUserState] = useState({
     id: authProfile.id,
@@ -45,24 +48,6 @@ export default function Profile() {
             </div>
           );
         })}
-      </>
-    );
-  };
-
-  const drawRecent = (recentList: Array<any>) => {
-    if (recentList.length === 0) return;
-    return (
-      <>
-        {recentList.map((value) => (
-          <div className="recent-list" key={value.game_date}>
-            <div>{value.game_date.slice(0, 10)}</div>
-            <div>{value.game_mode === 'normal' ? '일반전' : '1 vs 1'}</div>
-            <div>{value.ranking}</div>
-            <div>{value.play_time}</div>
-            <div>{value.attack_cnt}</div>
-            <div>{value.attacked_cnt}</div>
-          </div>
-        ))}
       </>
     );
   };
@@ -98,8 +83,6 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    setUserState({ ...userState, nickname });
-
     fetch('/api/profile/stateMessage', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -121,15 +104,13 @@ export default function Profile() {
     })
       .then((res) => res.json())
       .then((data) => {
-        setStatsticsState({ ...statsticsState, ...data.total[0], ...data.win[0] });
-        setRecentList([...data.recentList]);
+        setStatsticsState({ ...statsticsState, ...data });
       })
       .catch((error) => {
         navigate('/error/unauthorize', { replace: true });
         console.log('error:', error);
       });
-    return () => {};
-  }, [nickname]);
+  }, []);
 
   return (
     <AppbarLayout>
@@ -164,7 +145,7 @@ export default function Profile() {
           )}
         </div>
         <div className="total-section">
-          <div className="statistics-section ">
+          <div className="statistics-section">
             <div className="absolute_border_bottom statistics-section__header">
               <SectionTitle>통계</SectionTitle>
             </div>
@@ -179,8 +160,12 @@ export default function Profile() {
                 <div key={value}>{value}</div>
               ))}
             </div>
-
-            <div className="recent-list__scroll fancy__scroll">{drawRecent(recentList)}</div>
+            <InfiniteScroll
+              nickname={userState.nickname}
+              MAX_ROWS={5}
+              fetchURL="/api/profile/recent"
+              type="profile"
+            />
           </div>
         </div>
       </div>
