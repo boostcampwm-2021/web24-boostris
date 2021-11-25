@@ -32,6 +32,17 @@ ProfileRouter.post('/total', async (req, res, next) => {
   }
 });
 
+ProfileRouter.post('/recent', async (req, res, next) => {
+  try {
+    const { nickname, offset, limit } = req.body;
+    const [{ oauth_id }] = await getOauthId(nickname);
+    const recentList = await getRecentInDB_new(oauth_id, offset, limit);
+    res.status(200).json({ recentList });
+  } catch (error) {
+    res.status(401).json({ error: '잘못된 인증입니다.' });
+  }
+});
+
 ProfileRouter.patch('/', async (req, res, next) => {
   try {
     const { nickname, id } = req.body;
@@ -88,6 +99,17 @@ const getRecentInDB = (id) => {
     'GAME_INFO',
     'PLAY.game_id = GAME_INFO.game_id',
     `oauth_id='${id}'`
+  );
+};
+
+const getRecentInDB_new = (id, offset, limit) => {
+  return innerJoinTable(
+    'game_date, game_mode, ranking, play_time, attack_cnt, attacked_cnt',
+    'PLAY',
+    'GAME_INFO',
+    'PLAY.game_id = GAME_INFO.game_id',
+    `oauth_id='${id}'`,
+    `${offset}, ${limit}`
   );
 };
 
