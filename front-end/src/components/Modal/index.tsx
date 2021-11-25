@@ -48,7 +48,16 @@ const Modal = forwardRef(
                 </button>
               </div>
             )}
-            {type === 'rank' && <div className="modal__title">[{title}]</div>}
+            {type === 'rank' && (
+              <div className="modal__title">
+                <div>
+                  [{title}]
+                  <button className="close__btn" onClick={close}>
+                      X
+                  </button>
+                </div>
+              </div>
+            )}
             {children}
           </div>
         </div>
