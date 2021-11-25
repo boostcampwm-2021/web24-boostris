@@ -71,8 +71,10 @@ export const KEY = {
   RIGHT: 'ArrowRight',
   DOWN: 'ArrowDown',
   TURN_RIGHT: 'ArrowUp',
-  TURN_LEFT: 'z',
-  HOLD: 'c',
+  TURN_LEFT_ENG: 'z',
+  TURN_LEFT_KR: 'ㅋ',
+  HOLD_ENG: 'c',
+  HOLD_KR: 'ㅊ',
   HARD_DROP: ' ',
 };
 
