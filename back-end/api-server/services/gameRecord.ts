@@ -3,7 +3,7 @@ import { insertIntoTable } from '../database/query';
 export const insertGameInfo = async (game) => {
   try {
     await insertIntoTable(
-      `game_info`,
+      `GAME_INFO`,
       `(game_id, game_date, game_mode)`,
       `'${game.game_id}', '${game.game_date}', '${game.game_mode}'`
     );
@@ -18,7 +18,7 @@ export const insertPlayerInfo = (game_id, players) => {
     players.map(async (obj) => {
       obj.player_win = obj.player_win === false ? 0 : 1;
       await insertIntoTable(
-        `play`,
+        `PLAY`,
         `(oauth_id, game_id, play_time, ranking, attack_cnt, attacked_cnt, player_win)`,
         `'${obj.oauth_id}', '${game_id}', ${obj.play_time}, ${obj.ranking}, ${obj.attack_cnt}, ${obj.attacked_cnt}, ${obj.player_win}`
       );
