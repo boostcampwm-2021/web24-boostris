@@ -1,9 +1,35 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import './style.scss';
 
-export default function InfinityScroll() {
-  const MAX_ROWS = 5;
+const drawRecent = (list: Array<any>) => {
+  if (list.length === 0) return;
+  return (
+    <>
+      {list.map((value) => (
+        <div className="recent__list" key={value.game_id}>
+          <div>{value.game_date.slice(0, 10)}</div>
+          <div>{value.game_mode === 'normal' ? '일반전' : '1 vs 1'}</div>
+          <div>{value.ranking}</div>
+          <div>{value.play_time}</div>
+          <div>{value.attack_cnt}</div>
+          <div>{value.attacked_cnt}</div>
+        </div>
+      ))}
+    </>
+  );
+};
 
+export default function InfiniteScroll({
+  nickname,
+  MAX_ROWS,
+  fetchURL,
+  type,
+}: {
+  nickname: string | undefined;
+  MAX_ROWS: number;
+  fetchURL: string;
+  type: string;
+}) {
   const [pageNum, setPageNum] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -13,20 +39,22 @@ export default function InfinityScroll() {
   const [list, setList] = useState<any>([]);
   const [hasMore, setHasMore] = useState(false);
 
+  useEffect(() => console.log(hasMore), [hasMore]);
+
   useEffect(() => {
     setLoading(true);
-
-    fetch('/api/profile/recent', {
+    console.log(pageNum);
+    fetch(fetchURL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname: '뭐', limit: MAX_ROWS, offset: pageNum }),
+      body: JSON.stringify({ nickname, limit: MAX_ROWS, offset: pageNum }),
     })
       .then((res) => res.json())
       .then((data) => {
         setList((prev: any) => {
-          return [...prev, ...data.recentList];
+          return [...prev, ...data];
         });
-        setHasMore(data.recentList.length > 0);
+        setHasMore(data.length > 0);
         setLoading(false);
       })
       .catch((error) => {
@@ -39,7 +67,7 @@ export default function InfinityScroll() {
       if (loading) return;
       let options = {
         root: rootRef.current,
-        rootMargin: '0px',
+        rootMargin: '50px',
         threshold: 0,
       };
 
@@ -55,12 +83,13 @@ export default function InfinityScroll() {
   );
 
   return (
-    <div className="ScrollContainer" ref={rootRef}>
-      {list.map((m: any, i: number) => {
-        return <div key={i}>{m['game_date']}</div>;
-      })}
+    <div
+      className={`fancy__scroll ${type === 'profile' ? 'recent__list--scroll' : ''}`}
+      ref={rootRef}
+    >
+      {type === 'profile' && drawRecent(list)}
       <div ref={targetRef}></div>
-      <>{loading && <div>로딩중</div>}</>
+      <>{loading && <div className="loading">로딩중</div>}</>
     </div>
   );
 }

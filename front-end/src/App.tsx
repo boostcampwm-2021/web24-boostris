@@ -17,8 +17,6 @@ import RankingPage from './pages/RankingPage';
 import ErrorPage from './pages/ErrorPage';
 import './App.scss';
 
-import Test1 from './components/InfiniteScroll';
-
 function App() {
   let { auth } = useAuth();
   const dispatch = useAppDispatch();
@@ -57,8 +55,6 @@ function App() {
           <Route path="rank" element={<RankingPage />} />
           <Route path="profile/:nickname" element={<ProfilePage />} />
           <Route path="error/:title" element={<ErrorPage />} />
-
-          <Route path="test" element={<Test1 />} />
         </Route>
       </Routes>
     </div>

@@ -96,6 +96,7 @@ function RankingPage() {
     rankApiTemplate.nickName = inputRef?.current?.value;
     syncKeyWithServer(rankApiTemplate, categoryButtonState, modeButtonState);
     const res = await fetchGetRank(rankApiTemplate);
+    console.log(res.data, 'hihi');
     setPlayers(res.data);
   };
 
@@ -103,6 +104,7 @@ function RankingPage() {
     (async function effect() {
       syncKeyWithServer(rankApiTemplate, categoryButtonState, modeButtonState);
       const res = await fetchGetRank(rankApiTemplate);
+      console.log(res.data, 'byeye');
       setPlayers(res.data);
     })();
   }, [categoryButtonState, modeButtonState]);

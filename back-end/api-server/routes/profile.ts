@@ -23,9 +23,9 @@ ProfileRouter.post('/total', async (req, res, next) => {
   try {
     const [{ oauth_id }] = await getOauthId(req.body.nickname);
     const totalList = await getTotalInDB(oauth_id);
-    const recentList = await getRecentInDB(oauth_id);
     const [total, win] = totalList;
-    res.status(200).json({ total, win, recentList });
+    const data = { ...total[0], ...win[0] };
+    res.status(200).json(data);
   } catch (error) {
     console.log(error);
     res.status(401).json({ error: '잘못된 인증입니다.' });
@@ -36,9 +36,10 @@ ProfileRouter.post('/recent', async (req, res, next) => {
   try {
     const { nickname, offset, limit } = req.body;
     const [{ oauth_id }] = await getOauthId(nickname);
-    const recentList = await getRecentInDB_new(oauth_id, offset, limit);
-    res.status(200).json({ recentList });
+    const data = await getRecentInDB(oauth_id, offset, limit);
+    res.status(200).json(data);
   } catch (error) {
+    console.log(error);
     res.status(401).json({ error: '잘못된 인증입니다.' });
   }
 });
@@ -92,17 +93,7 @@ const getTotalInDB = async (id) => {
   ]);
 };
 
-const getRecentInDB = (id) => {
-  return innerJoinTable(
-    'game_date, game_mode, ranking, play_time, attack_cnt, attacked_cnt',
-    'PLAY',
-    'GAME_INFO',
-    'PLAY.game_id = GAME_INFO.game_id',
-    `oauth_id='${id}'`
-  );
-};
-
-const getRecentInDB_new = (id, offset, limit) => {
+const getRecentInDB = (id, offset, limit) => {
   return innerJoinTable(
     'game_date, game_mode, ranking, play_time, attack_cnt, attacked_cnt',
     'PLAY',
