@@ -57,8 +57,8 @@ RankingRouter.post('/', async (req, res) => {
       rank() over (order by sum(p.${categoryBox[category]}) desc) as ranking
       FROM
       PLAY as p 
-      inner join user_info as u on p.oauth_id = u.oauth_id 
-      inner join game_info as g on p.game_id = g.game_id and g.\`game_mode\` = '${mode}' 
+      inner join USER_INFO as u on p.oauth_id = u.oauth_id 
+      inner join GAME_INFO as g on p.game_id = g.game_id and g.\`game_mode\` = '${mode}' 
       group by p.oauth_id) a`
       //`ranking >= ${Number(offsetRank)} and ranking < ${Number(offsetRank) + 20}`
       //바로 위 코드는 무한 스크롤 구현 시 고려해 볼 것
