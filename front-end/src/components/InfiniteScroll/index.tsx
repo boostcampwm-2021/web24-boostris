@@ -6,7 +6,7 @@ const drawRecent = (list: Array<any>) => {
   return (
     <>
       {list.map((value) => (
-        <div className="recent__list" key={value.game_id}>
+        <div className="recent__list" key={value.game_date}>
           <div>{value.game_date.slice(0, 10)}</div>
           <div>{value.game_mode === 'normal' ? '일반전' : '1 vs 1'}</div>
           <div>{value.ranking}</div>
