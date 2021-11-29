@@ -79,12 +79,12 @@ const getStateMessageInDB = (nickname) => {
 const getTotalInDB = async (id) => {
   return await Promise.all([
     selectTable(
-      'SUM(attack_cnt) as total_attack_cnt, COUNT(oauth_id) as total_game_cnt, SEC_TO_TIME(SUM(TIME_TO_SEC(play_time))) as total_play_time ',
+      'SUM(attack_cnt) as total_attack_cnt, COUNT(oauth_id) as total_game_cnt, SEC_TO_TIME(SUM(play_time)) as total_play_time ',
       'PLAY',
       `oauth_id='${id}'`
     ),
     innerJoinTable(
-      `SUM(case when game_mode='1 vs 1' then player_win else 0 end) as single_player_win, SUM(case when game_mode='normal' then player_win else 0 end) as multi_player_win`,
+      `SUM(case when game_mode='normal' then player_win else 0 end) as multi_player_win`,
       'PLAY',
       'GAME_INFO',
       'PLAY.game_id = GAME_INFO.game_id',
@@ -95,7 +95,7 @@ const getTotalInDB = async (id) => {
 
 const getRecentInDB = (id, offset, limit) => {
   return innerJoinTable(
-    'game_date, game_mode, ranking, play_time, attack_cnt, attacked_cnt',
+    'game_date, game_mode, ranking, SEC_TO_TIME(play_time) as play_time, attack_cnt, attacked_cnt',
     'PLAY',
     'GAME_INFO',
     'PLAY.game_id = GAME_INFO.game_id',

@@ -9,7 +9,7 @@ const drawRecent = (list: Array<any>) => {
         <div className="recent__list" key={value.game_date}>
           <div>{value.game_date.slice(0, 10)}</div>
           <div>{value.game_mode === 'normal' ? '일반전' : '1 vs 1'}</div>
-          <div>{value.ranking}</div>
+          <div>{value.ranking}등</div>
           <div>{value.play_time}</div>
           <div>{value.attack_cnt}</div>
           <div>{value.attacked_cnt}</div>
@@ -38,6 +38,13 @@ export default function InfiniteScroll({
 
   const [list, setList] = useState<any>([]);
   const [hasMore, setHasMore] = useState(false);
+
+  useEffect(() => {
+    setPageNum(0);
+    setList([]);
+    setHasMore(false);
+    setLoading(false);
+  }, [nickname]);
 
   useEffect(() => {
     setLoading(true);
