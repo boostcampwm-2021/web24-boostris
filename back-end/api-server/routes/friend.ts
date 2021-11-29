@@ -74,9 +74,9 @@ FriendRouter.get('/request-list', async (req, res, next) => {
 
 // 내 친구 목록 가져오기
 FriendRouter.get('/list', async (req, res, next) => {
-  const nickname = req.query.nickname;
+  const oauthId = req.query.oauthId;
   try {
-    const friendList = await getFriendList(nickname);
+    const friendList = await getFriendList(oauthId);
     if (friendList ?? 0) {
       res.status(200).json(setMessage(friendList, 'success'));
     } else {

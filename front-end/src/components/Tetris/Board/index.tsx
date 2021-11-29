@@ -110,6 +110,7 @@ const clearLine = (board: number[][], socket: Socket) => {
   const key = clearLineCnt.toString();
 
   if (TETRIS.GARBAGE_RULES[key] === 0) return;
+
   socket.emit('attack other player', TETRIS.GARBAGE_RULES[key]);
   STATE.ATTACK_COUNT += TETRIS.GARBAGE_RULES[key];
 
@@ -327,8 +328,10 @@ const moves = {
     posY: prev.posY + 1,
   }),
   [TETRIS.KEY.TURN_RIGHT]: (prev: TetrisBlock) => rotate(JSON.parse(JSON.stringify(prev)), true),
-  [TETRIS.KEY.TURN_LEFT]: (prev: TetrisBlock) => rotate(JSON.parse(JSON.stringify(prev)), false),
-  [TETRIS.KEY.HOLD]: (prev: TetrisBlock) => prev,
+  [TETRIS.KEY.TURN_LEFT_ENG]: (prev: TetrisBlock) => rotate(JSON.parse(JSON.stringify(prev)), false),
+  [TETRIS.KEY.TURN_LEFT_KR]: (prev: TetrisBlock) => rotate(JSON.parse(JSON.stringify(prev)), false),
+  [TETRIS.KEY.HOLD_ENG]: (prev: TetrisBlock) => prev,
+  [TETRIS.KEY.HOLD_KR]: (prev: TetrisBlock) => prev,
   [TETRIS.KEY.HARD_DROP]: (prev: TetrisBlock) => prev,
 };
 
@@ -449,9 +452,7 @@ const initNewBlockCycle = (
   setSolidBlock(BOARD, STATE, socket);
 
   BLOCK.GHOST = hardDropBlock(BOARD, BLOCK.NOW);
-
-  // STATE.SOLID_GARBAGES = 0;
-  // STATE.ATTACKED_GARBAGES = 0;
+  
   STATE.CAN_HOLD = true;
 
   clearInterval(TIMER.DROP);
@@ -600,13 +601,16 @@ const Board = ({
     let downInterval: NodeJS.Timeout;
 
     const keyDownEventHandler = (event: KeyboardEvent) => {
-      event.preventDefault();
+      const focus = document.activeElement;
+      if(focus === document.querySelector('.chat__input')) return;
+
       if (!moves[event.key]) return;
       BLOCK.NEXT = moves[event.key](BLOCK.NOW);
 
       switch (event.key) {
         // 방향 키 이벤트(왼쪽, 오른쪽, 아래)
         case TETRIS.KEY.LEFT:
+          event.preventDefault();
           if (!STATE.KEYDOWN_LEFT) {
             if (STATE.KEYDOWN_RIGHT) {
               // 오른쪽이 계속 눌리고 있다면
@@ -622,12 +626,13 @@ const Board = ({
                 (leftInterval = setInterval(() => {
                   window.dispatchEvent(new KeyboardEvent('keydown', { key: event.key }));
                 }, 20)),
-              200
+              100
             );
           }
           moveBlock(BOARD, BLOCK, BACKGROUND, socket);
           break;
         case TETRIS.KEY.RIGHT:
+          event.preventDefault();
           if (!STATE.KEYDOWN_RIGHT) {
             if (STATE.KEYDOWN_LEFT) {
               // 왼쪽이 계속 눌리고 있다면
@@ -642,12 +647,13 @@ const Board = ({
                 (rightInterval = setInterval(() => {
                   window.dispatchEvent(new KeyboardEvent('keydown', { key: event.key }));
                 }, 20)),
-              200
+              100
             );
           }
           moveBlock(BOARD, BLOCK, BACKGROUND, socket);
           break;
         case TETRIS.KEY.DOWN:
+          event.preventDefault();
           if (!STATE.KEYDOWN_DOWN) {
             STATE.KEYDOWN_DOWN = true;
             downInterval = setInterval(() => {
@@ -658,19 +664,22 @@ const Board = ({
           break;
         // 회전 키 이벤트(위, z)
         case TETRIS.KEY.TURN_RIGHT:
+          event.preventDefault();
           if (STATE.KEYDOWN_TURN_RIGHT) return;
           STATE.KEYDOWN_TURN_RIGHT = true;
           BLOCK.NEXT = SRSAlgorithm(BOARD, BLOCK, event.key);
           moveBlock(BOARD, BLOCK, BACKGROUND, socket);
           break;
-        case TETRIS.KEY.TURN_LEFT:
+        case TETRIS.KEY.TURN_LEFT_ENG:
+        case TETRIS.KEY.TURN_LEFT_KR:
           if (STATE.KEYDOWN_TURN_LEFT) return;
           STATE.KEYDOWN_TURN_LEFT = true;
           BLOCK.NEXT = SRSAlgorithm(BOARD, BLOCK, event.key);
           moveBlock(BOARD, BLOCK, BACKGROUND, socket);
           break;
         // 홀드 키(c)
-        case TETRIS.KEY.HOLD:
+        case TETRIS.KEY.HOLD_ENG:
+        case TETRIS.KEY.HOLD_KR:
           if (STATE.CAN_HOLD) {
             STATE.CAN_HOLD = false;
             holdBlock(BOARD, BLOCK, STATE, PROPS_FUNC, BACKGROUND, socket);
@@ -711,7 +720,7 @@ const Board = ({
                 (rightContInterval = setInterval(() => {
                   window.dispatchEvent(new KeyboardEvent('keydown', { key: TETRIS.KEY.RIGHT }));
                 }, 20)),
-              200
+              100
             );
           }
           break;
@@ -728,7 +737,7 @@ const Board = ({
                 (leftContInterval = setInterval(() => {
                   window.dispatchEvent(new KeyboardEvent('keydown', { key: TETRIS.KEY.LEFT }));
                 }, 20)),
-              200
+              100
             );
           }
           break;
@@ -739,7 +748,7 @@ const Board = ({
         case TETRIS.KEY.TURN_RIGHT:
           STATE.KEYDOWN_TURN_RIGHT = false;
           break;
-        case TETRIS.KEY.TURN_LEFT:
+        case TETRIS.KEY.TURN_LEFT_ENG:
           STATE.KEYDOWN_TURN_LEFT = false;
           break;
         case TETRIS.KEY.HARD_DROP:
@@ -792,7 +801,13 @@ const Board = ({
     });
 
     socket.on('game over info', gameOverEvent = () => {
-      socket.emit('get game over info', profile.id, TIMER.PLAY_TIME, STATE.ATTACK_COUNT, STATE.ATTACKED_COUNT);
+      const data = {
+        oauthID: profile.id,
+        playTime: TIMER.PLAY_TIME,
+        attackCnt: STATE.ATTACK_COUNT,
+        attackedCnt: STATE.ATTACKED_COUNT
+      }
+      socket.emit('get game over info', data);
     });
 
     return () => {

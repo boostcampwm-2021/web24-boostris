@@ -1,0 +1,775 @@
+swagger: '2.0'
+info:
+  description: 'Boostris API 문서입니다.'
+  version: '1.0.0'
+  title: 'Boostris Api'
+  #  termsOfService: 'http://swagger.io/terms/'
+  contact:
+    #email: 'apiteam@swagger.io'
+  license:
+    #name: 'Apache 2.0'
+    #url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+
+host: 'https://boostris.com'
+basePath: '/'
+tags:
+  - name: 'api'
+    description: 'API 입니다.'
+    #externalDocs:
+    #  description: 'Find out more'
+    #  url: 'http://swagger.io'
+  - name: 'socket'
+    description: 'Socket 입니다.'
+schemes:
+  - 'https'
+  - 'http'
+paths:
+  /api/auth/github/code:
+    post:
+      tags:
+        - 'api'
+      summary: 'Github 유저 정보를 받아와서, 우리 사이트의 기존 회원 여부 확인.'
+      description: ''
+      operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'Github code를 받습니다.'
+          required: true
+          schema:
+            $ref: '#/definitions/GithubAuthParameter'
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/AuthResponse'
+        '400':
+          description: 'Invalid input'
+      #security:
+      #  - petstore_auth:
+      #      - 'write:pets'
+      #      - 'read:pets'
+
+  /api/auth/naver/token:
+    post:
+      tags:
+        - 'api'
+      summary: 'Naver 유저 정보를 받아와서, 우리 사이트의 기존 회원 여부 확인'
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'Access Token을 받습니다.'
+          required: true
+          schema:
+            $ref: '#/definitions/NaverAuthParameter'
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/AuthResponse'
+        '400':
+          description: 'Invalid input'
+
+      #security:
+      #  - petstore_auth:
+      #      - 'write:pets'
+      #      - 'read:pets'
+
+  /api/auth/google/user:
+    post:
+      tags:
+        - 'api'
+      summary: 'Google 유저 정보를 받아와서, 우리 사이트의 기존 회원 여부 확인'
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'email, name을 받습니다.'
+          required: true
+          schema:
+            $ref: '#/definitions/GoogleAuthParameter'
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/AuthResponse'
+        '400':
+          description: 'Invalid input'
+      #security:
+      #  - petstore_auth:
+      #      - 'write:pets'
+      #      - 'read:pets'
+
+  /api/auth/jwt:
+    get:
+      tags:
+        - 'api'
+      summary: 'Cookie에 들어있는 JWT 유효성 검사 후, 검증되면 추가적으로 닉네임, oauth_id 정보 전송'
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'header'
+          name: 'header'
+          description: 'req.cookies.user 값이 필요합니다.'
+          required: true
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/JwtResponse'
+        '400':
+          description: 'Invalid input'
+      #security:
+      #  - petstore_auth:
+      #      - 'write:pets'
+      #      - 'read:pets'
+
+  /api/auth/logout:
+    get:
+      tags:
+        - 'api'
+      summary: '로그아웃'
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'header'
+          name: 'header'
+          description: 'user 쿠키를 지웁니다.'
+          required: true
+          #schema:
+          #  $ref: '#/definitions/Pet'
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/LogoutResponse'
+        '400':
+          description: 'Invalid input'
+      #security:
+      #  - petstore_auth:
+      #      - 'write:pets'
+      #      - 'read:pets'
+
+  #######################################
+  #####          Ranking
+  #######################################
+
+  /api/rank:
+    post:
+      tags:
+        - 'api'
+      summary: '랭킹 검색'
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'DB 쿼리문으로 조건에 맞는 랭킹 정보를 뽑아냅니다'
+          required: true
+          schema:
+            $ref: '#/definitions/RankingParameter'
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/RankingResponse'
+        '400':
+          description: 'Invalid input'
+      #security:
+      #  - petstore_auth:
+      #      - 'write:pets'
+      #      - 'read:pets'
+
+  /api/rank/myInfo:
+    post:
+      tags:
+        - 'api'
+      summary: '랭킹 페이지 왼쪽 프로필을 위한 api'
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/RankingMyinfoParameter'
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/RankingMyinfoResponse'
+        '400':
+          description: 'Invalid input'
+      #security:
+      #  - petstore_auth:
+      #      - 'write:pets'
+      #      - 'read:pets'
+
+  #######################################
+  #####          Register
+  #######################################
+  /api/register/insert:
+    post:
+      tags:
+        - 'api'
+      summary: ''
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/RegisterInsertParameter'
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/RegisterInsertResponse'
+        '400':
+          description: 'Invalid input'
+      #security:
+      #  - petstore_auth:
+      #      - 'write:pets'
+      #      - 'read:pets'
+
+  #######################################
+  #####          Profile
+  #######################################
+  /api/profile/stateMessage:
+    post:
+      tags:
+        - 'api'
+      summary: ''
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/ProfileStateMessageParameter'
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/ProfileStateMessageResponse'
+        '400':
+          description: 'Invalid input'
+
+  /api/profile/total:
+    post:
+      tags:
+        - 'api'
+      summary: ''
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/ProfileTotalParameter'
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/ProfileTotalResponse'
+        '400':
+          description: 'Invalid input'
+
+  /api/profile/:
+    patch:
+      tags:
+        - 'api'
+      summary: ''
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/ProfilePatchParameter'
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/ProfilePatchResponse'
+        '400':
+          description: 'Invalid input'
+
+  #######################################
+  #####          Friend
+  #######################################
+  /api/friend/request:
+    post:
+      tags:
+        - 'api'
+      summary: ''
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/FriendRequestParameter'
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/FriendRequestResponse'
+        '400':
+          description: 'Invalid input'
+
+  /api/friend/request-update:
+    post:
+      tags:
+        - 'api'
+      summary: ''
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/FriendRequestUpdateParameter'
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/FriendRequestUpdateResponse'
+        '400':
+          description: 'Invalid input'
+
+  /api/friend/request-list:
+    get:
+      tags:
+        - 'api'
+      summary: ''
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/FriendRequestListParameter'
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/FriendRequestListResponse'
+        '400':
+          description: 'Invalid input'
+
+  /api/friend/list:
+    get:
+      tags:
+        - 'api'
+      summary: ''
+      description: ''
+      #operationId: 'githubCode'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/ProfilePatchParameter'
+      responses:
+        '200':
+          description:
+          schema:
+            $ref: '#/definitions/ProfilePatchResponse'
+        '400':
+          description: 'Invalid input'
+
+definitions:
+  #parameters
+  GithubAuthParameter:
+    type: 'object'
+    properties:
+      code:
+        type: 'string'
+        example: 'a5e58d098317a84df83a'
+
+  NaverAuthParameter:
+    type: 'object'
+    properties:
+      accessToken:
+        type: 'string'
+        example: '2c8dffbdf887406b394c79e917f0ea'
+
+  GoogleAuthParameter:
+    type: 'object'
+    properties:
+      email:
+        type: 'string'
+        example: 'abc@gmail.com'
+      name:
+        type: 'string'
+        example: '이지은'
+
+  RankingParameter:
+    type: 'object'
+    properties:
+      category:
+        type: 'string'
+        example: 'attackCnt'
+      mode:
+        type: 'string'
+        example: 'normal'
+      nickName:
+        type: 'string'
+        example: 'nickname'
+      offsetRank:
+        type: 'string'
+        example: '10'
+      lastNickName:
+        type: 'string'
+        example: 'nickname2'
+
+  RankingMyinfoParameter:
+    type: 'object'
+    properties:
+      nickname:
+        type: 'string'
+        example: 'nickname'
+
+  RegisterInsertParameter:
+    type: 'object'
+    properties:
+      data:
+        type: 'object'
+        properties:
+          nickname:
+            type: 'string'
+            example: 'nickname'
+          message:
+            type: 'string'
+            example: '안녕하세요~'
+          oauthInfo:
+            type: 'string'
+            example: 'Q6sHtlm6MXJvyHQnGTF77gyu4VHGCI1EA'
+
+  ProfileStateMessageParameter:
+    type: 'object'
+    properties:
+      nickname:
+        type: 'string'
+        example: 'nickname'
+
+  ProfileTotalParameter:
+    type: 'object'
+    properties:
+      id:
+        type: 'string'
+        example: 'abc@gmail.com'
+
+  ProfilePatchParameter:
+    type: 'object'
+    properties:
+      id:
+        type: 'string'
+        example: 'abc@gmail.com'
+      nickname:
+        type: 'string'
+        example: 'nickname'
+      stateMessage:
+        type: 'string'
+        example: '안녕하세요 !'
+
+  FriendRequestParameter:
+    type: 'object'
+    properties:
+      requestee:
+        type: 'string'
+        example: 'nickname'
+      requester:
+        type: 'string'
+        example: 'nickname2'
+
+  FriendRequestUpdateParameter:
+    type: 'object'
+    properties:
+      isAccept:
+        type: 'number'
+        example: 0
+      requestee:
+        type: 'string'
+        example: 'nickname'
+      requester:
+        type: 'string'
+        example: 'nickname'
+
+  FriendRequestListParameter:
+    type:
+
+  #reponses
+  AuthResponse:
+    type: 'object'
+    properties:
+      id:
+        type: 'string'
+        example: 'QA6sHtlm6MXJvONalHynGTF77gyu4VHGCI1EAv'
+      isOurUser:
+        type: 'boolean'
+        example: true
+      nickname:
+        type: 'string'
+        example: 'nickname'
+
+  JwtResponse:
+    type: 'object'
+    properties:
+      authenticated:
+        type: 'boolean'
+        example: true
+      nickname:
+        type: 'string'
+        example: 'nickname'
+      oauth_id:
+        type: 'string'
+        example: 'kk'
+
+  LogoutResponse:
+    type: 'object'
+    properties:
+      authenticated:
+        type: 'boolean'
+        exmaple: 'true'
+
+  RankingResponse:
+    type: 'object'
+    properties:
+      data:
+        type: 'array'
+        items:
+          type: 'object'
+          properties:
+            nickname:
+              type: 'string'
+              exmaple: 'chch'
+            category:
+              type: 'string'
+              example: '11'
+            state_message:
+              type: 'string'
+              example: '찬찬'
+            ranking:
+              type: 'number'
+              example: 1
+      message:
+        type: 'string'
+        example: 'success'
+
+  RankingMyinfoResponse:
+    type: 'object'
+    properties:
+      data:
+        type: 'object'
+        properties:
+          player_win:
+            type: 'string'
+            example: '11'
+          attack_cnt:
+            type: 'string'
+            example: '12'
+      message:
+        type: 'string'
+        example: 'success'
+
+  RegisterInsertResponse:
+    type: 'object'
+    properties:
+      data:
+        type: 'object'
+        properties:
+          dupCheck:
+            type: 'boolean'
+            example: 'true'
+          dbInsertError:
+            type: 'boolean'
+            example: 'false'
+
+  ProfileStateMessageResponse:
+    type: 'object'
+    properties:
+      state_message:
+        type: 'string'
+        example: '안녕하세요 !'
+
+  ProfileTotalResponse:
+    type: 'object'
+    properties:
+      total:
+        type: 'array'
+        items:
+          type: 'object'
+          properties:
+            total_attack_cnt:
+              type: 'string'
+              example: '12'
+            total_game_cnt:
+              type: 'number'
+              example: 15
+            total_play_time:
+              type: 'string'
+              example: '00:02:13'
+      win:
+        type: 'array'
+        items:
+          type: 'object'
+          properties:
+            single_player_win:
+              type: 'string'
+              example: '0'
+            multi_player_win:
+              type: 'string'
+              example: '11'
+      recentList:
+        type: 'array'
+        items:
+          type: 'object'
+          properties:
+            game_date:
+              type: 'string'
+              format: 'date-time'
+              exmaple: '2021-11-18T10:03:02.000Z'
+            game_mode:
+              type: 'string'
+              example: 'normal'
+            ranking:
+              type: 'number'
+              example: 2
+            play_time:
+              type: 'number'
+              example: 33
+            attack_cnt:
+              type: 'number'
+              example: 5
+            attacked_cnt:
+              type: 'number'
+              example: 6
+
+  ProfilePatchResponse:
+    type: 'object'
+    properties:
+      message:
+        type: 'string'
+        example: 'done'
+
+  FriendRequestResponse:
+    type: 'object'
+    properties:
+      data:
+        type: 'object'
+      message:
+        type: 'string'
+        example: 'success'
+
+  FriendRequestUpdateResponse:
+    type: 'object'
+    properties:
+      data:
+        type: 'object'
+      message:
+        type: 'string'
+        example: 'success'
+
+  FriendRequestListResponse:
+    type: 'object'
+    properties:
+      data:
+        type: 'array'
+        items:
+          type: 'object'
+          properties:
+            nickname:
+              type: 'string'
+              example: 'nickname'
+            created_at:
+              type: 'string'
+              format: 'date-time'
+              exmaple: '2021-11-18T10:03:02.000Z'
+      message:
+        type: 'string'
+        example: 'success'
+
+externalDocs:
+  description: 'Find out more about Swagger'
+  url: 'http://swagger.io'

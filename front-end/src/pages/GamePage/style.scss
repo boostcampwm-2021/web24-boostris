@@ -96,5 +96,12 @@
         color: #1C2137;
       }
     }
+
+    & .close__btn {
+      cursor: pointer;
+      left: 140px;
+      top: -13px;
+      position: relative;
+    }
   }
 }

@@ -102,7 +102,7 @@ const initSocketEvent = (socket: Socket, roomID: string | null, socketHandler: a
       }
     }
   });
-  socket.emit('get other players info', roomID, (res: []) => {
+  socket.emit('get other players info', (res: []) => {
     // 초기 접속 시 다른 플레이어 정보 요청
     res.forEach((p: {id:string; nickname: string}) => {
       const player = PLAYERS.find((r) => r.PLAYER === p.id);

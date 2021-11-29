@@ -69,13 +69,10 @@ export const fetchGoogleUser = createAsyncThunk(
   }
 );
 
-export const updateNickname = createAsyncThunk(
-  'profile/updateNickname',
-  async (nickname: string | undefined) => {
-    const response = await fetchAuthData();
-    return response;
-  }
-);
+export const updateNickname = createAsyncThunk('profile/updateNickname', async () => {
+  const response = await fetchAuthData();
+  return response;
+});
 
 export const registerNewUser = createAsyncThunk(
   'user/registerNewUser',

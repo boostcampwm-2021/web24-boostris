@@ -3,9 +3,11 @@ import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 export interface userRemote extends RemoteSocket<DefaultEventsMap> {
   userName: string;
-};
+  oauthID: string;
+}
 
 export interface userSocket extends Socket {
   userName: string;
-  roomID: string; 
-};
+  roomID: string;
+  oauthID: string;
+}

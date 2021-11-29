@@ -19,9 +19,17 @@ export const insertIntoTable = (table, into, values) => {
   return connectionQuery(queryLine);
 };
 
-export const innerJoinTable = async (column, tableA, tableB, on = null, condition = null) => {
-  let queryLine = `SELECT ${column} FROM ${tableA} INNER JOIN ${tableB} ON ${on} `;
-  queryLine += condition ? `WHERE ${condition}` : ``;
+export const innerJoinTable = async (
+  column,
+  tableA,
+  tableB,
+  on = null,
+  condition = null,
+  limit = null
+) => {
+  let queryLine = `SELECT ${column} FROM ${tableA} INNER JOIN ${tableB} ON ${on}`;
+  queryLine += condition ? ` WHERE ${condition}` : ``;
+  queryLine += limit ? ` LIMIT ${limit}` : ``;
   return connectionQuery(queryLine);
 };
 

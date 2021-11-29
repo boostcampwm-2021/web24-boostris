@@ -31,10 +31,10 @@ const profileResponse = {
 
 RankingRouter.post('/myInfo', async (req, res) => {
   try {
-    const { nickname } = req.body.myInfoTemplate;
+    const { oauthId } = req.body.myInfoTemplate;
     let queryResult = await selectTable(
       `sum(player_win) as player_win, sum(attack_cnt) as attack_cnt`,
-      `PLAY group by nickname having nickname = '${nickname}'`
+      `PLAY group by oauth_id having oauth_id = '${oauthId}'`
     ); // 지금은 nickname이 아니라 oauth id이므로 추후 스토어에 추가되면 바꿀 예정.
     profileResponse.data = queryResult?.[0];
     profileResponse.message = 'success';
@@ -51,15 +51,15 @@ RankingRouter.post('/', async (req, res) => {
     let queryResult = await selectTable(
       '*',
       `(SELECT 
-      p.nickname as nickname, 
+      u.nickname as nickname, 
       sum(p.${categoryBox[category]}) as category, 
       ANY_VALUE(u.state_message) as state_message, 
       rank() over (order by sum(p.${categoryBox[category]}) desc) as ranking
       FROM
       PLAY as p 
-      inner join user_info as u on p.nickname = u.nickname 
-      inner join game_info as g on p.game_id = g.game_id and g.\`game_mode\` = '${mode}' 
-      group by p.nickname) a`
+      inner join USER_INFO as u on p.oauth_id = u.oauth_id 
+      inner join GAME_INFO as g on p.game_id = g.game_id and g.\`game_mode\` = '${mode}' 
+      group by p.oauth_id) a`
       //`ranking >= ${Number(offsetRank)} and ranking < ${Number(offsetRank) + 20}`
       //바로 위 코드는 무한 스크롤 구현 시 고려해 볼 것
     );

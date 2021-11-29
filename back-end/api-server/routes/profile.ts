@@ -21,10 +21,23 @@ ProfileRouter.post('/stateMessage', async (req, res, next) => {
 
 ProfileRouter.post('/total', async (req, res, next) => {
   try {
-    const totalList = await getTotalInDB(req.body.id);
-    const recentList = await getRecentInDB(req.body.id);
+    const [{ oauth_id }] = await getOauthId(req.body.nickname);
+    const totalList = await getTotalInDB(oauth_id);
     const [total, win] = totalList;
-    res.status(200).json({ total, win, recentList });
+    const data = { ...total[0], ...win[0] };
+    res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(401).json({ error: '잘못된 인증입니다.' });
+  }
+});
+
+ProfileRouter.post('/recent', async (req, res, next) => {
+  try {
+    const { nickname, offset, limit } = req.body;
+    const [{ oauth_id }] = await getOauthId(nickname);
+    const data = await getRecentInDB(oauth_id, offset, limit);
+    res.status(200).json(data);
   } catch (error) {
     console.log(error);
     res.status(401).json({ error: '잘못된 인증입니다.' });
@@ -47,6 +60,10 @@ ProfileRouter.patch('/', async (req, res, next) => {
   }
 });
 
+const getOauthId = (nickname) => {
+  return selectTable('oauth_id', 'USER_INFO', `nickname='${nickname}'`);
+};
+
 const updateProfileInDB = ({ nickname, stateMessage, id }) => {
   return updateTable(
     'USER_INFO',
@@ -62,12 +79,12 @@ const getStateMessageInDB = (nickname) => {
 const getTotalInDB = async (id) => {
   return await Promise.all([
     selectTable(
-      'SUM(attack_cnt) as total_attack_cnt, COUNT(oauth_id) as total_game_cnt, SEC_TO_TIME(SUM(TIME_TO_SEC(play_time))) as total_play_time ',
+      'SUM(attack_cnt) as total_attack_cnt, COUNT(oauth_id) as total_game_cnt, SEC_TO_TIME(SUM(play_time)) as total_play_time ',
       'PLAY',
       `oauth_id='${id}'`
     ),
     innerJoinTable(
-      `SUM(case when game_mode='1 vs 1' then player_win else 0 end) as single_player_win, SUM(case when game_mode='normal' then player_win else 0 end) as multi_player_win`,
+      `SUM(case when game_mode='normal' then player_win else 0 end) as multi_player_win`,
       'PLAY',
       'GAME_INFO',
       'PLAY.game_id = GAME_INFO.game_id',
@@ -76,13 +93,14 @@ const getTotalInDB = async (id) => {
   ]);
 };
 
-const getRecentInDB = (id) => {
+const getRecentInDB = (id, offset, limit) => {
   return innerJoinTable(
-    'game_date, game_mode, ranking, play_time, attack_cnt, attacked_cnt',
+    'game_date, game_mode, ranking, SEC_TO_TIME(play_time) as play_time, attack_cnt, attacked_cnt',
     'PLAY',
     'GAME_INFO',
     'PLAY.game_id = GAME_INFO.game_id',
-    `oauth_id='${id}'`
+    `oauth_id='${id}'`,
+    `${offset}, ${limit}`
   );
 };
 

@@ -20,7 +20,7 @@ import {
   updateRequest,
 } from '../../features/friend/friendSlice';
 
-type rightClickEventType = MouseEventHandler | ((e: any, id: string) => void);
+type rightClickEventType = MouseEventHandler | ((e: any, id: string, oauthID: string) => void);
 
 function LobbyPage() {
   const { profile } = useAuth();
@@ -45,22 +45,23 @@ function LobbyPage() {
     nickname: string | null;
     isAlreadyFriend: boolean;
     socketId: string;
-  }>({ x: null, y: null, nickname: null, isAlreadyFriend: false, socketId: '' });
+    oauthID: string;
+  }>({ x: null, y: null, nickname: null, isAlreadyFriend: false, socketId: '', oauthID: '' });
 
   useEffect(() => {
-    if (profile.nickname) {
+    if (profile.id) {
       dispatch(
         getFriendList({
-          nickname: profile.nickname,
+          oauthID: `${profile.id}`,
         })
       );
       dispatch(
         getRequestList({
-          requestee: profile.nickname,
+          requestee: `${profile.id}`,
         })
       );
     }
-  }, [dispatch, profile.nickname]);
+  }, [dispatch, profile.id]);
 
   const userListVirtualizer = useVirtual({
     size: users.length,
@@ -110,7 +111,7 @@ function LobbyPage() {
     });
   };
 
-  const rightClickListener: rightClickEventType = (e, id) => {
+  const rightClickListener: rightClickEventType = (e, id, oauthID) => {
     e.preventDefault();
     const { target } = e;
     if ((target as HTMLElement).closest('.user__list--item')) {
@@ -120,6 +121,7 @@ function LobbyPage() {
         nickname: target.innerText,
         isAlreadyFriend: friendList.findIndex((f: any) => f === target.innerText) !== -1,
         socketId: id,
+        oauthID,
       });
     }
     setActivatedUser(id);
@@ -141,27 +143,27 @@ function LobbyPage() {
     socketClient.current.emit('join room', id, profile.nickname);
   };
 
-  const handleUpdateRequest = (result: boolean, n: string) => {
+  const handleUpdateRequest = (result: boolean, oauth_id: string) => {
     dispatch(
       updateRequest({
         isAccept: result ? 1 : 0,
-        requestee: profile.nickname as string,
-        requester: n,
+        requestee: profile.id as string,
+        requester: oauth_id,
         cb: () => {
           notificationModalRef.current.close();
           dispatch(
             getRequestList({
-              requestee: profile.nickname as string,
+              requestee: profile.id as string,
             })
           );
           dispatch(
             getFriendList({
-              nickname: profile.nickname as string,
+              oauthID: profile.id as string,
             })
           );
 
           if (result) {
-            socketClient.current.emit('refresh friend list', n);
+            socketClient.current.emit('refresh friend list', oauth_id);
           }
         },
       })
@@ -191,7 +193,14 @@ function LobbyPage() {
               <button
                 className={`${currentIdx === idx && 'selected'} toggle__btn`}
                 key={btn}
-                onClick={() => setCurrentIdx(idx)}
+                onClick={async () => {
+                  setCurrentIdx(idx);
+                  await dispatch(
+                    getFriendList({
+                      oauthID: `${profile.id}`,
+                    })
+                  );
+                }}
               >
                 {btn}
               </button>
@@ -208,13 +217,12 @@ function LobbyPage() {
                   }}
                 >
                   {userListVirtualizer.virtualItems.map((virtualRow: any) => {
-                    const { nickname, id } = users[virtualRow.index];
+                    const { nickname, id, oauthID } = users[virtualRow.index];
                     return (
                       <div
                         key={id}
-                        // key={virtualRow.index}
                         className={`user__list--item ${activatedUser === id && 'activated'}`}
-                        onContextMenu={(e) => rightClickListener(e, id)}
+                        onContextMenu={(e) => rightClickListener(e, id, oauthID)}
                         style={{
                           position: 'absolute',
                           top: 0,
@@ -226,7 +234,6 @@ function LobbyPage() {
                       >
                         <span className="dot"></span>
                         <span className="name__span">{nickname}</span>
-                        {/* <span className="name__span">Row {virtualRow.index}</span> */}
                       </div>
                     );
                   })}
@@ -245,7 +252,7 @@ function LobbyPage() {
                       <div
                         key={nickname}
                         className={`user__list--item ${activatedUser === nickname && 'activated'}`}
-                        onContextMenu={(e) => rightClickListener(e, nickname)}
+                        onContextMenu={(e) => rightClickListener(e, nickname, '')}
                         style={{
                           position: 'absolute',
                           top: 0,
@@ -354,7 +361,15 @@ function LobbyPage() {
           <div className="notification__title absolute_border_bottom">&gt; 알림 센터</div>
           <div className="notification__list__container fancy__scroll">
             {friendRequestList.map(
-              ({ nickname, created_at }: { nickname: string; created_at: string }) => (
+              ({
+                nickname,
+                created_at,
+                oauth_id,
+              }: {
+                nickname: string;
+                created_at: string;
+                oauth_id: string;
+              }) => (
                 <div className="notification__list__item absolute_border_bottom" key={created_at}>
                   <div className="notification__content">{nickname}님의 친구 요청입니다.</div>
                   <div className="bottom__container">
@@ -362,8 +377,8 @@ function LobbyPage() {
                       {new Date(created_at).toLocaleDateString('ko-KR')}
                     </div>
                     <div className="action__btn__container">
-                      [<button onClick={() => handleUpdateRequest(true, nickname)}>O</button>,
-                      <button onClick={() => handleUpdateRequest(false, nickname)}>X</button>]
+                      [<button onClick={() => handleUpdateRequest(true, oauth_id)}>O</button>,
+                      <button onClick={() => handleUpdateRequest(false, oauth_id)}>X</button>]
                     </div>
                   </div>
                 </div>

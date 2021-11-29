@@ -14,6 +14,7 @@ import RequireAuth from './routes/RequireAuth';
 import LobbyPage from './pages/LobbyPage';
 import GamePage from './pages/GamePage';
 import RankingPage from './pages/RankingPage';
+import ErrorPage from './pages/ErrorPage';
 import './App.scss';
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
           />
           <Route path="rank" element={<RankingPage />} />
           <Route path="profile/:nickname" element={<ProfilePage />} />
+          <Route path="error/:title" element={<ErrorPage />} />
         </Route>
       </Routes>
     </div>
