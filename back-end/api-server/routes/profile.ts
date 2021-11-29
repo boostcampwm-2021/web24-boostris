@@ -100,6 +100,7 @@ const getRecentInDB = (id, offset, limit) => {
     'GAME_INFO',
     'PLAY.game_id = GAME_INFO.game_id',
     `oauth_id='${id}'`,
+    `game_date DESC`,
     `${offset}, ${limit}`
   );
 };
