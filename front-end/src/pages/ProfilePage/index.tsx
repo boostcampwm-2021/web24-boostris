@@ -19,12 +19,10 @@ export default function Profile() {
   const translations = [
     ['total_game_cnt', '총 게임 수'],
     ['total_play_time', '총 플레이 시간'],
-    ['single_player_win', '1 vs 1 승리 횟수'],
-    ['multi_player_win', '일반전 승리 횟수'],
+    ['multi_player_win', '승리 횟수'],
     ['total_attack_cnt', '총 공격 횟수'],
   ];
 
-  const [recentList, setRecentList] = useState<string[][]>([]);
   const [statsticsState, setStatsticsState] = useState({});
 
   const [editMode, setEditMode] = useState(false);
@@ -83,6 +81,7 @@ export default function Profile() {
   };
 
   useEffect(() => {
+    setUserState({ ...userState, nickname });
     fetch('/api/profile/stateMessage', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -110,7 +109,7 @@ export default function Profile() {
         navigate('/error/unauthorize', { replace: true });
         console.log('error:', error);
       });
-  }, []);
+  }, [nickname]);
 
   return (
     <AppbarLayout>
