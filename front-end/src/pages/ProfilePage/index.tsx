@@ -10,6 +10,19 @@ import { useSocket } from '../../context/SocketContext';
 import InfiniteScroll from '../../components/InfiniteScroll';
 import { fetchGetStateMessage, fetchGetTotal, fetchUpdateUserState } from './profileFetch';
 
+const drawRecent = (value: any) => {
+  return (
+    <div className="recent__list" key={value.game_date}>
+      <div>{value.game_date.slice(0, 10)}</div>
+      <div>{value.game_mode === 'normal' ? '일반전' : '1 vs 1'}</div>
+      <div>{value.ranking}등</div>
+      <div>{value.play_time}</div>
+      <div>{value.attack_cnt}</div>
+      <div>{value.attacked_cnt}</div>
+    </div>
+  );
+};
+
 export default function Profile() {
   const { nickname } = useParams();
   const authProfile = useAuth().profile;
@@ -145,6 +158,7 @@ export default function Profile() {
             </div>
             <InfiniteScroll
               nickname={nickname}
+              drawFunction={drawRecent}
               MAX_ROWS={5}
               fetchURL="/api/profile/recent"
               type="profile"

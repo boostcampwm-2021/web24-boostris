@@ -2,33 +2,17 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './style.scss';
 
-const drawRecent = (list: Array<any>) => {
-  if (list.length === 0) return;
-  return (
-    <>
-      {list.map((value) => (
-        <div className="recent__list" key={value.game_date}>
-          <div>{value.game_date.slice(0, 10)}</div>
-          <div>{value.game_mode === 'normal' ? '일반전' : '1 vs 1'}</div>
-          <div>{value.ranking}등</div>
-          <div>{value.play_time}</div>
-          <div>{value.attack_cnt}</div>
-          <div>{value.attacked_cnt}</div>
-        </div>
-      ))}
-    </>
-  );
-};
-
 export default function InfiniteScroll({
   nickname,
   MAX_ROWS,
   fetchURL,
+  drawFunction,
   type,
 }: {
   nickname: string | undefined;
   MAX_ROWS: number;
   fetchURL: string;
+  drawFunction: (object: any) => any;
   type: string;
 }) {
   const [pageNum, setPageNum] = useState(0);
@@ -41,6 +25,11 @@ export default function InfiniteScroll({
   const [hasMore, setHasMore] = useState(false);
 
   const navigate = useNavigate();
+
+  const drawListItem = (list: Array<any>) => {
+    if (list.length === 0) return;
+    return <>{list.map((value) => drawFunction(value))}</>;
+  };
 
   useEffect(() => {
     setPageNum(0);
@@ -98,7 +87,7 @@ export default function InfiniteScroll({
       className={`fancy__scroll ${type === 'profile' ? 'recent__list--scroll' : ''}`}
       ref={rootRef}
     >
-      {type === 'profile' && drawRecent(list)}
+      {type === 'profile' && drawListItem(list)}
       <div ref={targetRef}></div>
       <>{loading && <div className="loading">로딩중</div>}</>
     </div>
