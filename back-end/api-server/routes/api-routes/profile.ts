@@ -1,6 +1,6 @@
 import * as express from 'express';
-import { selectTable, innerJoinTable, updateTable } from '../database/query';
-import { setJWT } from './../services/auth';
+import { selectTable, innerJoinTable, updateTable } from '../../database/query';
+import { setJWT } from '../../services/auth';
 
 const ProfileRouter = express.Router();
 

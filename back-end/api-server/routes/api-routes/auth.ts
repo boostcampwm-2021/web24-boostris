@@ -1,10 +1,10 @@
 import * as express from 'express';
 import axios from 'axios';
 import * as jwt from 'jsonwebtoken';
-import { selectTable } from '../database/query';
+import { selectTable } from '../../database/query';
 import 'dotenv/config';
 
-import { getGithubUser, getUserInfoFromNaver, setJWT } from '../services/auth';
+import { getGithubUser, getUserInfoFromNaver, setJWT } from '../../services/auth';
 
 const AuthRouter = express.Router();
 
