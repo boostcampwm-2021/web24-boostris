@@ -14,7 +14,7 @@ import { RedisAdapter } from '@socket.io/redis-adapter';
 
 export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) => {
   socket.on('duplicate check', async (oauthID) => {
-    const sockets = (await mainSpace.fetchSockets()) as userRemote[];
+    const sockets = await getSockets(mainSpace);
     if (sockets.filter((s) => s.oauthID === oauthID).length >= 1) {
       mainSpace.to(socket.id).emit('duplicate check:fail');
       socket.disconnect();
