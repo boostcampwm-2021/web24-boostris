@@ -5,7 +5,7 @@ import {
   requestFriend,
   requestFriendList,
   requestFriendUpdate,
-} from '../services/friend';
+} from '../../services/friend';
 
 const FriendRouter = express.Router();
 interface friendReturnFormInterface {

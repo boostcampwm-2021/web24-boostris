@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { selectTable } from '../database/query';
+import { selectTable } from '../../database/query';
 
 const RankingRouter = express.Router();
 
