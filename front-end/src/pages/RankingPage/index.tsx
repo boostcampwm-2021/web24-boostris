@@ -3,6 +3,7 @@ import { useAppSelector } from '../../app/hooks';
 import { selectUser } from '../../features/user/userSlice';
 import { fetchGetRank, fetchGetMyCntInfo } from './rankFetch';
 import AppbarLayout from '../../layout/AppbarLayout';
+import { useSocket, useSocketReady } from '../../context/SocketContext';
 import './style.scss';
 
 interface RankApiTemplateObject {
@@ -72,6 +73,9 @@ function RankingPage() {
     lastNickName: '',
   };
 
+  const socketClient = useSocket();
+  const { isReady } = useSocketReady();
+
   const categoryChange = ['공격 횟수', '승리 횟수'];
   const [categoryButtonState, setCategoryButtonState] = useState(1);
   const [modeButtonState, setModeButtonState] = useState(1);
@@ -106,6 +110,25 @@ function RankingPage() {
       setPlayers(res.data);
     })();
   }, [categoryButtonState, modeButtonState]);
+
+  useEffect(() => {
+    if(!isReady) return;
+
+    const popstateEvent = (e: any) => {
+      const url = e.target.location.pathname;
+
+      if(url.includes('/game/')) {
+        const gameID = url.split('/game/')[1];
+        socketClient.current.emit('check valid room', { roomID: gameID, id: socketClient.id });
+      }
+    }
+
+    window.addEventListener('popstate', popstateEvent);
+
+    return () => {
+      window.removeEventListener('popstate', popstateEvent);
+    }
+  }, [isReady]);
 
   return (
     <AppbarLayout>

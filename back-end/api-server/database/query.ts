@@ -25,10 +25,12 @@ export const innerJoinTable = async (
   tableB,
   on = null,
   condition = null,
+  orderBy = null,
   limit = null
 ) => {
   let queryLine = `SELECT ${column} FROM ${tableA} INNER JOIN ${tableB} ON ${on}`;
   queryLine += condition ? ` WHERE ${condition}` : ``;
+  queryLine += orderBy ? ` ORDER BY ${orderBy}` : ``;
   queryLine += limit ? ` LIMIT ${limit}` : ``;
   return connectionQuery(queryLine);
 };

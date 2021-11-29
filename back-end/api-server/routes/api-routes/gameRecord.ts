@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { insertGameInfo, insertPlayerInfo } from '../services/gameRecord';
+import { insertGameInfo, insertPlayerInfo } from '../../services/gameRecord';
 
 const GameRecordRouter = express.Router();
 

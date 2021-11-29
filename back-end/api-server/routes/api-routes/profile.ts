@@ -1,6 +1,6 @@
 import * as express from 'express';
-import { selectTable, innerJoinTable, updateTable } from '../database/query';
-import { setJWT } from './../services/auth';
+import { selectTable, innerJoinTable, updateTable } from '../../database/query';
+import { setJWT } from '../../services/auth';
 
 const ProfileRouter = express.Router();
 
@@ -40,7 +40,7 @@ ProfileRouter.post('/recent', async (req, res, next) => {
     res.status(200).json(data);
   } catch (error) {
     console.log(error);
-    res.status(401).json({ error: '잘못된 인증입니다.' });
+    res.status(401).json(error);
   }
 });
 
@@ -100,6 +100,7 @@ const getRecentInDB = (id, offset, limit) => {
     'GAME_INFO',
     'PLAY.game_id = GAME_INFO.game_id',
     `oauth_id='${id}'`,
+    `game_date DESC`,
     `${offset}, ${limit}`
   );
 };
