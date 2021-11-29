@@ -3,19 +3,11 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const logger = require('morgan');
-const axios = require('axios');
 
 import 'dotenv/config';
-import AuthRouter from '../routes/auth';
-import InsertDbRegister from '../routes/registerDBInsert';
-import ProfileRouter from '../routes/profile';
-import RankingRouter from '../routes/rankingSearch';
-import FriendRouter from '../routes/friend';
-import GameRecordRouter from '../routes/gameRecord';
 import * as swaggerUi from 'swagger-ui-express';
 import * as YAML from 'yamljs';
-
-import { registerDupCheck } from '../middlewares/jwt';
+import ApiRouter from '../routes/api-routes/index';
 
 class App {
   public application: express.Application;
@@ -37,16 +29,7 @@ app.use(
 app.use(logger('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/api/auth', AuthRouter);
-app.use('/api/rank', RankingRouter);
-app.use('/api/register', registerDupCheck, InsertDbRegister);
-app.use('/api/profile', ProfileRouter);
-app.use('/api/friend', FriendRouter);
-app.use('/api/game/record', GameRecordRouter);
+app.use('/api', ApiRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-app.get('/api', (req: express.Request, res: express.Response) => {
-  res.send('start');
-});
 
 app.listen(4000, () => console.log('start'));

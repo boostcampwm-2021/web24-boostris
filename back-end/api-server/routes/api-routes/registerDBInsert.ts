@@ -1,6 +1,6 @@
-import { setJWT } from './../services/auth';
+import { setJWT } from '../../services/auth';
 import * as express from 'express';
-import { insertIntoTable } from '../database/query';
+import { insertIntoTable } from '../../database/query';
 
 const RegisterRouter = express.Router();
 
