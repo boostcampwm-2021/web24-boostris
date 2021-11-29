@@ -1,6 +1,5 @@
 import { MouseEventHandler, useCallback, useRef, useState, useEffect } from 'react';
 import { useVirtual } from 'react-virtual';
-// import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import Modal from '../../components/Modal';
 
@@ -27,6 +26,7 @@ function LobbyPage() {
   const { rooms, users } = useAppSelector(selectSocket);
   const { friendList, friendRequestList } = useAppSelector(selectFriend);
   const socketClient = useSocket();
+  const { isReady } = useSocketReady();
   const dispatch = useAppDispatch();
 
   const modalRef = useRef<any>();
@@ -169,6 +169,26 @@ function LobbyPage() {
       })
     );
   };
+
+  useEffect(() => {
+    if(!isReady) return;
+
+    const popstateEvent = (e: any) => {
+      const url = e.target.location.pathname;
+
+      if(url.includes('/game/')) {
+        const gameID = url.split('/game/')[1];
+        socketClient.current.emit('check valid room', { roomID: gameID, id: socketClient.id });
+      }
+    }
+
+    window.addEventListener('popstate', popstateEvent);
+
+    return () => {
+      window.removeEventListener('popstate', popstateEvent);
+    }
+  }, [isReady]);
+
   return (
     <AppbarLayout>
       <SEO>

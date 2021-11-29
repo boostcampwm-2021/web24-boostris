@@ -6,7 +6,7 @@ import AppbarLayout from '../../layout/AppbarLayout';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppDispatch } from '../../app/hooks';
 import { updateNickname } from '../../features/user/userSlice';
-import { useSocket } from '../../context/SocketContext';
+import { useSocket, useSocketReady } from '../../context/SocketContext';
 import InfiniteScroll from '../../components/InfiniteScroll';
 import { fetchGetStateMessage, fetchGetTotal, fetchUpdateUserState } from './profileFetch';
 
@@ -47,6 +47,7 @@ export default function Profile() {
   });
 
   const socketClient = useSocket();
+  const { isReady } = useSocketReady();
 
   const drawStatistics = (statsticsState: any) => {
     return (
@@ -107,6 +108,25 @@ export default function Profile() {
       navigate('/error/unauthorize', { replace: true });
     }
   }, [nickname]);
+
+  useEffect(() => {
+    if(!isReady) return;
+
+    const popstateEvent = (e: any) => {
+      const url = e.target.location.pathname;
+
+      if(url.includes('/game/')) {
+        const gameID = url.split('/game/')[1];
+        socketClient.current.emit('check valid room', { roomID: gameID, id: socketClient.id });
+      }
+    }
+
+    window.addEventListener('popstate', popstateEvent);
+
+    return () => {
+      window.removeEventListener('popstate', popstateEvent);
+    }
+  }, [isReady]);
 
   return (
     <AppbarLayout>
