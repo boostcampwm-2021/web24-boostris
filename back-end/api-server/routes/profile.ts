@@ -40,7 +40,7 @@ ProfileRouter.post('/recent', async (req, res, next) => {
     res.status(200).json(data);
   } catch (error) {
     console.log(error);
-    res.status(401).json({ error: '잘못된 인증입니다.' });
+    res.status(401).json(error);
   }
 });
 

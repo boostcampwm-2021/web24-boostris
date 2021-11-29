@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './style.scss';
 
 const drawRecent = (list: Array<any>) => {
@@ -39,6 +40,8 @@ export default function InfiniteScroll({
   const [list, setList] = useState<any>([]);
   const [hasMore, setHasMore] = useState(false);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     setPageNum(0);
     setList([]);
@@ -53,7 +56,11 @@ export default function InfiniteScroll({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nickname, limit: MAX_ROWS, offset: pageNum }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (res.status === 401) {
+          throw new Error('unauthorize');
+        } else return res.json();
+      })
       .then((data) => {
         setList((prev: any) => {
           return [...prev, ...data];
@@ -61,8 +68,8 @@ export default function InfiniteScroll({
         setHasMore(data.length > 0);
         setLoading(false);
       })
-      .catch((error) => {
-        console.log('error:', error);
+      .catch(() => {
+        navigate('/error/unauthorize', { replace: true });
       });
   }, [pageNum]);
 

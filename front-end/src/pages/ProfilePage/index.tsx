@@ -8,6 +8,7 @@ import { useAppDispatch } from '../../app/hooks';
 import { updateNickname } from '../../features/user/userSlice';
 import { useSocket } from '../../context/SocketContext';
 import InfiniteScroll from '../../components/InfiniteScroll';
+import { fetchGetStateMessage, fetchGetTotal, fetchUpdateUserState } from './profileFetch';
 
 export default function Profile() {
   const { nickname } = useParams();
@@ -55,23 +56,22 @@ export default function Profile() {
     setUserState({ ...userState, stateMessage: e.target.value });
   };
 
-  const clickEditButton = () => {
+  const clickEditButton = async () => {
     if (!editMode) {
       setEditMode(!editMode);
       return;
     } else {
-      fetch('/api/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...userState }),
-      })
-        .then(async () => {
+      try {
+        const res = await fetchUpdateUserState({ ...userState });
+        if (res.message === 'done') {
           setEditMode(!editMode);
           await dispatch(updateNickname());
           socketClient.current.emit('set userName', userState.nickname);
           navigate(`/profile/${userState.nickname}`, { replace: true });
-        })
-        .catch((error) => console.log('error:', error));
+        }
+      } catch (error) {
+        console.log('error:', error);
+      }
     }
   };
 
@@ -82,33 +82,17 @@ export default function Profile() {
 
   useEffect(() => {
     setUserState({ ...userState, nickname });
-    fetch('/api/profile/stateMessage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setUserState({ ...userState, nickname, stateMessage: data.state_message });
-      })
-      .catch((error) => {
-        navigate('/error/unauthorize', { replace: true });
-        console.log('error:', error);
-      });
+    try {
+      (async function effect() {
+        const resMsg = await fetchGetStateMessage(nickname);
+        setUserState({ ...userState, nickname, stateMessage: resMsg.state_message });
 
-    fetch('/api/profile/total', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setStatsticsState({ ...statsticsState, ...data });
-      })
-      .catch((error) => {
-        navigate('/error/unauthorize', { replace: true });
-        console.log('error:', error);
-      });
+        const resTotal = await fetchGetTotal(nickname);
+        setStatsticsState({ ...statsticsState, ...resTotal });
+      })();
+    } catch {
+      navigate('/error/unauthorize', { replace: true });
+    }
   }, [nickname]);
 
   return (
@@ -160,7 +144,7 @@ export default function Profile() {
               ))}
             </div>
             <InfiniteScroll
-              nickname={userState.nickname}
+              nickname={nickname}
               MAX_ROWS={5}
               fetchURL="/api/profile/recent"
               type="profile"
