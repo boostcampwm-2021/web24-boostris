@@ -28,8 +28,8 @@ export const playerAttackProcess = (mainSpace, socket, target, garbage) => {
   mainSpace.to(target.garbageBlockCnt[idx].id).emit('attacked', garbage);
 
   target.gamingPlayer.forEach((p) => {
-    if (p === target.garbageBlockCnt[idx].id) return;
-    mainSpace.to(p).emit('someone attacked', garbage, target.garbageBlockCnt[idx].id);
+    if (p.id === target.garbageBlockCnt[idx].id) return;
+    mainSpace.to(p.id).emit('someone attacked', garbage, target.garbageBlockCnt[idx].id);
   });
 
   target.garbageBlockCnt[idx].garbageCnt += garbage;
