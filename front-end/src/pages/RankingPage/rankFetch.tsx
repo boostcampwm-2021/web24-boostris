@@ -7,6 +7,7 @@ export const fetchGetRank: Function = async (rankApiTemplate: Object, signal: Ab
     },
     credentials: 'include',
     body: JSON.stringify({ rankApiTemplate }),
+    signal,
   }).then((res) => res.json());
 };
 
@@ -19,5 +20,6 @@ export const fetchGetMyCntInfo: Function = async (myInfoTemplate: Object, signal
     },
     credentials: 'include',
     body: JSON.stringify({ myInfoTemplate }),
+    signal,
   }).then((res) => res.json());
 };
