@@ -43,7 +43,6 @@ function LoginPage() {
       loginButton: {
         color: 'black',
         type: 1,
-        height: 20,
       },
     });
     naverLogin.init();
