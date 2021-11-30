@@ -84,12 +84,12 @@ const everyPlayerGameOverCheck = (mainSpace, socket, target) => {
   pubClient.set(`room:${target.id}`, JSON.stringify(target));
 };
 
-export const calcPlayerRank = async (mainSpace, socket, _target, data) => {
-  let target = JSON.parse(await getAsync(`room:${_target.id}`));
-  const rankTarget = target.rank.find((r) => r.nickname === socket.userName);
-  const unlock = await lock(`${_target.id}`);
-  pubClient.get(`room:${_target.id}`, (err, result) => {
+export const calcPlayerRank = async (mainSpace, socket, target, data) => {
+  const unlock = await lock(`${target.id}`);
+  pubClient.get(`room:${target.id}`, (err, result) => {
     let target = JSON.parse(result);
+    const rankTarget = target.rank.find((r) => r.nickname === socket.userName);
+
     target.semaphore++;
     pubClient.set(`room:${target.id}`, JSON.stringify(target));
     if (!rankTarget) {
