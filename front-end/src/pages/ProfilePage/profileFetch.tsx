@@ -1,4 +1,4 @@
-export const fetchGetStateMessage: Function = async (nickname: String) => {
+export const fetchGetStateMessage: Function = async (nickname: String, signal: AbortSignal) => {
   return fetch(`/api/profile/stateMessage`, {
     method: 'POST',
     headers: {
@@ -7,10 +7,11 @@ export const fetchGetStateMessage: Function = async (nickname: String) => {
     },
     credentials: 'include',
     body: JSON.stringify({ nickname }),
+    signal,
   }).then((res) => res.json());
 };
 
-export const fetchGetTotal: Function = async (nickname: String) => {
+export const fetchGetTotal: Function = async (nickname: String, signal: AbortSignal) => {
   return fetch(`/api/profile/total`, {
     method: 'POST',
     headers: {
@@ -19,6 +20,7 @@ export const fetchGetTotal: Function = async (nickname: String) => {
     },
     credentials: 'include',
     body: JSON.stringify({ nickname }),
+    signal,
   }).then((res) => res.json());
 };
 

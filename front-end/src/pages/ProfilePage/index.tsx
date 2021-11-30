@@ -11,9 +11,14 @@ import InfiniteScroll from '../../components/InfiniteScroll';
 import { fetchGetStateMessage, fetchGetTotal, fetchUpdateUserState } from './profileFetch';
 
 const drawRecent = (value: any) => {
+  const dateObj = new Date(value.game_date);
+  let timeString = dateObj.toLocaleString('en-US', { timeZone: 'Asia/Seoul' });
+  const [date, time] = timeString.split(',');
+  const [m, d, y] = date.split('/');
+
   return (
     <div className="recent__list" key={value.game_date}>
-      <div>{value.game_date.slice(0, 10)}</div>
+      <div>{`${y}-${m}-${d} ${time}`}</div>
       <div>{value.game_mode === 'normal' ? '일반전' : '1 vs 1'}</div>
       <div>{value.ranking}등</div>
       <div>{value.play_time}</div>
@@ -95,37 +100,43 @@ export default function Profile() {
   };
 
   useEffect(() => {
+    const abortController = new AbortController();
     setUserState({ ...userState, nickname });
-    try {
-      (async function effect() {
-        const resMsg = await fetchGetStateMessage(nickname);
+
+    (async function effect() {
+      try {
+        const resMsg = await fetchGetStateMessage(nickname, abortController.signal);
         setUserState({ ...userState, nickname, stateMessage: resMsg.state_message });
 
-        const resTotal = await fetchGetTotal(nickname);
+        const resTotal = await fetchGetTotal(nickname, abortController.signal);
         setStatsticsState({ ...statsticsState, ...resTotal });
-      })();
-    } catch {
-      navigate('/error/unauthorize', { replace: true });
-    }
+      } catch {
+        if (!abortController.signal.aborted) navigate('/error/unauthorize', { replace: true });
+      }
+    })();
+
+    return () => {
+      abortController.abort();
+    };
   }, [nickname]);
 
   useEffect(() => {
-    if(!isReady) return;
+    if (!isReady) return;
 
     const popstateEvent = (e: any) => {
       const url = e.target.location.pathname;
 
-      if(url.includes('/game/')) {
+      if (url.includes('/game/')) {
         const gameID = url.split('/game/')[1];
         socketClient.current.emit('check valid room', { roomID: gameID, id: socketClient.id });
       }
-    }
+    };
 
     window.addEventListener('popstate', popstateEvent);
 
     return () => {
       window.removeEventListener('popstate', popstateEvent);
-    }
+    };
   }, [isReady]);
 
   return (
