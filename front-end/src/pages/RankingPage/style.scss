@@ -17,7 +17,7 @@
     display: flex;
     width: 100%;
     height: 30vh;
-    margin-left: 100px;
+    padding-right: 140px;
     justify-content: center;
     align-items: center;
   }
@@ -25,7 +25,8 @@
     display: flex;
     background: #364171;
     height: 140px;
-    width: 402px;
+    width: 100%;
+    margin: 200px 60px 200px 200px;
     box-shadow: 0px 7px #272d4e;
     .rank__player__image {
       display: flex;
@@ -49,9 +50,9 @@
   .rank__input__box {
     display: flex;
     flex-direction: column;
-    margin-left: 70px;
-    width: 500px;
-    height: 116px;
+    width: 100%;
+    height: 140px;
+    margin-left: 50px;
   }
   .rank__input__box__row {
     display: flex;
@@ -90,16 +91,17 @@
 
   .rank__body__down {
     display: flex;
-    margin-left: 230px;
     width: 100%;
-    height: 18vh;
+    min-height: 200px;
   }
 
   .rank__display {
     display: flex;
     flex-direction: column;
-    width: 750px;
-    height: 100%;
+    width: 100%;
+    height: 17vh;
+    padding-left: 230px;
+    padding-right: 230px;
   }
   .rank__display__scroll__root {
     overflow: auto;
