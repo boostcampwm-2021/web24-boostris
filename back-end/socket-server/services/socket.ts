@@ -26,7 +26,7 @@ export const getAsync = promisify(pubClient.get).bind(pubClient);
 export const asmembers = promisify(pubClient.smembers).bind(pubClient);
 export const ahkeys = promisify(pubClient.hkeys).bind(pubClient);
 
-export const initSocket = (httpServer) => {
+export const initSocket = (httpServer, port) => {
   const io = new Server(httpServer, {
     /* options */
     cors: {
@@ -44,6 +44,7 @@ export const initSocket = (httpServer) => {
 
   mainSpace.on('connection', async (socket: userSocket) => {
     socket.setMaxListeners(0);
+    socket.emit('port notify', port);
     initLobbyUserSocket(mainSpace, socket);
     initTetrisSocket(mainSpace, socket);
   });
