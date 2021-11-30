@@ -78,7 +78,7 @@ function RankingPage() {
 
   const categoryChange = ['공격 횟수', '승리 횟수'];
   const [categoryButtonState, setCategoryButtonState] = useState(1);
-  const [modeButtonState, setModeButtonState] = useState(1);
+  const [modeButtonState, setModeButtonState] = useState(0);
   const [players, setPlayers] = useState([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -87,11 +87,6 @@ function RankingPage() {
   ) => {
     const value = (e.target as Element).id === 'attackCnt' ? 0 : 1;
     setCategoryButtonState(value);
-  };
-
-  const modeButton: MouseEventHandler<HTMLButtonElement> = (e: MouseEvent<HTMLButtonElement>) => {
-    const value = (e.target as Element).id === 'normal' ? 0 : 1;
-    setModeButtonState(value);
   };
 
   const searchButton: MouseEventHandler<HTMLButtonElement> = async (
@@ -112,22 +107,22 @@ function RankingPage() {
   }, [categoryButtonState, modeButtonState]);
 
   useEffect(() => {
-    if(!isReady) return;
+    if (!isReady) return;
 
     const popstateEvent = (e: any) => {
       const url = e.target.location.pathname;
 
-      if(url.includes('/game/')) {
+      if (url.includes('/game/')) {
         const gameID = url.split('/game/')[1];
         socketClient.current.emit('check valid room', { roomID: gameID, id: socketClient.id });
       }
-    }
+    };
 
     window.addEventListener('popstate', popstateEvent);
 
     return () => {
       window.removeEventListener('popstate', popstateEvent);
-    }
+    };
   }, [isReady]);
 
   return (
@@ -157,16 +152,8 @@ function RankingPage() {
             <div className="rank__input__box__row">
               모드 :
               <button
-                id="1 vs 1"
-                className={`rank__input__box__button ${modeButtonState && 'selected'}`}
-                onClick={modeButton}
-              >
-                1 vs 1
-              </button>
-              <button
                 id="normal"
                 className={`rank__input__box__button ${!modeButtonState && 'selected'}`}
-                onClick={modeButton}
               >
                 일반전
               </button>
