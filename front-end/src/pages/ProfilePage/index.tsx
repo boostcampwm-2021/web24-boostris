@@ -13,7 +13,6 @@ import { fetchGetStateMessage, fetchGetTotal, fetchUpdateUserState } from './pro
 const drawRecent = (value: any) => {
   const dateObj = new Date(value.game_date);
   let timeString = dateObj.toLocaleString('en-US', { timeZone: 'Asia/Seoul' });
-  //console.log(timeString);
   const [date, time] = timeString.split(',');
   const [m, d, y] = date.split('/');
 
@@ -101,18 +100,24 @@ export default function Profile() {
   };
 
   useEffect(() => {
+    const abortController = new AbortController();
     setUserState({ ...userState, nickname });
-    try {
-      (async function effect() {
-        const resMsg = await fetchGetStateMessage(nickname);
+
+    (async function effect() {
+      try {
+        const resMsg = await fetchGetStateMessage(nickname, abortController.signal);
         setUserState({ ...userState, nickname, stateMessage: resMsg.state_message });
 
-        const resTotal = await fetchGetTotal(nickname);
+        const resTotal = await fetchGetTotal(nickname, abortController.signal);
         setStatsticsState({ ...statsticsState, ...resTotal });
-      })();
-    } catch {
-      navigate('/error/unauthorize', { replace: true });
-    }
+      } catch {
+        if (!abortController.signal.aborted) navigate('/error/unauthorize', { replace: true });
+      }
+    })();
+
+    return () => {
+      abortController.abort();
+    };
   }, [nickname]);
 
   useEffect(() => {

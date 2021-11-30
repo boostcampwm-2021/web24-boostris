@@ -31,14 +31,28 @@ function RankLeftProfile() {
   const [myInfo, setMyInfo] = useState([]);
   const user = useAppSelector(selectUser);
   useEffect(() => {
+    const abortController = new AbortController();
+
     (async function effect() {
-      const myInfo = await fetchGetMyCntInfo({ oauthId: user.profile.id });
-      const playerWin = myInfo.data?.['player_win'];
-      const attackCnt = myInfo.data?.['attack_cnt'];
-      const tmp: any = [playerWin, attackCnt];
-      setMyInfo(tmp);
+      try {
+        const myInfo = await fetchGetMyCntInfo(
+          { oauthId: user.profile.id },
+          abortController.signal
+        );
+        const playerWin = myInfo.data?.['player_win'];
+        const attackCnt = myInfo.data?.['attack_cnt'];
+        const tmp: any = [playerWin, attackCnt];
+        setMyInfo(tmp);
+      } catch (e) {
+        if (!abortController.signal.aborted) console.log(e);
+      }
     })();
+
+    return () => {
+      abortController.abort();
+    };
   }, []);
+
   return (
     <div className="rank__player__box">
       <div className="rank__player__image">
@@ -104,30 +118,39 @@ function RankingPage() {
   };
 
   useEffect(() => {
+    const abortController = new AbortController();
     (async function effect() {
-      syncKeyWithServer(rankApiTemplate, categoryButtonState, modeButtonState);
-      const res = await fetchGetRank(rankApiTemplate);
-      setPlayers(res.data);
+      try {
+        syncKeyWithServer(rankApiTemplate, categoryButtonState, modeButtonState);
+        const res = await fetchGetRank(rankApiTemplate, abortController.signal);
+        setPlayers(res.data);
+      } catch (e) {
+        if (!abortController.signal.aborted) console.log(e);
+      }
     })();
+
+    return () => {
+      abortController.abort();
+    };
   }, [categoryButtonState, modeButtonState]);
 
   useEffect(() => {
-    if(!isReady) return;
+    if (!isReady) return;
 
     const popstateEvent = (e: any) => {
       const url = e.target.location.pathname;
 
-      if(url.includes('/game/')) {
+      if (url.includes('/game/')) {
         const gameID = url.split('/game/')[1];
         socketClient.current.emit('check valid room', { roomID: gameID, id: socketClient.id });
       }
-    }
+    };
 
     window.addEventListener('popstate', popstateEvent);
 
     return () => {
       window.removeEventListener('popstate', popstateEvent);
-    }
+    };
   }, [isReady]);
 
   return (

@@ -31,6 +31,27 @@ export default function InfiniteScroll({
     return <>{list.map((value) => drawFunction(value))}</>;
   };
 
+  const fetchData = async (nickname: string | undefined, fetchURL: string, signal: AbortSignal) => {
+    return fetch(fetchURL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ nickname, limit: MAX_ROWS, offset: pageNum }),
+      signal,
+    })
+      .then((res) => {
+        if (res.status === 401) {
+          throw new Error('unauthorize');
+        } else return res.json();
+      })
+      .catch((e) => {
+        throw new Error(e);
+      });
+  };
+
   useEffect(() => {
     setPageNum(0);
     setList([]);
@@ -39,27 +60,25 @@ export default function InfiniteScroll({
   }, [nickname]);
 
   useEffect(() => {
+    const abortController = new AbortController();
     setLoading(true);
-    fetch(fetchURL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname, limit: MAX_ROWS, offset: pageNum }),
-    })
-      .then((res) => {
-        if (res.status === 401) {
-          throw new Error('unauthorize');
-        } else return res.json();
-      })
-      .then((data) => {
+
+    (async function effect() {
+      try {
+        const resList = await fetchData(nickname, fetchURL, abortController.signal);
         setList((prev: any) => {
-          return [...prev, ...data];
+          return [...prev, ...resList];
         });
-        setHasMore(data.length > 0);
+        setHasMore(resList.length > 0);
         setLoading(false);
-      })
-      .catch(() => {
-        navigate('/error/unauthorize', { replace: true });
-      });
+      } catch (e) {
+        if (!abortController.signal.aborted) navigate('/error/unauthorize', { replace: true });
+      }
+    })();
+
+    return () => {
+      abortController.abort();
+    };
   }, [pageNum]);
 
   const targetRef = useCallback(

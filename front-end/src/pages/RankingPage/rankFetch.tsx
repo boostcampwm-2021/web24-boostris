@@ -1,4 +1,4 @@
-export const fetchGetRank: Function = async (rankApiTemplate: Object) => {
+export const fetchGetRank: Function = async (rankApiTemplate: Object, signal: AbortSignal) => {
   return fetch(`/api/rank`, {
     method: 'POST',
     headers: {
@@ -10,7 +10,7 @@ export const fetchGetRank: Function = async (rankApiTemplate: Object) => {
   }).then((res) => res.json());
 };
 
-export const fetchGetMyCntInfo: Function = async (myInfoTemplate: Object) => {
+export const fetchGetMyCntInfo: Function = async (myInfoTemplate: Object, signal: AbortSignal) => {
   return fetch(`/api/rank/myInfo`, {
     method: 'POST',
     headers: {
