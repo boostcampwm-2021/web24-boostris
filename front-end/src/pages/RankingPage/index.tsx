@@ -81,6 +81,7 @@ function RankingPage() {
   const [modeButtonState, setModeButtonState] = useState(0);
   const [players, setPlayers] = useState([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const searchRef = useRef<any>(null);
 
   const categoryButton: MouseEventHandler<HTMLButtonElement> = (
     e: MouseEvent<HTMLButtonElement>
@@ -96,6 +97,13 @@ function RankingPage() {
     syncKeyWithServer(rankApiTemplate, categoryButtonState, modeButtonState);
     const res = await fetchGetRank(rankApiTemplate);
     setPlayers(res.data);
+  };
+
+  const handleKeyPress = (e: any) => {
+    if (e.key === 'Enter') {
+      const searchButton: any = searchRef.current;
+      searchButton.click();
+    }
   };
 
   useEffect(() => {
@@ -163,9 +171,11 @@ function RankingPage() {
                 className="rank__input__box__nickname"
                 placeholder="플레이어 닉네임을 입력해주세요."
                 ref={inputRef}
+                onKeyPress={handleKeyPress}
               ></input>
               <button
                 className="rank__input__box__button rank__nickname__search"
+                ref={searchRef}
                 onClick={searchButton}
               >
                 검색
