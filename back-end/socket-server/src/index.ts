@@ -8,6 +8,7 @@ const path = require('path');
 const logger = require('morgan');
 const http = require('http');
 
+const port = process.env.PORT || 5001;
 class App {
   public application: express.Application;
   constructor() {
@@ -30,6 +31,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const server = http.createServer(app);
 
-initSocket(server);
+initSocket(server, port);
 
-server.listen(5001);
+server.listen(port);

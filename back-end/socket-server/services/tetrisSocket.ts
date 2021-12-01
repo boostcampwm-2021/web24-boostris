@@ -1,11 +1,17 @@
+import { getRooms } from './../utils/userUtil';
 import { Namespace } from 'socket.io';
 
-import { gameOverProcess, initGameInfo, playerAttackProcess, calcPlayerRank } from './../utils/tetrisUtil';
+import {
+  gameOverProcess,
+  initGameInfo,
+  playerAttackProcess,
+  calcPlayerRank,
+} from './../utils/tetrisUtil';
 import { userSocket } from '../type/socketType';
-import { roomList } from '../constant/room';
 
 export const initTetrisSocket = (mainSpace: Namespace, socket: userSocket) => {
-  socket.on('get other players info', (res) => {
+  socket.on('get other players info', async (res) => {
+    const roomList = await getRooms(mainSpace);
     const target = roomList.find((r) => r.id === socket.roomID);
 
     if (target) {
@@ -14,7 +20,8 @@ export const initTetrisSocket = (mainSpace: Namespace, socket: userSocket) => {
     }
   });
 
-  socket.on('game start', () => {
+  socket.on('game start', async () => {
+    const roomList = await getRooms(mainSpace);
     const target = roomList.find((r) => r.id === socket.roomID);
 
     if (target) {
@@ -26,7 +33,8 @@ export const initTetrisSocket = (mainSpace: Namespace, socket: userSocket) => {
     socket.broadcast.to(socket.roomID).emit(`other player's drop block`, socket.id, board, block);
   });
 
-  socket.on('attack other player', (garbage) => {
+  socket.on('attack other player', async (garbage) => {
+    const roomList = await getRooms(mainSpace);
     const target = roomList.find((r) => r.id === socket.roomID);
 
     if (target && target.garbageBlockCnt.length !== 1) {
@@ -38,7 +46,8 @@ export const initTetrisSocket = (mainSpace: Namespace, socket: userSocket) => {
     socket.broadcast.to(socket.roomID).emit('someone attacked finish', socket.id);
   });
 
-  socket.on('game over', () => {
+  socket.on('game over', async () => {
+    const roomList = await getRooms(mainSpace);
     const target = roomList.find((r) => r.id === socket.roomID);
 
     if (target) {
@@ -46,7 +55,8 @@ export const initTetrisSocket = (mainSpace: Namespace, socket: userSocket) => {
     }
   });
 
-  socket.on('get game over info', (data) => {
+  socket.on('get game over info', async (data) => {
+    const roomList = await getRooms(mainSpace);
     const target = roomList.find((r) => r.id === socket.roomID);
 
     if (target) {

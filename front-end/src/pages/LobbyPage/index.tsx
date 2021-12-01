@@ -65,14 +65,12 @@ function LobbyPage() {
 
   const userListVirtualizer = useVirtual({
     size: users.length,
-    // size: 100 * 1000,
     parentRef,
     estimateSize: useCallback(() => 35, []),
     overscan: 5,
   });
   const friendListVirtualizer = useVirtual({
     size: friendList.length,
-    // size: 100 * 1000,
     parentRef,
     estimateSize: useCallback(() => 35, []),
     overscan: 5,

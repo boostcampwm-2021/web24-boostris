@@ -52,6 +52,9 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
         socketRef.current.emit('duplicate check', profile.id);
       });
 
+      socketRef.current.on('port notify', (port: number) => {
+        console.log('YOU are on PORT ', port);
+      });
       socketRef.current.on('duplicate check:success', () => {
         setIsReady(true);
         socketRef.current.emit('set userName', profile.nickname, profile.id);
