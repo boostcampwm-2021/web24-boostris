@@ -33,7 +33,7 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
     broadcastRoomList(mainSpace);
   });
 
-  socket.on('create room', ({ owner, name, limit, isSecret, nickname }) => {
+  socket.on('create room', ({ owner, name, limit, nickname }) => {
     try {
       let newRoomID = randomUUID();
       socket.roomID = newRoomID;
@@ -45,7 +45,6 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
           owner,
           name,
           limit,
-          isSecret,
           current: mainSpace.adapter.rooms.get(newRoomID).size,
           gameOverPlayer: 0,
           garbageBlockCnt: [],
