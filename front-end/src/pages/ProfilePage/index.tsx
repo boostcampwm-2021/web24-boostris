@@ -85,7 +85,7 @@ export default function Profile() {
         if (res.message === 'done') {
           setEditMode(!editMode);
           await dispatch(updateNickname());
-          socketClient.current.emit('set userName', userState.nickname);
+          socketClient.current.emit('set userName', userState.nickname, userState.id);
           navigate(`/profile/${userState.nickname}`, { replace: true });
         }
       } catch (error) {
