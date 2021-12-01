@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './style.scss';
 import SectionTitle from '../../components/SectionTitle';
 import useAuth from '../../hooks/use-auth';
@@ -9,6 +9,14 @@ import { updateNickname } from '../../features/user/userSlice';
 import { useSocket, useSocketReady } from '../../context/SocketContext';
 import InfiniteScroll from '../../components/InfiniteScroll';
 import { fetchGetStateMessage, fetchGetTotal, fetchUpdateUserState } from './profileFetch';
+
+const recentHeader = ['날짜', '모드', '등수', '플레이 타임', '공격 횟수', '받은 횟수'];
+const translations = [
+  ['total_game_cnt', '총 게임 수'],
+  ['total_play_time', '총 플레이 시간'],
+  ['multi_player_win', '승리 횟수'],
+  ['total_attack_cnt', '총 공격 횟수'],
+];
 
 const drawRecent = (value: any) => {
   const dateObj = new Date(value.game_date);
@@ -34,13 +42,8 @@ export default function Profile() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const recentHeader = ['날짜', '모드', '등수', '플레이 타임', '공격 횟수', '받은 횟수'];
-  const translations = [
-    ['total_game_cnt', '총 게임 수'],
-    ['total_play_time', '총 플레이 시간'],
-    ['multi_player_win', '승리 횟수'],
-    ['total_attack_cnt', '총 공격 횟수'],
-  ];
+  const nicknameRef = useRef<any>();
+  const stateMessageRef = useRef<any>();
 
   const [statsticsState, setStatsticsState] = useState({});
 
@@ -70,23 +73,26 @@ export default function Profile() {
     );
   };
 
-  const changeTextArea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (!e.target) return;
-    setUserState({ ...userState, stateMessage: e.target.value });
-  };
-
   const clickEditButton = async () => {
     if (!editMode) {
       setEditMode(!editMode);
       return;
     } else {
       try {
-        const res = await fetchUpdateUserState({ ...userState });
+        const newNickname = nicknameRef.current.value;
+        const newStateMessage = stateMessageRef.current.value;
+
+        const res = await fetchUpdateUserState({
+          ...userState,
+          nickname: newNickname,
+          stateMessage: newStateMessage,
+        });
+
         if (res.message === 'done') {
           setEditMode(!editMode);
           await dispatch(updateNickname());
-          socketClient.current.emit('set userName', userState.nickname, userState.id);
-          navigate(`/profile/${userState.nickname}`, { replace: true });
+          socketClient.current.emit('set userName', newNickname, userState.id);
+          navigate(`/profile/${newNickname}`, { replace: true });
         }
       } catch (error) {
         console.log('error:', error);
@@ -94,19 +100,16 @@ export default function Profile() {
     }
   };
 
-  const changeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target) return;
-    setUserState({ ...userState, nickname: e.target.value });
-  };
-
   useEffect(() => {
     const abortController = new AbortController();
-    setUserState({ ...userState, nickname });
+    //setUserState({ ...userState, nickname });
 
     (async function effect() {
       try {
         const resMsg = await fetchGetStateMessage(nickname, abortController.signal);
         setUserState({ ...userState, nickname, stateMessage: resMsg.state_message });
+        nicknameRef.current.value = nickname;
+        stateMessageRef.current.value = resMsg.state_message;
 
         const resTotal = await fetchGetTotal(nickname, abortController.signal);
         setStatsticsState({ ...statsticsState, ...resTotal });
@@ -152,17 +155,15 @@ export default function Profile() {
           <input
             className={`profile-section__player ${editMode ? 'editMode' : ''}`}
             maxLength={10}
-            value={userState.nickname}
+            ref={nicknameRef}
             readOnly={!editMode}
-            onChange={changeInput}
           />
           <textarea
             maxLength={50}
             minLength={1}
             className="profile-section__status"
             disabled={!editMode}
-            onChange={changeTextArea}
-            value={userState.stateMessage}
+            ref={stateMessageRef}
           ></textarea>
 
           {authProfile.nickname === nickname && (
@@ -190,7 +191,7 @@ export default function Profile() {
             <InfiniteScroll
               nickname={nickname}
               drawFunction={drawRecent}
-              MAX_ROWS={5}
+              MAX_ROWS={4}
               fetchURL="/api/profile/recent"
               type="profile"
             />
