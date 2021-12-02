@@ -9,6 +9,7 @@ import { updateNickname } from '../../features/user/userSlice';
 import { useSocket, useSocketReady } from '../../context/SocketContext';
 import InfiniteScroll from '../../components/InfiniteScroll';
 import { fetchGetStateMessage, fetchGetTotal, fetchUpdateUserState } from './profileFetch';
+import { NICKNAME_REGEX } from '../../constants';
 
 const recentHeader = ['날짜', '모드', '등수', '플레이 타임', '공격 횟수', '받은 횟수'];
 const translations = [
@@ -82,17 +83,21 @@ export default function Profile() {
         const newNickname = nicknameRef.current.value;
         const newStateMessage = stateMessageRef.current.value;
 
-        const res = await fetchUpdateUserState({
-          ...userState,
-          nickname: newNickname,
-          stateMessage: newStateMessage,
-        });
+        if (!NICKNAME_REGEX.test(newNickname)) {
+          alert('닉네임은 반드시 한글/영문(대소문자)/숫자로만 이루어져야합니다.');
+        } else {
+          const res = await fetchUpdateUserState({
+            ...userState,
+            nickname: newNickname,
+            stateMessage: newStateMessage,
+          });
 
-        if (res.message === 'done') {
-          setEditMode(!editMode);
-          await dispatch(updateNickname());
-          socketClient.current.emit('set userName', newNickname, userState.id);
-          navigate(`/profile/${newNickname}`, { replace: true });
+          if (res.message === 'done') {
+            setEditMode(!editMode);
+            await dispatch(updateNickname());
+            socketClient.current.emit('set userName', newNickname, userState.id);
+            navigate(`/profile/${newNickname}`, { replace: true });
+          }
         }
       } catch (error) {
         console.log('error:', error);
