@@ -1,5 +1,5 @@
 import { RedisAdapter } from '@socket.io/redis-adapter';
-import { getallAsync, getAsync, asmembers, pubClient } from './../services/socket';
+import { getallAsync, getAsync, asmembers, pubClient, redisEmitter } from './../services/socket';
 import { Namespace } from 'socket.io';
 
 import { userRemote } from '../type/socketType';
@@ -44,7 +44,7 @@ export const getSockets = async (mainSpace: Namespace) => {
 
 export const broadcastRoomList = async (mainSpace: Namespace) => {
   const roomList = await getRooms(mainSpace);
-  mainSpace.emit('room list update', roomList);
+  redisEmitter.emit('room list update', roomList);
 };
 
 export const broadcastUserList = async (mainSpace: Namespace) => {

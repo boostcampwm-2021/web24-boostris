@@ -10,8 +10,10 @@ import { initLobbyUserSocket } from './lobbyUserSocket';
 import { initTetrisSocket } from './tetrisSocket';
 import { userSocket } from '../type/socketType';
 import { createAdapter } from '@socket.io/redis-adapter';
+
 import { createClient } from 'redis';
 import { promisify } from 'util';
+const { Emitter } = require('@socket.io/redis-emitter');
 const LOCK = require('redis-lock');
 
 const wrap = (middleware) => (socket, next) => middleware(socket.request, {}, next);
@@ -21,6 +23,8 @@ const io = new Server();
 export const pubClient = createClient({ host: 'localhost', port: 6379 });
 
 const subClient = pubClient.duplicate();
+
+export const redisEmitter = new Emitter(pubClient);
 
 export const getallAsync = promisify(pubClient.HGETALL).bind(pubClient);
 export const hgetAsync = promisify(pubClient.hget).bind(pubClient);
@@ -52,10 +56,10 @@ export const initSocket = (httpServer, port) => {
     initTetrisSocket(mainSpace, socket);
   });
   mainSpace.adapter.on('create-room', (room) => {});
-  mainSpace.adapter.on('join-room', (room, id) => {
-    updateRoomCurrent(mainSpace, room);
-    broadcastRoomMemberUpdate(mainSpace, room, id);
-    broadcastRoomList(mainSpace);
+  mainSpace.adapter.on('join-room', async (room, id) => {
+    await updateRoomCurrent(mainSpace, room);
+    await broadcastRoomMemberUpdate(mainSpace, room, id);
+    await broadcastRoomList(mainSpace);
   });
 
   mainSpace.adapter.on('leave-room', async (roomID, id) => {
@@ -76,8 +80,8 @@ export const initSocket = (httpServer, port) => {
       }
     }
 
-    updateRoomCurrent(mainSpace, roomID);
-    broadcastRoomMemberUpdate(mainSpace, roomID, id);
-    broadcastRoomList(mainSpace);
+    await updateRoomCurrent(mainSpace, roomID);
+    await broadcastRoomMemberUpdate(mainSpace, roomID, id);
+    await broadcastRoomList(mainSpace);
   });
 };
