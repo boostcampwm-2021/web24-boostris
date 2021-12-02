@@ -68,11 +68,12 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
     const roomList = await getRooms(mainSpace);
     const target = roomList.find((r) => r.id === roomID);
     const redisAdapter = mainSpace.adapter as RedisAdapter;
+
     if (
       target &&
       target.current < target.limit &&
       (await redisAdapter.allRooms()).has(roomID) &&
-      !redisAdapter.rooms.get(roomID).has(id)
+      !(await redisAdapter.sockets(new Set([roomID]))).has(id)
     ) {
       try {
         const isPlayer = target.player.find((p) => p.id === socket.id);
@@ -181,8 +182,8 @@ export const initLobbyUserSocket = (mainSpace: Namespace, socket: userSocket) =>
 
     const roomsWillDelete = [];
     const redisAdapter = mainSpace.adapter as RedisAdapter;
-    [...(await redisAdapter.allRooms())].forEach((rId) => {
-      if (socket.rooms.has(rId) && redisAdapter.rooms.get(rId).size === 1)
+    [...(await redisAdapter.allRooms())].forEach(async (rId) => {
+      if (socket.rooms.has(rId) && (await redisAdapter.sockets(new Set([rId]))).size === 1)
         roomsWillDelete.push(rId);
     });
     roomsWillDelete.forEach((rID) => {
