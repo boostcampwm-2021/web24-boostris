@@ -30,7 +30,11 @@ function App() {
   }
 
   return (
-    <Suspense fallback={<div>loading</div>}>
+    <Suspense
+      fallback={
+        <div style={{ height: '100vh', color: 'white', background: '#1c2137' }}>loading</div>
+      }
+    >
       <div className="App">
         <Routes>
           <Route path="/login" element={<Login />} />
