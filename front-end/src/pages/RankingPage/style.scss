@@ -5,7 +5,11 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
+  min-width: 950px;
+  min-height: 714px;
   flex: 1;
+  background-color: #2b3150;
+
   .rank__header {
     display: flex;
     font-size: 20px;
@@ -16,7 +20,7 @@
   .rank__body {
     display: flex;
     width: 100%;
-    height: 30vh;
+    max-height: 300px;
     padding-right: 140px;
     justify-content: center;
     align-items: center;
@@ -24,8 +28,10 @@
   .rank__player__box {
     display: flex;
     background: #364171;
-    height: 140px;
+
+    max-height: 140px;
     width: 100%;
+    min-width: 400px;
     margin: 200px 60px 200px 200px;
     box-shadow: 0px 7px #272d4e;
     .rank__player__image {
@@ -38,6 +44,7 @@
     .rank__player__rank {
       display: flex;
       width: 100%;
+      height: 100%;
       justify-content: center;
       align-items: center;
       flex-direction: column;
@@ -92,6 +99,7 @@
   .rank__body__down {
     display: flex;
     width: 100%;
+    min-width: 1000px;
     min-height: 200px;
   }
 
