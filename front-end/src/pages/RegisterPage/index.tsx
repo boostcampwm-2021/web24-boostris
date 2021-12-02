@@ -10,6 +10,7 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import BasicButton from '../../components/BasicButton';
 import BasicInput from '../../components/BasicInput';
 import './style.scss';
+import { NICKNAME_REGEX } from '../../constants';
 
 function RegisterPage() {
   const nickNameRef = useRef<HTMLInputElement>(null);
@@ -41,13 +42,17 @@ function RegisterPage() {
       return;
     }
 
-    dispatch(
-      registerNewUser({
-        nickname: nickNameRef.current.value,
-        message: messageRef.current?.value || '',
-        oauthInfo: user.profile.id,
-      })
-    );
+    if (!NICKNAME_REGEX.test(nickNameRef?.current?.value)) {
+      alert('닉네임은 반드시 한글/영문(대소문자)/숫자로만 이루어져야합니다.');
+    } else {
+      dispatch(
+        registerNewUser({
+          nickname: nickNameRef.current.value,
+          message: messageRef.current?.value || '',
+          oauthInfo: user.profile.id,
+        })
+      );
+    }
   };
 
   const onCancelClick = () => {
