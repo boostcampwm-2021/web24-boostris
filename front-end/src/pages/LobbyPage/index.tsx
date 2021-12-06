@@ -1,6 +1,5 @@
 import { MouseEventHandler, useCallback, useRef, useState, useEffect } from 'react';
 import { useVirtual } from 'react-virtual';
-// import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import Modal from '../../components/Modal';
 
@@ -27,6 +26,7 @@ function LobbyPage() {
   const { rooms, users } = useAppSelector(selectSocket);
   const { friendList, friendRequestList } = useAppSelector(selectFriend);
   const socketClient = useSocket();
+  const { isReady } = useSocketReady();
   const dispatch = useAppDispatch();
 
   const modalRef = useRef<any>();
@@ -38,7 +38,6 @@ function LobbyPage() {
   const [activatedUser, setActivatedUser] = useState<string>('');
   const [currentIdx, setCurrentIdx] = useState(0);
   const [modalToggleIdx, setModalToggleIdx] = useState(0);
-  const [modalChecked, setModalChecked] = useState(false);
   const [profileState, setProfileState] = useState<{
     x: number | null;
     y: number | null;
@@ -65,14 +64,12 @@ function LobbyPage() {
 
   const userListVirtualizer = useVirtual({
     size: users.length,
-    // size: 100 * 1000,
     parentRef,
     estimateSize: useCallback(() => 35, []),
     overscan: 5,
   });
   const friendListVirtualizer = useVirtual({
     size: friendList.length,
-    // size: 100 * 1000,
     parentRef,
     estimateSize: useCallback(() => 35, []),
     overscan: 5,
@@ -93,7 +90,6 @@ function LobbyPage() {
   };
   const handleCreatRoomClose = () => {
     setModalToggleIdx(0);
-    setModalChecked(false);
     modalRef.current.close();
   };
 
@@ -102,11 +98,13 @@ function LobbyPage() {
   };
 
   const handleCreatRoomSubmit = () => {
+    const roomName = roomNameInputRef.current.value
+      ? roomNameInputRef.current.value
+      : `${profile.nickname}님의 방`;
     socketClient.current.emit('create room', {
       owner: profile.nickname,
-      name: roomNameInputRef.current.value,
+      name: roomName,
       limit: modalToggleIdx + 2,
-      isSecret: modalChecked,
       nickname: profile.nickname,
     });
   };
@@ -169,6 +167,26 @@ function LobbyPage() {
       })
     );
   };
+
+  useEffect(() => {
+    if (!isReady) return;
+
+    const popstateEvent = (e: any) => {
+      const url = e.target.location.pathname;
+
+      if (url.includes('/game/')) {
+        const gameID = url.split('/game/')[1];
+        socketClient.current.emit('check valid room', { roomID: gameID, id: socketClient.id });
+      }
+    };
+
+    window.addEventListener('popstate', popstateEvent);
+
+    return () => {
+      window.removeEventListener('popstate', popstateEvent);
+    };
+  }, [isReady]);
+
   return (
     <AppbarLayout>
       <SEO>
@@ -290,10 +308,10 @@ function LobbyPage() {
             <SectionTitle>로비</SectionTitle>
             <div className="lobby__container">
               <div className="room__list__scroll__root fancy__scroll">
-                {rooms.map(({ id, owner, name, limit, isSecret, current }) => (
+                {rooms.map(({ id, owner, name, limit, current }) => (
                   <div
                     key={id}
-                    className={`room__container ${isSecret ? 'room__type--secret' : ''}`}
+                    className={`room__container`}
                     onClick={() => {
                       if (limit > current) {
                         joinRoom(id);
@@ -336,19 +354,6 @@ function LobbyPage() {
                   {btn}
                 </button>
               ))}
-            </div>
-          </div>
-          <div className="modal__content__row modal__content__row--horizontal">
-            <div className="modal__label">* 비밀방</div>
-            <div className="modal__checkbox--container">
-              <label className="checkbox__container">
-                <input
-                  type="checkbox"
-                  defaultChecked={modalChecked}
-                  onChange={(e) => setModalChecked(e.target.checked)}
-                />
-                <span className="checkmark"></span>
-              </label>
             </div>
           </div>
           <div className="mb--40"></div>

@@ -1,29 +1,39 @@
+import { pubClient, getAsync, lock } from './../services/socket';
 import axios from 'axios';
-
 import { getTimeStamp } from '../utils/dateUtil';
 
 export const initGameInfo = (mainSpace, socket, target) => {
-  [target.gameStart, target.semaphore, target.gameOverPlayer, target.rank, target.gamingPlayer, target.garbageBlockCnt] = [true, 0, 0, [], [], []];
+  [
+    target.gameStart,
+    target.semaphore,
+    target.gameOverPlayer,
+    target.rank,
+    target.gamingPlayer,
+    target.garbageBlockCnt,
+  ] = [true, 0, 0, [], [], []];
 
   target.player.forEach((p) => {
     target.gamingPlayer.push({ id: p.id });
     target.garbageBlockCnt.push({ id: p.id, garbageCnt: 0 });
   });
-  
+
+  pubClient.set(`room:${target.id}`, JSON.stringify(target));
+
   mainSpace.to(socket.roomID).emit('game started');
-}
+};
 
 export const playerAttackProcess = (mainSpace, socket, target, garbage) => {
   let idx = setAttackPlayer(target, socket.id);
   mainSpace.to(target.garbageBlockCnt[idx].id).emit('attacked', garbage);
 
   target.gamingPlayer.forEach((p) => {
-    if (p === target.garbageBlockCnt[idx].id) return;
-    mainSpace.to(p).emit('someone attacked', garbage, target.garbageBlockCnt[idx].id);
+    if (p.id === target.garbageBlockCnt[idx].id) return;
+    mainSpace.to(p.id).emit('someone attacked', garbage, target.garbageBlockCnt[idx].id);
   });
 
   target.garbageBlockCnt[idx].garbageCnt += garbage;
-}
+  pubClient.set(`room:${target.id}`, JSON.stringify(target));
+};
 
 const setAttackPlayer = (target, id) => {
   target.garbageBlockCnt.sort((a, b) => a.garbageCnt - b.garbageCnt);
@@ -34,8 +44,9 @@ const setAttackPlayer = (target, id) => {
     idx++;
   }
 
+  pubClient.set(`room:${target.id}`, JSON.stringify(target));
   return idx;
-}
+};
 
 export const gameOverProcess = (mainSpace, socket, target) => {
   target.garbageBlockCnt = target.garbageBlockCnt.filter((p) => p.id !== socket.id);
@@ -50,54 +61,72 @@ export const gameOverProcess = (mainSpace, socket, target) => {
   });
   target.gameOverPlayer++;
 
+  pubClient.set(`room:${target.id}`, JSON.stringify(target));
   everyPlayerGameOverCheck(mainSpace, socket, target);
-}
+};
 
 const everyPlayerGameOverCheck = (mainSpace, socket, target) => {
   if (
     target.gamingPlayer.length === 1 ||
     target.gameOverPlayer === target.gamingPlayer.length - 1
   ) {
-
+    pubClient.set(`room:${target.id}`, JSON.stringify(target));
     mainSpace.to(socket.roomID).emit('every player game over');
 
     if (target.gamingPlayer.length !== 1) {
+      pubClient.set(`room:${target.id}`, JSON.stringify(target));
       target.gamingPlayer.forEach((p) => {
         mainSpace.to(p.id).emit('game over info');
       });
     }
   }
-}
 
-export const calcPlayerRank = (mainSpace, socket, target, data) => {
-  const rankTarget = target.rank.find((r) => r.nickname === socket.userName);
+  pubClient.set(`room:${target.id}`, JSON.stringify(target));
+};
 
-  target.semaphore++;
+export const calcPlayerRank = async (mainSpace, socket, target, data) => {
+  const unlock = await lock(`${target.id}`);
+  pubClient.get(`room:${target.id}`, (err, result) => {
+    let target = JSON.parse(result);
+    const rankTarget = target.rank.find((r) => r.nickname === socket.userName);
 
-  if (!rankTarget) {
-    target.rank.push({
-      id: socket.id,
-      oauthID: data.oauthID,
-      nickname: socket.userName,
-      playTime: data.playTime,
-      ranking: 1,
-      attackCnt: data.attackCnt,
-      attackedCnt: data.attackedCnt,
-    });
-  } else {
-    [rankTarget.oauthID, rankTarget.playTime, rankTarget.attackCnt, rankTarget.attackedCnt] = 
-      [data.oauthID, data.playTime, data.attackCnt, data.attackedCnt];
-  }
+    target.semaphore++;
+    pubClient.set(`room:${target.id}`, JSON.stringify(target));
+    if (!rankTarget) {
+      target.rank.push({
+        id: socket.id,
+        oauthID: data.oauthID,
+        nickname: socket.userName,
+        playTime: data.playTime,
+        ranking: 1,
+        attackCnt: data.attackCnt,
+        attackedCnt: data.attackedCnt,
+      });
+      pubClient.set(`room:${target.id}`, JSON.stringify(target));
+    } else {
+      [rankTarget.oauthID, rankTarget.playTime, rankTarget.attackCnt, rankTarget.attackedCnt] = [
+        data.oauthID,
+        data.playTime,
+        data.attackCnt,
+        data.attackedCnt,
+      ];
+      pubClient.set(`room:${target.id}`, JSON.stringify(target));
+    }
 
-  if (target.gameStart && target.semaphore === target.gamingPlayer.length) {
-    [target.gameStart, target.semaphore, target.gameOverPlayer] = [false, 0, 0];
-    
-    target.rank.sort((a, b) => a.ranking - b.ranking);
-    mainSpace.to(socket.roomID).emit('send rank table', target.rank);
-    
-    sendData(makeData(socket, target));
-  }
-}
+    pubClient.set(`room:${target.id}`, JSON.stringify(target));
+
+    if (target.gameStart && target.semaphore === target.gamingPlayer.length) {
+      [target.gameStart, target.semaphore, target.gameOverPlayer] = [false, 0, 0];
+
+      target.rank.sort((a, b) => a.ranking - b.ranking);
+      mainSpace.to(socket.roomID).emit('send rank table', target.rank);
+
+      pubClient.set(`room:${target.id}`, JSON.stringify(target));
+      sendData(makeData(socket, target));
+    }
+  });
+  unlock();
+};
 
 const makeData = (socket, target) => {
   const date = new Date();
@@ -122,8 +151,9 @@ const makeData = (socket, target) => {
     });
   });
 
+  pubClient.set(`room:${target.id}`, JSON.stringify(target));
   return data;
-}
+};
 
 const sendData = (data) => {
   axios({
@@ -131,4 +161,4 @@ const sendData = (data) => {
     url: `${process.env.API_HOST}/api/game/record`,
     data: data,
   });
-}
+};

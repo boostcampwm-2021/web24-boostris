@@ -19,7 +19,6 @@
   }
 
   .modal-content {
-    margin-top: 40px;
     .modal__title {
       font-size: 20px;
       line-height: 23px;
@@ -249,6 +248,7 @@
 
       .modal--profile__image {
         width: 93px;
+        height: 93px;
         margin: 20px auto 15px;
       }
 

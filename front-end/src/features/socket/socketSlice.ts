@@ -7,7 +7,6 @@ export type roomInfo = {
   owner: string;
   name: string;
   limit: number;
-  isSecret: boolean;
   current: number;
   gameStart: boolean;
 };

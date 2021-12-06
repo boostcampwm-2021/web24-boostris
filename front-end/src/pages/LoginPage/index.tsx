@@ -43,7 +43,6 @@ function LoginPage() {
       loginButton: {
         color: 'black',
         type: 1,
-        height: 20,
       },
     });
     naverLogin.init();
@@ -52,7 +51,7 @@ function LoginPage() {
   return (
     <div className="login__root full__page--root">
       <div>
-        <img src="assets/logo.png" alt="" />
+        <img src="assets/logo.png" width={318} height={64} alt="" />
       </div>
       <p className="login__title">SELECT Login Button</p>
       {OAUTH_LIST.map(({ type }, idx) => (

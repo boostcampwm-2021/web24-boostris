@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './style.scss';
 import SectionTitle from '../../components/SectionTitle';
 import useAuth from '../../hooks/use-auth';
@@ -6,8 +6,36 @@ import AppbarLayout from '../../layout/AppbarLayout';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppDispatch } from '../../app/hooks';
 import { updateNickname } from '../../features/user/userSlice';
-import { useSocket } from '../../context/SocketContext';
+import { useSocket, useSocketReady } from '../../context/SocketContext';
 import InfiniteScroll from '../../components/InfiniteScroll';
+import { fetchGetStateMessage, fetchGetTotal, fetchUpdateUserState } from './profileFetch';
+import { NICKNAME_REGEX } from '../../constants';
+
+const recentHeader = ['날짜', '모드', '등수', '플레이 타임', '공격 횟수', '받은 횟수'];
+const translations = [
+  ['total_game_cnt', '총 게임 수'],
+  ['total_play_time', '총 플레이 시간'],
+  ['multi_player_win', '승리 횟수'],
+  ['total_attack_cnt', '총 공격 횟수'],
+];
+
+const drawRecent = (value: any) => {
+  const dateObj = new Date(value.game_date);
+  let timeString = dateObj.toLocaleString('en-US', { timeZone: 'Asia/Seoul' });
+  const [date, time] = timeString.split(',');
+  const [m, d, y] = date.split('/');
+
+  return (
+    <div className="recent__list" key={value.game_date}>
+      <div>{`${y}-${m}-${d} ${time}`}</div>
+      <div>{value.game_mode === 'normal' ? '일반전' : '1 vs 1'}</div>
+      <div>{value.ranking}등</div>
+      <div>{value.play_time}</div>
+      <div>{value.attack_cnt}</div>
+      <div>{value.attacked_cnt}</div>
+    </div>
+  );
+};
 
 export default function Profile() {
   const { nickname } = useParams();
@@ -15,13 +43,8 @@ export default function Profile() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const recentHeader = ['날짜', '모드', '등수', '플레이 타임', '공격 횟수', '받은 횟수'];
-  const translations = [
-    ['total_game_cnt', '총 게임 수'],
-    ['total_play_time', '총 플레이 시간'],
-    ['multi_player_win', '승리 횟수'],
-    ['total_attack_cnt', '총 공격 횟수'],
-  ];
+  const nicknameRef = useRef<any>();
+  const stateMessageRef = useRef<any>();
 
   const [statsticsState, setStatsticsState] = useState({});
 
@@ -33,6 +56,7 @@ export default function Profile() {
   });
 
   const socketClient = useSocket();
+  const { isReady } = useSocketReady();
 
   const drawStatistics = (statsticsState: any) => {
     return (
@@ -50,66 +74,78 @@ export default function Profile() {
     );
   };
 
-  const changeTextArea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (!e.target) return;
-    setUserState({ ...userState, stateMessage: e.target.value });
-  };
-
-  const clickEditButton = () => {
+  const clickEditButton = async () => {
     if (!editMode) {
       setEditMode(!editMode);
       return;
     } else {
-      fetch('/api/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...userState }),
-      })
-        .then(async () => {
-          setEditMode(!editMode);
-          await dispatch(updateNickname());
-          socketClient.current.emit('set userName', userState.nickname);
-          navigate(`/profile/${userState.nickname}`, { replace: true });
-        })
-        .catch((error) => console.log('error:', error));
+      try {
+        const newNickname = nicknameRef.current.value;
+        const newStateMessage = stateMessageRef.current.value;
+
+        if (!NICKNAME_REGEX.test(newNickname)) {
+          alert('닉네임은 반드시 한글/영문(대소문자)/숫자로만 이루어져야합니다.');
+        } else {
+          const res = await fetchUpdateUserState({
+            ...userState,
+            nickname: newNickname,
+            stateMessage: newStateMessage,
+          });
+
+          if (res.message === 'done') {
+            setEditMode(!editMode);
+            await dispatch(updateNickname());
+            socketClient.current.emit('set userName', newNickname, userState.id);
+            navigate(`/profile/${newNickname}`, { replace: true });
+          }
+        }
+      } catch (error) {
+        console.log('error:', error);
+      }
     }
   };
 
-  const changeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target) return;
-    setUserState({ ...userState, nickname: e.target.value });
-  };
+  useEffect(() => {
+    const abortController = new AbortController();
+    //setUserState({ ...userState, nickname });
+
+    (async function effect() {
+      try {
+        const resMsg = await fetchGetStateMessage(nickname, abortController.signal);
+        setUserState({ ...userState, nickname, stateMessage: resMsg.state_message });
+        nicknameRef.current.value = nickname;
+        stateMessageRef.current.value = resMsg.state_message;
+
+        const resTotal = await fetchGetTotal(nickname, abortController.signal);
+        setStatsticsState({ ...statsticsState, ...resTotal });
+      } catch {
+        if (!abortController.signal.aborted) navigate('/error/unauthorize', { replace: true });
+      }
+    })();
+
+    return () => {
+      abortController.abort();
+    };
+  }, [nickname]);
 
   useEffect(() => {
-    setUserState({ ...userState, nickname });
-    fetch('/api/profile/stateMessage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setUserState({ ...userState, nickname, stateMessage: data.state_message });
-      })
-      .catch((error) => {
-        navigate('/error/unauthorize', { replace: true });
-        console.log('error:', error);
-      });
+    if (!isReady) return;
 
-    fetch('/api/profile/total', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setStatsticsState({ ...statsticsState, ...data });
-      })
-      .catch((error) => {
-        navigate('/error/unauthorize', { replace: true });
-        console.log('error:', error);
-      });
-  }, [nickname]);
+    const popstateEvent = (e: any) => {
+      const url = e.target.location.pathname;
+
+      if (url.includes('/game/')) {
+        const gameID = url.split('/game/')[1];
+        socketClient.current.emit('check valid room', { roomID: gameID, id: socketClient.id });
+      }
+    };
+
+    window.addEventListener('popstate', popstateEvent);
+
+    return () => {
+      window.removeEventListener('popstate', popstateEvent);
+    };
+  }, [isReady]);
 
   return (
     <AppbarLayout>
@@ -124,17 +160,15 @@ export default function Profile() {
           <input
             className={`profile-section__player ${editMode ? 'editMode' : ''}`}
             maxLength={10}
-            value={userState.nickname}
+            ref={nicknameRef}
             readOnly={!editMode}
-            onChange={changeInput}
           />
           <textarea
             maxLength={50}
             minLength={1}
             className="profile-section__status"
             disabled={!editMode}
-            onChange={changeTextArea}
-            value={userState.stateMessage}
+            ref={stateMessageRef}
           ></textarea>
 
           {authProfile.nickname === nickname && (
@@ -160,8 +194,9 @@ export default function Profile() {
               ))}
             </div>
             <InfiniteScroll
-              nickname={userState.nickname}
-              MAX_ROWS={5}
+              nickname={nickname}
+              drawFunction={drawRecent}
+              MAX_ROWS={4}
               fetchURL="/api/profile/recent"
               type="profile"
             />

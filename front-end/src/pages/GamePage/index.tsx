@@ -30,10 +30,10 @@ interface blockInterface {
 }
 
 interface RankInterface {
-  nickname: string,
-  playTime: number,
-  attackCnt: number,
-  attackedCnt: number
+  nickname: string;
+  playTime: number;
+  attackCnt: number;
+  attackedCnt: number;
 }
 
 function GamePage() {
@@ -42,7 +42,7 @@ function GamePage() {
   const dispatch = useAppDispatch();
   const socketClient = useSocket();
   const { profile } = useAuth();
-  const {isReady, isStartedGame, setIsStartedGame} = useSocketReady();
+  const { isReady, isStartedGame, setIsStartedGame } = useSocketReady();
   const chatInputRef = useRef<any>();
   const containerRef = useRef<any>();
 
@@ -119,59 +119,65 @@ function GamePage() {
   };
 
   useEffect(() => {
-    if(!isReady) return;
+    if (!isReady) return;
     drawBoardBackground(canvas.current, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT, TETRIS.BLOCK_SIZE);
 
     let startEvent: () => void;
     let gameOverEvent: () => void;
     let rankTableEvent: (rank: RankInterface[]) => void;
 
-    socketClient.current.on('game started', startEvent = () => {
-      // 다른 플레이어가 게임 시작 누르는 것 감지
-      setgameStart(false);
-      setgameStart(true);
-      setGameOver(false);
-      setHoldBlock(null);
-      setPreviewBlock(null);
-    });
+    socketClient.current.on(
+      'game started',
+      (startEvent = () => {
+        // 다른 플레이어가 게임 시작 누르는 것 감지
+        setgameStart(false);
+        setgameStart(true);
+        setGameOver(false);
+        setHoldBlock(null);
+        setPreviewBlock(null);
+      })
+    );
 
-    socketClient.current.on('every player game over', gameOverEvent = () => {
-      // 모든 플레이어가 게임 종료 된 경우
-      setGameOver(true);
-      setIsStartedGame(false);
-    });
+    socketClient.current.on(
+      'every player game over',
+      (gameOverEvent = () => {
+        // 모든 플레이어가 게임 종료 된 경우
+        setGameOver(true);
+        setIsStartedGame(false);
+      })
+    );
 
-    socketClient.current.on('send rank table', rankTableEvent = (rank: RankInterface[]) => {
-      setRankState(rank);
-    });
+    socketClient.current.on(
+      'send rank table',
+      (rankTableEvent = (rank: RankInterface[]) => {
+        setRankState(rank);
+      })
+    );
 
     return () => {
       socketClient.current.off('game started', startEvent);
       socketClient.current.off('every player game over', gameOverEvent);
       socketClient.current.off('send rank table', rankTableEvent);
-    }
+    };
   }, [isReady]);
 
   useEffect(() => {
-    if(!rank) return;
+    if (!rank) return;
     handleRankModal();
   }, [rank]);
 
   useEffect(() => {
     const target = rooms.find((r) => r.id === roomID);
-  
-    if(target?.gameStart) {
+
+    if (target?.gameStart) {
       setIsStartedGame(true);
-    }
-    else {
+    } else {
       setIsStartedGame(false);
     }
   }, []);
 
   return (
     <AppbarLayout>
-
-
       <SEO>
         <title>게임 입장</title>
         <meta property="og:title" content={`게임 ${gameID}`} />
@@ -180,20 +186,19 @@ function GamePage() {
       </SEO>
 
       {isReady ? (
-
         <div
           className="game__page--root"
           style={{ width: '1200px', display: 'flex', padding: '50px', backgroundColor: '#2b3150' }}
         >
+          <div>
+            <HoldBlock holdBlock={holdBlock} />
             <div>
-              <HoldBlock holdBlock={holdBlock} />
-              <div>
-                <div>{'플레이 타임'}</div>
-                <div className={'play-time'}>0s</div>
-                <div>{'공격 횟수'}</div>
-                <div className={'attack-count'}>0</div>
-              </div>
+              <div>{'플레이 타임'}</div>
+              <div className={'play-time'}>0s</div>
+              <div>{'공격 횟수'}</div>
+              <div className={'attack-count'}>0</div>
             </div>
+          </div>
           <div style={{ position: 'relative', margin: '0px 40px' }}>
             <canvas
               style={{
@@ -221,8 +226,9 @@ function GamePage() {
               label="게임 시작"
               handleClick={() => {
                 clickStartButton(socketClient.current);
-              } }
-              disabled={!gameOver || isStartedGame} />
+              }}
+              disabled={!gameOver || isStartedGame}
+            />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div className="slots">
@@ -244,7 +250,8 @@ function GamePage() {
                     type="text"
                     className="chat__input"
                     onKeyUp={handleSubmit}
-                    ref={chatInputRef} />
+                    ref={chatInputRef}
+                  />
                   <button className="chat__send__btn" onClick={sendMessage}>
                     전송
                   </button>
@@ -254,11 +261,11 @@ function GamePage() {
           </div>
         </div>
       ) : null}
-      {rank ?
-        (<Modal ref={modalRef} title="게임 결과" type="rank">
+      {rank ? (
+        <Modal ref={modalRef} title="게임 결과" type="rank">
           <RankTable rank={rank} />
-        </Modal>)
-      : null}
+        </Modal>
+      ) : null}
     </AppbarLayout>
   );
 }

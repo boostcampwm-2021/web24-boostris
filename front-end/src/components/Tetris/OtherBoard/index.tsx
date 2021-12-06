@@ -126,7 +126,9 @@ const initSocketEvent = (socket: Socket, roomID: string | null, socketHandler: a
 
         if(target) {
           target.NICKNAME_ElEMENT = document.querySelector(`[data-other-player="${idx}"]`) as HTMLDivElement;
-          target.NICKNAME_ElEMENT.innerText = p.nickname;
+          if(target.NICKNAME_ElEMENT) {
+            target.NICKNAME_ElEMENT.innerText = p.nickname;
+          }
           target.CANVAS = document.querySelector(`[data-player="${idx}"]`) as HTMLCanvasElement;
           target.CTX = target.CANVAS?.getContext('2d') as CanvasRenderingContext2D;
           target.CTX?.clearRect(0, 0, TETRIS.BOARD_WIDTH, TETRIS.BOARD_HEIGHT);
