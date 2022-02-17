@@ -32,9 +32,9 @@
 [Boostris 즐기러 가기](https://www.boostris.com) <img src="https://user-images.githubusercontent.com/46598292/144735881-f6308168-5058-43ee-bff3-b9ccf601a37e.png" width="50">  
 
 
-|Notion|Wiki|Figma|Backlog|
-|------|---|---|---|
-|[Notion 바로가기](https://www.notion.so/Boostris-7123af3df6d34873b81f28fa6fa1e9a0)|[Wiki 바로가기](https://github.com/boostcampwm-2021/web24-boostris/wiki)|[Figma 바로가기](https://www.figma.com/file/L74jqi18RdQtEody3LXcZT/Boostris?node-id=165%3A3)|[Backlog 바로가기](https://www.notion.so/e44a722a32d949c496c977007efc5357?v=89ee1ebfb84e45bbb1130fa883f7d8d7)|
+|Notion|Wiki|Figma|Backlog|Youtube|
+|------|---|---|---|---|
+|[Notion 바로가기](https://www.notion.so/Boostris-7123af3df6d34873b81f28fa6fa1e9a0)|[Wiki 바로가기](https://github.com/boostcampwm-2021/web24-boostris/wiki)|[Figma 바로가기](https://www.figma.com/file/L74jqi18RdQtEody3LXcZT/Boostris?node-id=165%3A3)|[Backlog 바로가기](https://www.notion.so/e44a722a32d949c496c977007efc5357?v=89ee1ebfb84e45bbb1130fa883f7d8d7)|[Youtube 바로가기](https://www.youtube.com/watch?v=KVUbau2fy8M&t=186s)|
 
 <br>
 
