@@ -16,7 +16,7 @@ const Lobby = lazy(() => import('./pages/LobbyPage'));
 const Game = lazy(() => import('./pages/GamePage'));
 const Ranking = lazy(() => import('./pages/RankingPage'));
 const Error = lazy(() => import('./pages/ErrorPage'));
-
+//
 function App() {
   let { auth } = useAuth();
   const dispatch = useAppDispatch();
